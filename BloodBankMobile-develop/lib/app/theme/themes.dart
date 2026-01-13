@@ -56,7 +56,7 @@ class AppThemeData {
       colorSchemeSeed: colorScheme.primary,
       appBarTheme: AppBarTheme(elevation: 0.0, backgroundColor: colorScheme.appBarBackground),
       scaffoldBackgroundColor: colorScheme.scaffoldBackgroundColor,
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
           margin: EdgeInsets.zero,
           color: colorScheme.cardColor,
           surfaceTintColor: colorScheme.cardSurfaceTintColor,
