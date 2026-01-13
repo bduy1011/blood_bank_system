@@ -1,0 +1,6 @@
+@BB_CR_Restful_HostAddress = http://localhost:5076
+
+GET {{BB_CR_Restful_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
