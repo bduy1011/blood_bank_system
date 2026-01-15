@@ -1,4 +1,4 @@
-﻿using BB.CR.Models;
+using BB.CR.Models;
 using BB.CR.Providers;
 using BB.CR.Providers.Bases;
 using BB.CR.Providers.Extensions;
@@ -59,13 +59,20 @@ namespace BB.CR.Repositories.Implements
                         {
                             try
                             {
-                                systemUser.FireBaseToken = fireBaseToken;
-                                context.SystemUser
-                                    .Update(systemUser);
-
-                                await context
-                                    .SaveChangesAsync()
+                                // Attach entity to context before updating
+                                var userToUpdate = await context.SystemUser
+                                    .FirstOrDefaultAsync(i => i.UserCode == login.UserCode && i.Active)
                                     .ConfigureAwait(false);
+                                
+                                if (userToUpdate != null)
+                                {
+                                    userToUpdate.FireBaseToken = fireBaseToken;
+                                    context.SystemUser.Update(userToUpdate);
+
+                                    await context
+                                        .SaveChangesAsync()
+                                        .ConfigureAwait(false);
+                                }
                             }
                             catch (Exception ex)
                             {

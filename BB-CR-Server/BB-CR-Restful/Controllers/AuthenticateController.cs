@@ -1,4 +1,4 @@
-﻿using BB.CR.Models;
+using BB.CR.Models;
 using BB.CR.Providers;
 using BB.CR.Providers.Bases;
 using BB.CR.Providers.Extensions;

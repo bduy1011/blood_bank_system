@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace BB.CR.Providers
@@ -8,8 +9,8 @@ namespace BB.CR.Providers
         public static string Encrypt(string key, string plainText)
         {
             using Aes aes = Aes.Create();
-            aes.Key = Encoding.UTF8.GetBytes(key); // DeriveKeyFromKey(key);
-            aes.IV = Encoding.UTF8.GetBytes(key); // DeriveKeyFromKey(key);
+            aes.Key = DeriveKeyFromKey(key);
+            aes.IV = DeriveKeyFromKey(key).Take(16).ToArray(); // IV should be 16 bytes for AES
 
             using MemoryStream output = new();
             using CryptoStream cryptoStream = new(output, aes.CreateEncryptor(), CryptoStreamMode.Write);
@@ -22,8 +23,8 @@ namespace BB.CR.Providers
         public static string Decrypt(string key, string hashText)
         {
             using Aes aes = Aes.Create();
-            aes.Key = Encoding.UTF8.GetBytes(key); // DeriveKeyFromKey(key);
-            aes.IV = Encoding.UTF8.GetBytes(key); // DeriveKeyFromKey(key);
+            aes.Key = DeriveKeyFromKey(key);
+            aes.IV = DeriveKeyFromKey(key).Take(16).ToArray(); // IV should be 16 bytes for AES
 
             using MemoryStream input = new(Convert.FromBase64String(hashText));
             using CryptoStream cryptoStream = new(input, aes.CreateDecryptor(), CryptoStreamMode.Read);
@@ -37,7 +38,7 @@ namespace BB.CR.Providers
         {
             var emptySalt = Array.Empty<byte>();
             var iterations = 1000;
-            var desiredKeyLength = 16; // 16 bytes equal 128 bits.
+            var desiredKeyLength = 32; // 32 bytes equal 256 bits for AES-256
             var hashMethod = HashAlgorithmName.SHA384;
             return Rfc2898DeriveBytes.Pbkdf2(Encoding.UTF8.GetBytes(key),
                                              emptySalt,
