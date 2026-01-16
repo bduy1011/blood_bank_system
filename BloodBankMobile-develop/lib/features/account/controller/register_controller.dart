@@ -5,7 +5,9 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../base/base_view/base_view.dart';
+import '../../../models/citizen.dart';
 import '../../../utils/app_utils.dart';
+import '../../scan_qr_code/scan_qr_code_screen.dart';
 import '../presentation/confirm_otp.dart';
 
 class RegisterController extends BaseModelStateful {
@@ -152,5 +154,53 @@ class RegisterController extends BaseModelStateful {
       AppUtils.instance.showToast("Đăng ký tài khoản thất bại!");
     }
     AppUtils.instance.hideLoading();
+  }
+
+  Future<bool> scanQRCodeForRegistration(BuildContext context) async {
+    try {
+      var rs = await Get.to(
+        () => ScanQrCodeScreen(
+          title: "Quét mã QR CCCD",
+          onScan: (code) async {
+            try {
+              // Parse QR code thành Citizen model
+              final citizen = Citizen.fromQRCode(code);
+
+              // Validate thông tin
+              if (!citizen.isValid()) {
+                final errors = citizen.getValidationErrors();
+                AppUtils.instance.showMessage(
+                  errors.join("\n"),
+                  context: Get.context,
+                );
+                return false;
+              }
+
+              usernameRegisterController.text = citizen.idCard;
+              fullNameRegisterController.text = citizen.fullName;
+
+              AppUtils.instance.showToast("Quét mã QR thành công!");
+
+              return true;
+            } catch (e) {
+              log("parseQRCode()", error: e);
+              AppUtils.instance.showToast("Lỗi khi đọc mã QR");
+              return false;
+            }
+          },
+        ),
+      );
+      if (rs == "ok") {
+        return true;
+      }
+      if (rs == "cancel") {
+        return false;
+      }
+      return false;
+    } catch (e, t) {
+      log("scanQRCodeForRegistration()", error: e, stackTrace: t);
+      AppUtils.instance.showToast("Lỗi khi quét mã QR");
+      return false;
+    }
   }
 }

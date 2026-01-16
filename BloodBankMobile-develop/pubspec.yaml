@@ -75,6 +75,8 @@ dependencies:
   enhance_expansion_panel: 0.7.0
   pull_to_refresh_flutter3: ^2.0.2
   screen_brightness: ^2.1.1
+  image_picker: ^1.2.1
+  mobile_scanner: ^7.1.4
 
 dev_dependencies:
   flutter_test:

@@ -112,29 +112,68 @@ class _RegisterPageState
                           const SizedBox(
                             height: 20,
                           ),
-                          TextFormField(
-                            controller: controller.usernameRegisterController,
-                            maxLength: 12,
-                            keyboardType: TextInputType.number,
-                            textInputAction: TextInputAction.next,
-                            decoration: InputDecoration(
-                                focusedBorder: const UnderlineInputBorder(),
-                                labelText: "Tên đăng nhập (CCCD/Căn cước)",
-                                floatingLabelStyle: context
-                                    .myTheme.textThemeT1.title
-                                    .copyWith(fontWeight: FontWeight.normal),
-                                labelStyle: context.myTheme.textThemeT1.title
-                                    .copyWith(fontWeight: FontWeight.normal)),
-                            style: context.myTheme.textThemeT1.body
-                                .copyWith(fontSize: 16),
-                            autovalidateMode:
-                                AutovalidateMode.onUserInteraction,
-                            validator: FormBuilderValidators.compose([
-                              FormBuilderValidators.required(
-                                errorText: AppLocale.formRequiredUsernameError
-                                    .translate(context),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextFormField(
+                                  controller:
+                                      controller.usernameRegisterController,
+                                  maxLength: 12,
+                                  keyboardType: TextInputType.number,
+                                  textInputAction: TextInputAction.next,
+                                  decoration: InputDecoration(
+                                      focusedBorder:
+                                          const UnderlineInputBorder(),
+                                      labelText:
+                                          "Tên đăng nhập (CCCD/Căn cước)",
+                                      floatingLabelStyle: context
+                                          .myTheme.textThemeT1.title
+                                          .copyWith(
+                                              fontWeight: FontWeight.normal),
+                                      labelStyle: context
+                                          .myTheme.textThemeT1.title
+                                          .copyWith(
+                                              fontWeight: FontWeight.normal)),
+                                  style: context.myTheme.textThemeT1.body
+                                      .copyWith(fontSize: 16),
+                                  autovalidateMode:
+                                      AutovalidateMode.onUserInteraction,
+                                  validator: FormBuilderValidators.compose([
+                                    FormBuilderValidators.required(
+                                      errorText: AppLocale
+                                          .formRequiredUsernameError
+                                          .translate(context),
+                                    ),
+                                  ]),
+                                ),
                               ),
-                            ]),
+                              const SizedBox(width: 8),
+                              // Nút quét QR nhỏ
+                              Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () {
+                                    controller
+                                        .scanQRCodeForRegistration(context);
+                                  },
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          const Color.fromARGB(255, 229, 59, 59)
+                                              .withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Icon(
+                                      Icons.qr_code_scanner,
+                                      size: 24,
+                                      color: Color.fromARGB(255, 229, 59, 59),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(
                             height: 20,
@@ -219,7 +258,7 @@ class _RegisterPageState
                             ]),
                           ),
                           const VSpacing(
-                            spacing: 40,
+                            spacing: 30,
                           ),
                           ConstrainedBox(
                             constraints:

@@ -5,6 +5,7 @@ import 'package:blood_donation/core/localization/app_locale.dart';
 import 'package:blood_donation/di/injector.dart';
 import 'package:blood_donation/utils/app_utils.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -23,7 +24,14 @@ void main() async {
   // usePathUrlStrategy();
   // runZonedGuarded(() async {
   WidgetsFlutterBinding.ensureInitialized();
-  configureDependencies(AppConfig.prod());
+  
+  // Tự động chọn môi trường: dev() khi chạy debug, prod() khi release
+  // Để test với server local, chạy app ở debug mode
+  // Để deploy lên production, build release và cập nhật URL trong app_config.dart
+  configureDependencies(
+    kDebugMode ? AppConfig.dev() : AppConfig.prod(),
+  );
+  
   // Init
   await Firebase.initializeApp();
 
