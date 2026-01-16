@@ -40,6 +40,9 @@ class RegisterDonateBloodController extends BaseModelStateful {
   TextEditingController emailController = TextEditingController();
   TextEditingController ngheNghiepController = TextEditingController();
   TextEditingController coQuanController = TextEditingController();
+  // TextEditingController provinceController = TextEditingController();
+  // TextEditingController districtController = TextEditingController();
+  // TextEditingController wardController = TextEditingController();
 
   RegisterDonationBlood registerDonationBlood = RegisterDonationBlood(
     id: 0,
@@ -490,6 +493,7 @@ class RegisterDonateBloodController extends BaseModelStateful {
               e.codeCountry ==
               appCenter.authentication!.dmNguoiHienMau?.maTinh);
           if (codeProvince != null) {
+            // provinceController.text = codeProvince?.nameProvince ?? '';
             updateProfile(
               codeProvince: codeProvince?.codeProvince,
               nameProvince: codeProvince?.nameProvince,
@@ -505,6 +509,7 @@ class RegisterDonateBloodController extends BaseModelStateful {
               e.codeDistrict ==
               appCenter.authentication!.dmNguoiHienMau?.maHuyen);
           if (codeDistrict != null) {
+            // districtController.text = codeDistrict?.nameDistrict ?? '';
             updateProfile(
               codeDistrict: codeDistrict?.codeDistrict,
               nameDistrict: codeDistrict?.nameDistrict,
@@ -519,6 +524,7 @@ class RegisterDonateBloodController extends BaseModelStateful {
           codeWard = wards.firstWhereOrNull((e) =>
               e.codeWards == appCenter.authentication!.dmNguoiHienMau?.maXa);
           if (codeWard != null) {
+            // wardController.text = codeWard?.nameWards ?? '';
             updateProfile(
               codeWard: codeWard?.codeWards,
               nameWard: codeWard?.nameWards,
@@ -597,9 +603,11 @@ class RegisterDonateBloodController extends BaseModelStateful {
 
         ///
       } else {
-        AppUtils.instance.showToast(
-          response.message ?? "",
-        );
+        hideLoading();
+        final errorMessage = response.message?.isNotEmpty == true 
+            ? response.message! 
+            : "Đăng ký thất bại. Vui lòng thử lại sau.";
+        AppUtils.instance.showToast(errorMessage);
       }
       return response;
     } catch (e, s) {

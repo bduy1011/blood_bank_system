@@ -211,6 +211,37 @@ class _RegisterDonateBloodPageSecondState
                       isRequired: false,
                       getValue: () => widget.state.codeWard,
                     ),
+
+                    // _buildTextField(
+                    //   label: AppLocale.provinceCity.translate(context),
+                    //   controller: widget.state.provinceController,
+                    //   onChanged: (value) {
+                    //     widget.state.updateProfile(
+                    //       nameProvince: value,
+                    //     );
+                    //   },
+                    //   isRequired: true,
+                    // ),
+                    // _buildTextField(
+                    //   label: AppLocale.district.translate(context),
+                    //   controller: widget.state.districtController,
+                    //   onChanged: (value) {
+                    //     widget.state.updateProfile(
+                    //       nameDistrict: value,
+                    //     );
+                    //   },
+                    //   isRequired: false,
+                    // ),
+                    // _buildTextField(
+                    //   label: AppLocale.ward.translate(context),
+                    //   controller: widget.state.wardController,
+                    //   onChanged: (value) {
+                    //     widget.state.updateProfile(
+                    //       nameWard: value,
+                    //     );
+                    //   },
+                    //   isRequired: false,
+                    // ),
                     _buildTextField(
                       label: "Email",
                       controller: widget.state.emailController,
