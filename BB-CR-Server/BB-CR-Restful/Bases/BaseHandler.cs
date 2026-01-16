@@ -30,24 +30,42 @@ namespace BB.CR.Rest.Bases
         {
             var response = new ReturnResponse<T>();
 
+            // Try to get from cache first
             try
             {
                 var cacheProvinces = await distributedCache.GetStringAsync(cacheName).ConfigureAwait(false);
                 if (!string.IsNullOrEmpty(cacheProvinces))
                 {
                     response = JsonConvert.DeserializeObject<ReturnResponse<T>>(cacheProvinces);
+                    if (response != null)
+                        return response;
                 }
-                else
+            }
+            catch (Exception ex)
+            {
+                // Redis connection error - log and continue without cache
+                logger.Log(LogLevel.Warning, "Redis cache unavailable, falling back to database: {Message}", ex.InnerMessage());
+            }
+
+            // Cache miss or Redis error - get from database
+            try
+            {
+                response = await action().ConfigureAwait(false);
+                
+                // Try to cache the result (ignore errors if Redis is still unavailable)
+                try
                 {
-                    response = await action().ConfigureAwait(false);
-                    #region Xử lý expire để recache lấy dữ liệu mới.
                     var cachedOption = new DistributedCacheEntryOptions
                     {
                         AbsoluteExpiration = DateTime.Now.AddMinutes(2)
                     };
                     var json = JsonConvert.SerializeObject(response);
                     await distributedCache.SetStringAsync(cacheName, json, cachedOption).ConfigureAwait(false);
-                    #endregion
+                }
+                catch (Exception cacheEx)
+                {
+                    // Log but don't fail the request if caching fails
+                    logger.Log(LogLevel.Warning, "Failed to cache result: {Message}", cacheEx.InnerMessage());
                 }
             }
             catch (Exception ex)
@@ -66,20 +84,41 @@ namespace BB.CR.Rest.Bases
         public static async Task<ReturnResponse<List<KeyValuePair<T, string>>>?> GetEnumAsync<T>(ILogger logger, IDistributedCache distributedCache, string cacheName) where T : Enum
         {
             var response = new ReturnResponse<List<KeyValuePair<T, string>>>();
+            
+            // Try to get from cache first
             try
             {
                 var cacheProvinces = await distributedCache.GetStringAsync(cacheName).ConfigureAwait(false);
                 if (!string.IsNullOrEmpty(cacheProvinces))
                 {
                     response = JsonConvert.DeserializeObject<ReturnResponse<List<KeyValuePair<T, string>>>>(cacheProvinces);
+                    if (response != null)
+                        return response;
                 }
-                else
+            }
+            catch (Exception ex)
+            {
+                // Redis connection error - log and continue without cache
+                logger.Log(LogLevel.Warning, "Redis cache unavailable, falling back to enum generation: {Message}", ex.InnerMessage());
+            }
+
+            // Cache miss or Redis error - generate enum list
+            try
+            {
+                var enums = new List<KeyValuePair<T, string>>();
+                await Task.Run(() => enums = EnumExtension.ToList<T>()).ConfigureAwait(false);
+                response.Success(enums, CommonResources.Ok);
+                
+                // Try to cache the result (ignore errors if Redis is still unavailable)
+                try
                 {
-                    var enums = new List<KeyValuePair<T, string>>();
-                    await Task.Run(() => enums = EnumExtension.ToList<T>()).ConfigureAwait(false);
-                    response.Success(enums, CommonResources.Ok);
                     var json = JsonConvert.SerializeObject(response);
                     await distributedCache.SetStringAsync(cacheName, json).ConfigureAwait(false);
+                }
+                catch (Exception cacheEx)
+                {
+                    // Log but don't fail the request if caching fails
+                    logger.Log(LogLevel.Warning, "Failed to cache enum result: {Message}", cacheEx.InnerMessage());
                 }
             }
             catch (Exception ex)
@@ -87,6 +126,7 @@ namespace BB.CR.Rest.Bases
                 logger.Log(LogLevel.Error, BaseVariable.ERROR_MESSAGE, ex.InnerMessage());
                 response?.Error(HttpStatusCode.InternalServerError, CommonResources.InternalServerError);
             }
+            
             return response;
         }
 

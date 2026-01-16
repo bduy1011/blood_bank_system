@@ -78,9 +78,11 @@ namespace BB.CR.Repositories.UseCases
                 if (data.Ngay == model.Ngay)
                 {
                     response.Error(HttpStatusCode.Conflict, string.Format(BzLogicResource.DaDangKyHienMau, data.CMND, data.SoDT, data.Ngay.ToString(DateFormatter.DDMMYYYY_VN)));
+                    return response;
                 }
             }
-            else
+            
+            if (data is null || data.Ngay != model.Ngay)
             {
                 // Kiểm tra số lượng đợt lấy máu
                 var slDotLayMauDangKy = await context.DangKyHienMau
