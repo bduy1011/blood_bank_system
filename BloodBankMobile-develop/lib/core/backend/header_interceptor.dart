@@ -13,6 +13,9 @@ import '../storage/local_storage.dart';
 import 'backend_provider.dart';
 
 class HeaderInterceptor extends InterceptorsWrapper {
+  // Flag để tránh vòng lặp khi refresh token
+  bool _isRefreshing = false;
+
   @override
   Future onRequest(
     RequestOptions options,
@@ -49,15 +52,48 @@ class HeaderInterceptor extends InterceptorsWrapper {
   ) async {
     developer.log("onError : $err");
     if (err.response?.statusCode == HttpStatus.unauthorized) {
-      var token = await BackendProvider().refreshToken();
-      if (token?.isNotEmpty == true) {
-        GetIt.instance<AppCenter>().authentication?.accessToken = token;
-        GetIt.instance<AppCenter>().localStorage.saveAuthentication(
-            authentication: GetIt.instance<AppCenter>().authentication!);
-      } else {
+      // Kiểm tra xem request hiện tại có phải là refresh-token endpoint không
+      final isRefreshTokenEndpoint = err.requestOptions.uri.path
+          .contains('refresh-token');
+      
+      // Nếu đang refresh token và gặp 401, hoặc đang trong quá trình refresh
+      // thì không nên retry, mà phải clear auth và logout ngay
+      if (isRefreshTokenEndpoint || _isRefreshing) {
+        developer.log("Refresh token failed or already refreshing. Clearing authentication...");
+        _isRefreshing = false;
         GetIt.instance<AppCenter>().state.status.value = PageStatus.loading;
         await GetIt.instance<AppCenter>().localStorage.clearAuthentication();
         BackendProvider().notifyAuthentication(isAuthenticated: false);
+        super.onError(err, handler);
+        return;
+      }
+
+      // Nếu chưa đang refresh, thử refresh token
+      if (!_isRefreshing) {
+        _isRefreshing = true;
+        try {
+          var token = await BackendProvider().refreshToken();
+          if (token?.isNotEmpty == true) {
+            GetIt.instance<AppCenter>().authentication?.accessToken = token;
+            GetIt.instance<AppCenter>().localStorage.saveAuthentication(
+                authentication: GetIt.instance<AppCenter>().authentication!);
+            _isRefreshing = false;
+          } else {
+            // Refresh token thất bại, clear auth
+            developer.log("Token refresh failed. Clearing authentication...");
+            _isRefreshing = false;
+            GetIt.instance<AppCenter>().state.status.value = PageStatus.loading;
+            await GetIt.instance<AppCenter>().localStorage.clearAuthentication();
+            BackendProvider().notifyAuthentication(isAuthenticated: false);
+          }
+        } catch (e) {
+          // Lỗi khi refresh token, clear auth
+          developer.log("Error refreshing token: $e");
+          _isRefreshing = false;
+          GetIt.instance<AppCenter>().state.status.value = PageStatus.loading;
+          await GetIt.instance<AppCenter>().localStorage.clearAuthentication();
+          BackendProvider().notifyAuthentication(isAuthenticated: false);
+        }
       }
     }
     super.onError(err, handler);
@@ -65,9 +101,31 @@ class HeaderInterceptor extends InterceptorsWrapper {
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
-    // developer.log("response : ${response.data}");
+    // Log response
+    developer.log("===============================================");
+    developer.log("API Response:");
+    developer.log("Status Code: ${response.statusCode}");
+    developer.log("URL: ${response.requestOptions.uri}");
+    developer.log("Method: ${response.requestOptions.method}");
+    
+    // Format response data
+    String responseData = "";
+    try {
+      if (response.data != null) {
+        if (response.data is Map || response.data is List) {
+          responseData = const JsonEncoder.withIndent('  ').convert(response.data);
+        } else {
+          responseData = response.data.toString();
+        }
+      }
+    } catch (e) {
+      responseData = response.data?.toString() ?? "Unable to parse response";
+    }
+    
+    developer.log("Response Body:");
+    developer.log(responseData);
+    developer.log("===============================================");
 
-    // TODO: implement onResponse
     super.onResponse(response, handler);
   }
 }

@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:blood_donation/base/base_view/base_view.dart';
 import 'package:blood_donation/models/authentication.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
 import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
 
 import '../../../app/config/routes.dart';
@@ -206,11 +205,14 @@ class HomeController extends BaseModelStateful {
   Future<void> init() async {
     try {
       showLoading();
-      await _getSystemConfig();
-      await _getSlides();
-      await _getNews();
-      await getHistory();
-      await reLoadInformation();
+      // Load các API song song để tăng tốc độ
+      await Future.wait([
+        _getSystemConfig(),
+        _getSlides(),
+        _getNews(),
+        getHistory(),
+        reLoadInformation(),
+      ]);
     } catch (e, s) {
       log("init()", error: e, stackTrace: s);
     } finally {
@@ -221,17 +223,29 @@ class HomeController extends BaseModelStateful {
   Future<void> _getSlides() async {
     final response = await backendProvider.getSystemSlides();
     if (response.status == 200) {
-      final List<SlideModel> slides = [];
-      for (var slide in response.data ?? []) {
-        try {
-          if ((await http.head(Uri.parse(slide.url))).statusCode == 200) {
-            slides.add(slide);
-          }
-        } catch (_) {}
-      }
-      this.slides.value = slides;
+      // Tạm thời bỏ check URL để tăng tốc độ load
+      // Có thể check URL sau khi hiển thị hoặc khi user click vào slide
+      this.slides.value = response.data ?? [];
+      
+      // Optional: Check URL sau khi đã hiển thị (background)
+      // _validateSlidesInBackground(response.data ?? []);
     }
   }
+  
+  // Optional: Validate slides URL trong background (không block UI)
+  // void _validateSlidesInBackground(List<SlideModel> allSlides) async {
+  //   final List<SlideModel> validSlides = [];
+  //   for (var slide in allSlides) {
+  //     try {
+  //       if ((await http.head(Uri.parse(slide.url))).statusCode == 200) {
+  //         validSlides.add(slide);
+  //       }
+  //     } catch (_) {}
+  //   }
+  //   if (validSlides.isNotEmpty) {
+  //     slides.value = validSlides;
+  //   }
+  // }
 
   Future<void> _getNews() async {
     final response = await backendProvider.getNews();

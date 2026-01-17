@@ -28,6 +28,7 @@ import '../../models/blood_donor.dart';
 import '../../models/cau_hinh_ton_kho_view.dart';
 import '../../models/dm_don_vi_cap_mau_response.dart';
 import '../../models/donation_blood_history_response.dart';
+import '../../utils/secure_token_service.dart';
 import '../../models/feedback_respose.dart';
 import '../../models/giao_dich_template.dart';
 import '../../models/news_response.dart';
@@ -290,9 +291,24 @@ class BackendProvider {
     try {
       await _client.logout();
       await _localStorage.clearAuthentication();
+      // Clear tokens trong secure storage (biometric tokens)
+      try {
+        final secureTokenService = SecureTokenService();
+        await secureTokenService.clearTokens();
+      } catch (e) {
+        // Log nhưng không throw, vì đây là cleanup
+        log("Error clearing secure storage tokens on logout: $e");
+      }
     } catch (e) {
       // TODO
       await _localStorage.clearAuthentication();
+      // Clear tokens trong secure storage ngay cả khi logout API fail
+      try {
+        final secureTokenService = SecureTokenService();
+        await secureTokenService.clearTokens();
+      } catch (e2) {
+        log("Error clearing secure storage tokens on logout: $e2");
+      }
     }
     notifyAuthentication(isAuthenticated: false);
   }

@@ -1,10 +1,16 @@
 import 'dart:developer';
 
+import 'package:blood_donation/app/app_util/app_center.dart';
 import 'package:blood_donation/base/base_view/base_view.dart';
+import 'package:blood_donation/core/backend/backend_provider.dart';
 import 'package:blood_donation/core/localization/app_locale.dart';
+import 'package:blood_donation/models/authentication.dart';
 import 'package:blood_donation/utils/app_utils.dart';
+import 'package:blood_donation/utils/biometric_auth_service.dart';
+import 'package:blood_donation/utils/secure_token_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../app/config/routes.dart';
@@ -49,6 +55,172 @@ class LoginController extends BaseModelStateful {
     ///
     prefs?.setString("userName", usernameController.text);
   }
+
+  // ========== BIOMETRIC LOGIN (Tách biệt, không ảnh hưởng login bằng text) ==========
+  final SecureTokenService _tokenService = SecureTokenService();
+  final BackendProvider _backendProvider = BackendProvider();
+  final AppCenter _appCenter = GetIt.instance<AppCenter>();
+
+  /// Lưu tokens và toàn bộ Authentication vào secure storage sau khi login thành công
+  /// Token được khóa bằng Face ID/vân tay cho đúng account (UserCode)
+  Future<void> saveTokensToSecureStorage({
+    required Authentication authentication,
+    String? refreshToken,
+  }) async {
+    try {
+      if (authentication.accessToken != null &&
+          authentication.accessToken!.isNotEmpty) {
+        log("Saving authentication to secure storage (locked by biometric): userCode=${authentication.userCode}, userName=${authentication.name}");
+        await _tokenService.saveAuthentication(authentication);
+        log("Authentication and tokens saved to secure storage successfully (locked by biometric)");
+      } else {
+        log("Warning: accessToken is null or empty, cannot save to secure storage");
+      }
+    } catch (e) {
+      log("saveTokensToSecureStorage error: $e");
+      rethrow;
+    }
+  }
+
+  /// Kiểm tra xem có tokens đã lưu trong secure storage không
+  Future<bool> hasStoredTokens() async {
+    return await _tokenService.hasTokens();
+  }
+
+  /// Xóa tokens khỏi secure storage (khi logout)
+  Future<void> clearStoredTokens() async {
+    await _tokenService.clearTokens();
+  }
+
+  /// Đăng nhập bằng biometric (FaceID/Fingerprint)
+  /// Flow: Kiểm tra token → Xác thực biometric → Lấy token từ secure storage → Set auth → Vào app
+  Future<void> loginWithBiometric(BuildContext context) async {
+    try {
+      final biometricService = BiometricAuthService();
+
+      // Bước 1: Kiểm tra xem có tokens đã lưu không
+      final hasTokens = await hasStoredTokens();
+      if (!hasTokens) {
+        log("No tokens found");
+        if (context.mounted) {
+          await AppUtils.instance.showMessage(
+            'Bạn chưa đăng nhập. Vui lòng đăng nhập bằng tên đăng nhập và mật khẩu trước khi sử dụng đăng nhập bằng vân tay/Face ID.',
+            context: context,
+          );
+        }
+        return;
+      }
+
+      // Bước 2: Kiểm tra token có hết hạn không TRƯỚC KHI xác thực biometric
+      // Nếu token hết hạn, server sẽ không cho refresh → yêu cầu đăng nhập lại
+      final isExpired = await _tokenService.isAccessTokenExpired();
+      if (isExpired) {
+        log("Token expired. Cannot use biometric login. User must login with username/password.");
+        await clearStoredTokens();
+        if (context.mounted) {
+          await AppUtils.instance.showMessage(
+            'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại bằng tên đăng nhập và mật khẩu.',
+            context: context,
+          );
+        }
+        return;
+      }
+
+      // Bước 3: Lấy thông tin user đã lưu để hiển thị
+      final userInfo = await _tokenService.getUserInfo();
+      final savedUserCode = userInfo['userCode'];
+      final savedUserName = userInfo['userName'];
+      log("Saved user info - UserCode: $savedUserCode, UserName: $savedUserName");
+
+      // Bước 4: Xác thực bằng biometric (chỉ khi token chưa hết hạn)
+      String reason = AppLocale.biometricAuthReason.translate(context);
+      if (savedUserName != null || savedUserCode != null) {
+        final userDisplay = savedUserName != null 
+            ? (savedUserCode != null ? "$savedUserName ($savedUserCode)" : savedUserName)
+            : savedUserCode ?? '';
+        reason = "Đăng nhập với tài khoản: $userDisplay\n\n${reason}";
+      }
+      
+      final didAuthenticate = await biometricService.authenticate(
+        reason: reason,
+        context: context,
+      );
+
+      if (!didAuthenticate) {
+        return; // User cancel hoặc fail
+      }
+
+      log("Biometric authentication successful");
+      AppUtils.instance.showLoading();
+
+      // Bước 5: Lấy Authentication object từ secure storage (đã được khóa bằng biometric)
+      log("Getting authentication from secure storage (unlocked by biometric)...");
+      Authentication? savedAuth = await _tokenService.getAuthentication();
+      
+      if (savedAuth == null) {
+        log("No authentication found in secure storage");
+        AppUtils.instance.hideLoading();
+        if (context.mounted) {
+          AppUtils.instance.showToast(
+              'Không tìm thấy thông tin đăng nhập. Vui lòng đăng nhập lại.');
+        }
+        return;
+      }
+      
+      log("Authentication retrieved: userCode=${savedAuth.userCode}, name=${savedAuth.name}");
+
+      // Bước 6: Kiểm tra lại token (đảm bảo token vẫn còn hợp lệ)
+      final accessToken = savedAuth.accessToken ?? '';
+      if (accessToken.isEmpty) {
+        log("Access token is empty");
+        AppUtils.instance.hideLoading();
+        if (context.mounted) {
+          AppUtils.instance.showToast(
+              'Token không hợp lệ. Vui lòng đăng nhập lại.');
+        }
+        await clearStoredTokens();
+        return;
+      }
+
+      // Token đã được kiểm tra ở bước 2, nên không cần refresh nữa
+
+      // Bước 7: Set authentication và vào app (KHÔNG cần gọi API - chỉ mở khóa token)
+      log("Setting authentication from secure storage (no API call needed)");
+      
+      // Lưu vào localStorage để tương thích với code cũ
+      await _appCenter.localStorage
+          .saveAuthentication(authentication: savedAuth);
+      
+      // Set authentication
+      _appCenter.setAuthentication(savedAuth);
+      _backendProvider.notifyAuthentication(isAuthenticated: true);
+
+      log("Authentication set successfully from secure storage");
+      
+      if (!context.mounted) {
+        log("Context is not mounted, cannot show UI");
+        return;
+      }
+      
+      AppUtils.instance.hideLoading();
+      AppUtils.instance
+          .showToast(AppLocale.biometricAuthSuccess.translate(context));
+
+      // Vào app
+      autoGotoHomePage(context);
+    } catch (e, t) {
+      log("loginWithBiometric() error", error: e, stackTrace: t);
+      AppUtils.instance.hideLoading();
+      if (context.mounted) {
+        final errorMessage = e.toString();
+        log("Error details: $errorMessage");
+        AppUtils.instance.showToast(
+          'Lỗi: ${errorMessage.length > 50 ? "${errorMessage.substring(0, 50)}..." : errorMessage}',
+        );
+      }
+    }
+  }
+  // ========== END BIOMETRIC LOGIN ==========
 
   @override
   Future<void> onReady() {
@@ -99,6 +271,17 @@ class LoginController extends BaseModelStateful {
       final isAuthenticated =
           await backendProvider.login(username: username, password: password);
       if (isAuthenticated != null) {
+        // Lưu tokens vào secure storage để dùng cho biometric login (tách biệt, không ảnh hưởng flow hiện tại)
+        try {
+          await saveTokensToSecureStorage(
+            authentication: isAuthenticated,
+            refreshToken: null,
+          );
+        } catch (e) {
+          log("Error saving tokens to secure storage: $e");
+          // Không throw error, vì đây là tính năng bổ sung, không ảnh hưởng login bằng text
+        }
+        
         // emit(state.copyWith(isAuthenticated: true));
         setUserName();
         autoGotoHomePage(context);
