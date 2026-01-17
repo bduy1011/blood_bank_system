@@ -9,6 +9,14 @@ namespace BB.CR.Rest.Extensions
 
         public async Task InvokeAsync(HttpContext httpContext)
         {
+            // Allow refresh-token endpoint to proceed even if token was revoked.
+            // This enables exchanging a recently-revoked token for a new one (biometric flow).
+            if (httpContext.Request.Path.Value?.Contains("refresh-token") == true)
+            {
+                await _next(httpContext);
+                return;
+            }
+
             var token = httpContext.Request.Headers.Authorization.ToString().Replace("Bearer ", "");
             if (!string.IsNullOrWhiteSpace(token)
                 && _tokenService.IsTokenRevoked(token))

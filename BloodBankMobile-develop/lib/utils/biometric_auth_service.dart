@@ -113,7 +113,9 @@ class BiometricAuthService {
               children: [
                 const Icon(Icons.fingerprint, color: Colors.blue, size: 28),
                 const SizedBox(width: 10),
-                Text(AppLocale.biometricAuth.translate(context)),
+                Expanded(
+                  child: Text(AppLocale.biometricAuth.translate(context)),
+                ),
               ],
             ),
             content: Column(

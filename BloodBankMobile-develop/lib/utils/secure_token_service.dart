@@ -65,9 +65,14 @@ class SecureTokenService {
   /// Đây là cách an toàn để lưu thông tin user đầy đủ, được khóa bằng biometric
   Future<void> saveAuthentication(Authentication authentication) async {
     try {
+      log("[SecureTokenService] Saving Authentication to secure storage...");
+      log("[SecureTokenService] UserCode: ${authentication.userCode}, Name: ${authentication.name}");
+      log("[SecureTokenService] AccessToken length: ${authentication.accessToken?.length ?? 0}");
+      
       // Lưu toàn bộ Authentication object dạng JSON
       final authJson = jsonEncode(authentication.toJson());
       await _storage.write(key: _keyAuthentication, value: authJson);
+      log("[SecureTokenService] ✓ Authentication object saved to secure storage");
       
       // Vẫn lưu các field riêng lẻ để tương thích với code cũ
       await saveTokens(
@@ -77,9 +82,15 @@ class SecureTokenService {
         userName: authentication.name,
       );
       
-      log("Authentication object saved to secure storage successfully");
+      log("[SecureTokenService] ✓ Tokens saved to secure storage successfully");
+      
+      // Verify sau khi lưu
+      final verifyToken = await getAccessToken();
+      final verifyAuth = await _storage.read(key: _keyAuthentication);
+      log("[SecureTokenService] Verification - AccessToken exists: ${verifyToken != null && verifyToken.isNotEmpty}");
+      log("[SecureTokenService] Verification - Authentication exists: ${verifyAuth != null && verifyAuth.isNotEmpty}");
     } catch (e) {
-      log("saveAuthentication() error: $e");
+      log("[SecureTokenService] ❌ saveAuthentication() error: $e");
       rethrow;
     }
   }
@@ -128,10 +139,19 @@ class SecureTokenService {
   /// Kiểm tra xem có tokens đã lưu không
   Future<bool> hasTokens() async {
     try {
+      log("[SecureTokenService] Checking if tokens exist...");
       final accessToken = await getAccessToken();
-      return accessToken != null && accessToken.isNotEmpty;
+      final hasToken = accessToken != null && accessToken.isNotEmpty;
+      log("[SecureTokenService] hasTokens result: $hasToken (accessToken length: ${accessToken?.length ?? 0})");
+      
+      // Cũng check Authentication object
+      final authJson = await _storage.read(key: _keyAuthentication);
+      final hasAuth = authJson != null && authJson.isNotEmpty;
+      log("[SecureTokenService] hasAuthentication: $hasAuth");
+      
+      return hasToken || hasAuth; // Return true nếu có accessToken HOẶC Authentication object
     } catch (e) {
-      log("hasTokens() error: $e");
+      log("[SecureTokenService] ❌ hasTokens() error: $e");
       return false;
     }
   }
@@ -236,14 +256,22 @@ class SecureTokenService {
   /// Xóa tất cả tokens (khi logout)
   Future<void> clearTokens() async {
     try {
+      log("[SecureTokenService] clearTokens() - START - Clearing all tokens from secure storage");
       await _storage.delete(key: _keyAccessToken);
+      log("[SecureTokenService] ✓ Deleted access_token");
       await _storage.delete(key: _keyRefreshToken);
+      log("[SecureTokenService] ✓ Deleted refresh_token");
       await _storage.delete(key: _keyBiometricEnabled);
+      log("[SecureTokenService] ✓ Deleted biometric_enabled");
       await _storage.delete(key: _keyUserCode);
+      log("[SecureTokenService] ✓ Deleted user_code");
       await _storage.delete(key: _keyUserName);
+      log("[SecureTokenService] ✓ Deleted user_name");
       await _storage.delete(key: _keyAuthentication);
+      log("[SecureTokenService] ✓ Deleted authentication object");
+      log("[SecureTokenService] clearTokens() - SUCCESS - All tokens cleared");
     } catch (e) {
-      log("clearTokens() error: $e");
+      log("[SecureTokenService] ❌ clearTokens() error: $e");
     }
   }
 }

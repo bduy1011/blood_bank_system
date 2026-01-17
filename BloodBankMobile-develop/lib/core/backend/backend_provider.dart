@@ -28,7 +28,6 @@ import '../../models/blood_donor.dart';
 import '../../models/cau_hinh_ton_kho_view.dart';
 import '../../models/dm_don_vi_cap_mau_response.dart';
 import '../../models/donation_blood_history_response.dart';
-import '../../utils/secure_token_service.dart';
 import '../../models/feedback_respose.dart';
 import '../../models/giao_dich_template.dart';
 import '../../models/news_response.dart';
@@ -290,25 +289,18 @@ class BackendProvider {
     // await _firebaseAuth.signOut();
     try {
       await _client.logout();
+      // Chỉ xóa localStorage authentication (để vào login page)
+      // KHÔNG xóa secure storage tokens (giữ lại để user có thể dùng biometric login)
+      // Secure storage tokens chỉ bị xóa khi:
+      // 1. Token hết hạn (tự động trong loginWithBiometric)
+      // 2. User chủ động disable biometric (nếu có setting)
       await _localStorage.clearAuthentication();
-      // Clear tokens trong secure storage (biometric tokens)
-      try {
-        final secureTokenService = SecureTokenService();
-        await secureTokenService.clearTokens();
-      } catch (e) {
-        // Log nhưng không throw, vì đây là cleanup
-        log("Error clearing secure storage tokens on logout: $e");
-      }
+      log("[BackendProvider] LocalStorage cleared (secure storage tokens preserved for biometric login)");
     } catch (e) {
       // TODO
+      // Ngay cả khi logout API fail, vẫn xóa localStorage để vào login page
       await _localStorage.clearAuthentication();
-      // Clear tokens trong secure storage ngay cả khi logout API fail
-      try {
-        final secureTokenService = SecureTokenService();
-        await secureTokenService.clearTokens();
-      } catch (e2) {
-        log("Error clearing secure storage tokens on logout: $e2");
-      }
+      log("[BackendProvider] LocalStorage cleared after logout error (secure storage tokens preserved)");
     }
     notifyAuthentication(isAuthenticated: false);
   }

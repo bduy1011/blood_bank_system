@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:blood_donation/app/config/routes.dart';
 import 'package:blood_donation/models/authentication.dart';
 import 'package:flutter/material.dart';
@@ -35,20 +37,36 @@ class AppCenter {
   int showQRCodeOnlyDangKyId = 0;
 
   void checkAuthentication({required BuildContext context}) async {
+    log("[AppCenter] checkAuthentication() - START");
+    log("[AppCenter] backendProvider.isAuthenticated: ${backendProvider.isAuthenticated}");
+    log("[AppCenter] localStorage.authentication?.accessToken exists: ${localStorage.authentication?.accessToken?.isNotEmpty == true}");
+    log("[AppCenter] this.authentication?.accessToken exists: ${authentication?.accessToken?.isNotEmpty == true}");
+    
     if (backendProvider.isAuthenticated) {
+      log("[AppCenter] ✓ isAuthenticated = true, setting status to idle");
       state.copyWith(status: PageStatus.idle);
     } else {
+      log("[AppCenter] ⚠️ isAuthenticated = false, checking for refresh token...");
       ///refresh Token
       if (authentication?.accessToken?.isNotEmpty == true) {
+        log("[AppCenter] Attempting to refresh token...");
         var token = await BackendProvider().refreshToken();
         if (token?.isNotEmpty == true) {
+          log("[AppCenter] ✓ Token refreshed successfully");
           authentication?.accessToken = token;
           localStorage.saveAuthentication(authentication: authentication!);
+          backendProvider.notifyAuthentication(isAuthenticated: true);
+          log("[AppCenter] ✓ Authentication restored after refresh");
           return;
+        } else {
+          log("[AppCenter] ❌ Refresh token failed or returned empty");
         }
+      } else {
+        log("[AppCenter] ❌ No authentication token found");
       }
 
       ///
+      log("[AppCenter] Clearing authentication and redirecting to login...");
       await localStorage.clearAuthentication();
       Future.delayed(const Duration(milliseconds: 500), () {
         {
@@ -56,6 +74,7 @@ class AppCenter {
         }
       });
     }
+    log("[AppCenter] checkAuthentication() - END");
   }
 
   @disposeMethod

@@ -9,6 +9,7 @@ import 'package:blood_donation/utils/app_utils.dart';
 import 'package:blood_donation/utils/biometric_auth_service.dart';
 import 'package:blood_donation/utils/secure_token_service.dart';
 import 'package:flutter/material.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -63,18 +64,30 @@ class LoginController extends BaseModelStateful {
 
   /// Lưu tokens và toàn bộ Authentication vào secure storage sau khi login thành công
   /// Token được khóa bằng Face ID/vân tay cho đúng account (UserCode)
-  Future<void> saveTokensToSecureStorage({
+  /// Returns true nếu lưu thành công, false nếu bị chặn (đã có account khác).
+  Future<bool> saveTokensToSecureStorage({
     required Authentication authentication,
     String? refreshToken,
   }) async {
     try {
+      // Không cho phép ghi đè nếu biometric đã gắn với account khác
+      final existingAuth = await _tokenService.getAuthentication();
+      if (existingAuth?.userCode != null &&
+          authentication.userCode != null &&
+          existingAuth!.userCode != authentication.userCode) {
+        log("Biometric already linked to another account: ${existingAuth.userCode}. Skipping save.");
+        return false;
+      }
+
       if (authentication.accessToken != null &&
           authentication.accessToken!.isNotEmpty) {
         log("Saving authentication to secure storage (locked by biometric): userCode=${authentication.userCode}, userName=${authentication.name}");
         await _tokenService.saveAuthentication(authentication);
         log("Authentication and tokens saved to secure storage successfully (locked by biometric)");
+        return true;
       } else {
         log("Warning: accessToken is null or empty, cannot save to secure storage");
+        return false;
       }
     } catch (e) {
       log("saveTokensToSecureStorage error: $e");
@@ -95,13 +108,18 @@ class LoginController extends BaseModelStateful {
   /// Đăng nhập bằng biometric (FaceID/Fingerprint)
   /// Flow: Kiểm tra token → Xác thực biometric → Lấy token từ secure storage → Set auth → Vào app
   Future<void> loginWithBiometric(BuildContext context) async {
+    log("═══════════════════════════════════════════════════════");
+    log("[LoginController] loginWithBiometric() - START");
+    log("═══════════════════════════════════════════════════════");
     try {
       final biometricService = BiometricAuthService();
 
       // Bước 1: Kiểm tra xem có tokens đã lưu không
+      log("[LoginController] Bước 1: Kiểm tra tokens đã lưu...");
       final hasTokens = await hasStoredTokens();
+      log("[LoginController] hasStoredTokens: $hasTokens");
       if (!hasTokens) {
-        log("No tokens found");
+        log("[LoginController] ❌ No tokens found - Cannot proceed with biometric login");
         if (context.mounted) {
           await AppUtils.instance.showMessage(
             AppLocale.biometricNotLoggedIn.translate(context),
@@ -113,9 +131,11 @@ class LoginController extends BaseModelStateful {
 
       // Bước 2: Kiểm tra token có hết hạn không TRƯỚC KHI xác thực biometric
       // Nếu token hết hạn, server sẽ không cho refresh → yêu cầu đăng nhập lại
+      log("[LoginController] Bước 2: Kiểm tra token có hết hạn...");
       final isExpired = await _tokenService.isAccessTokenExpired();
+      log("[LoginController] isAccessTokenExpired: $isExpired");
       if (isExpired) {
-        log("Token expired. Cannot use biometric login. User must login with username/password.");
+        log("[LoginController] ❌ Token expired. Cannot use biometric login. User must login with username/password.");
         await clearStoredTokens();
         if (context.mounted) {
           await AppUtils.instance.showMessage(
@@ -127,12 +147,14 @@ class LoginController extends BaseModelStateful {
       }
 
       // Bước 3: Lấy thông tin user đã lưu để hiển thị
+      log("[LoginController] Bước 3: Lấy thông tin user đã lưu...");
       final userInfo = await _tokenService.getUserInfo();
       final savedUserCode = userInfo['userCode'];
       final savedUserName = userInfo['userName'];
-      log("Saved user info - UserCode: $savedUserCode, UserName: $savedUserName");
+      log("[LoginController] ✓ Saved user info - UserCode: $savedUserCode, UserName: $savedUserName");
 
       // Bước 4: Xác thực bằng biometric (chỉ khi token chưa hết hạn)
+      log("[LoginController] Bước 4: Xác thực bằng biometric...");
       String reason = AppLocale.biometricAuthReason.translate(context);
       if (savedUserName != null || savedUserCode != null) {
         final userDisplay = savedUserName != null 
@@ -142,25 +164,30 @@ class LoginController extends BaseModelStateful {
             .replaceAll('{account}', userDisplay)
             .replaceAll('{reason}', reason);
       }
+      log("[LoginController] Biometric reason: $reason");
       
+      log("[LoginController] Calling biometricService.authenticate()...");
       final didAuthenticate = await biometricService.authenticate(
         reason: reason,
         context: context,
       );
+      log("[LoginController] didAuthenticate result: $didAuthenticate");
 
       if (!didAuthenticate) {
+        log("[LoginController] ❌ Biometric authentication failed or cancelled by user");
         return; // User cancel hoặc fail
       }
 
-      log("Biometric authentication successful");
+      log("[LoginController] ✓ Biometric authentication successful");
       AppUtils.instance.showLoading();
 
       // Bước 5: Lấy Authentication object từ secure storage (đã được khóa bằng biometric)
-      log("Getting authentication from secure storage (unlocked by biometric)...");
+      log("[LoginController] Bước 5: Lấy Authentication từ secure storage...");
+      log("[LoginController] Getting authentication from secure storage (unlocked by biometric)...");
       Authentication? savedAuth = await _tokenService.getAuthentication();
       
       if (savedAuth == null) {
-        log("No authentication found in secure storage");
+        log("[LoginController] ❌ No authentication found in secure storage");
         AppUtils.instance.hideLoading();
         if (context.mounted) {
           AppUtils.instance.showToast(
@@ -169,12 +196,14 @@ class LoginController extends BaseModelStateful {
         return;
       }
       
-      log("Authentication retrieved: userCode=${savedAuth.userCode}, name=${savedAuth.name}");
+      log("[LoginController] ✓ Authentication retrieved: userCode=${savedAuth.userCode}, name=${savedAuth.name}");
 
       // Bước 6: Kiểm tra lại token (đảm bảo token vẫn còn hợp lệ)
+      log("[LoginController] Bước 6: Kiểm tra lại access token...");
       final accessToken = savedAuth.accessToken ?? '';
+      log("[LoginController] accessToken length: ${accessToken.length}");
       if (accessToken.isEmpty) {
-        log("Access token is empty");
+        log("[LoginController] ❌ Access token is empty");
         AppUtils.instance.hideLoading();
         if (context.mounted) {
           AppUtils.instance.showToast(
@@ -183,21 +212,63 @@ class LoginController extends BaseModelStateful {
         await clearStoredTokens();
         return;
       }
-
-      // Token đã được kiểm tra ở bước 2, nên không cần refresh nữa
-
-      // Bước 7: Set authentication và vào app (KHÔNG cần gọi API - chỉ mở khóa token)
-      log("Setting authentication from secure storage (no API call needed)");
       
-      // Lưu vào localStorage để tương thích với code cũ
+      // Kiểm tra token có hết hạn không (double check để đảm bảo)
+      try {
+        final isExpired = JwtDecoder.isExpired(accessToken);
+        log("[LoginController] Token expiration check (double check): isExpired=$isExpired");
+        if (isExpired) {
+          log("[LoginController] ❌ Token has expired (JWT expiration check). Cannot use biometric login.");
+          await clearStoredTokens();
+          AppUtils.instance.hideLoading();
+          if (context.mounted) {
+            await AppUtils.instance.showMessage(
+              AppLocale.biometricSessionExpired.translate(context),
+              context: context,
+            );
+          }
+          return;
+        }
+      } catch (e) {
+        log("[LoginController] ⚠️ Error checking token expiration (JWT): $e - Will continue with token");
+        // Nếu không parse được JWT, vẫn tiếp tục (có thể token không phải JWT)
+      }
+
+      // Bước 7: Set authentication vào localStorage và BackendProvider
+      // KHÔNG refresh token ở đây vì:
+      // 1. Token đã được kiểm tra ở bước 2 là chưa hết hạn
+      // 2. Refresh token có thể fail (401) và HeaderInterceptor sẽ xóa authentication
+      // 3. Token từ secure storage đã đủ để sử dụng (chưa hết hạn)
+      // Refresh token sẽ được xử lý tự động bởi HeaderInterceptor khi token thực sự hết hạn
+      log("[LoginController] Bước 7: Set authentication vào localStorage...");
       await _appCenter.localStorage
           .saveAuthentication(authentication: savedAuth);
-      
-      // Set authentication
       _appCenter.setAuthentication(savedAuth);
       _backendProvider.notifyAuthentication(isAuthenticated: true);
-
-      log("Authentication set successfully from secure storage");
+      log("[LoginController] ✓ Authentication set in localStorage and BackendProvider");
+      
+      // Bước 8: Đảm bảo BackendProvider được notify và isAuthenticated được set đúng
+      log("[LoginController] Bước 8: Đảm bảo BackendProvider authentication state...");
+      // Kiểm tra lại isAuthenticated để đảm bảo state đúng
+      final isAuth = _backendProvider.isAuthenticated;
+      log("[LoginController] backendProvider.isAuthenticated: $isAuth");
+      if (!isAuth) {
+        // Nếu vẫn chưa authenticated, thử set lại
+        log("[LoginController] ⚠️ isAuthenticated is false, setting again...");
+        _backendProvider.notifyAuthentication(isAuthenticated: true);
+      }
+      
+      // Đảm bảo token đã được set trong localStorage
+      final hasLocalStorageAuth = _appCenter.localStorage.authentication?.accessToken?.isNotEmpty == true;
+      log("[LoginController] localStorage.hasAuthentication: $hasLocalStorageAuth");
+      
+      if (!hasLocalStorageAuth) {
+        log("[LoginController] ⚠️ localStorage authentication missing, re-saving...");
+        await _appCenter.localStorage
+            .saveAuthentication(authentication: savedAuth);
+      }
+      
+      log("[LoginController] ✓ Authentication set successfully from secure storage");
       
       if (!context.mounted) {
         log("Context is not mounted, cannot show UI");
@@ -208,9 +279,18 @@ class LoginController extends BaseModelStateful {
       AppUtils.instance
           .showToast(AppLocale.biometricAuthSuccess.translate(context));
 
-      // Vào app
+      // Vào app - dùng offAllNamed để xóa login page khỏi stack
+      log("[LoginController] Navigating to home page...");
+      // Đợi một chút để đảm bảo state được update đầy đủ
+      await Future.delayed(const Duration(milliseconds: 100));
       autoGotoHomePage(context);
+      log("═══════════════════════════════════════════════════════");
+      log("[LoginController] loginWithBiometric() - SUCCESS ✓");
+      log("═══════════════════════════════════════════════════════");
     } catch (e, t) {
+      log("═══════════════════════════════════════════════════════");
+      log("[LoginController] ❌ loginWithBiometric() ERROR");
+      log("═══════════════════════════════════════════════════════");
       log("loginWithBiometric() error", error: e, stackTrace: t);
       AppUtils.instance.hideLoading();
       if (context.mounted) {
@@ -276,12 +356,23 @@ class LoginController extends BaseModelStateful {
       if (isAuthenticated != null) {
         // Lưu tokens vào secure storage để dùng cho biometric login (tách biệt, không ảnh hưởng flow hiện tại)
         try {
-          await saveTokensToSecureStorage(
+          log("[LoginController] Saving tokens to secure storage for biometric login...");
+          final saved = await saveTokensToSecureStorage(
             authentication: isAuthenticated,
             refreshToken: null,
           );
+          if (saved) {
+            log("[LoginController] ✓ Tokens saved to secure storage successfully");
+          } else {
+            log("[LoginController] ⚠️ Biometric save skipped (already linked to another account)");
+            if (context.mounted) {
+              AppUtils.instance.showToast(
+                AppLocale.biometricLockedToOtherAccount.translate(context),
+              );
+            }
+          }
         } catch (e) {
-          log("Error saving tokens to secure storage: $e");
+          log("[LoginController] ❌ Error saving tokens to secure storage: $e");
           // Không throw error, vì đây là tính năng bổ sung, không ảnh hưởng login bằng text
         }
         

@@ -381,6 +381,8 @@ mixin class AppLocale {
   static const String biometricAuthNotFound = 'biometricAuthNotFound';
   static const String biometricTokenInvalid = 'biometricTokenInvalid';
   static const String biometricError = 'biometricError';
+  static const String biometricLockedToOtherAccount =
+      'biometricLockedToOtherAccount';
   static const String loginUsernameRequired = 'loginUsernameRequired';
   static const String loginPasswordRequired = 'loginPasswordRequired';
   static const String registerFullNameRequired = 'registerFullNameRequired';
@@ -570,6 +572,12 @@ mixin class AppLocale {
     prev: 'prev',
     name: 'Name',
     gender: 'Gender',
+    yearOfBirth: 'Year of birth',
+    male: 'Male',
+    female: 'Female',
+    expectedArrivalDate: 'Expected arrival date',
+    occupation: 'Occupation',
+    company: 'Company',
     registerBuyBlood: 'Register buy blood',
     approveBuyBlood: 'Approve buy blood',
     bloodDonationSchedule: 'Blood donation schedule',
@@ -826,6 +834,8 @@ mixin class AppLocale {
     biometricAuthNotFound: 'Login information not found. Please login again.',
     biometricTokenInvalid: 'Invalid token. Please login again.',
     biometricError: 'Error: {error}',
+    biometricLockedToOtherAccount:
+        'Biometric login is already linked to another account. Please clear biometric login before switching accounts.',
     loginUsernameRequired: 'Please enter username or ID card',
     loginPasswordRequired: 'Please enter password',
     registerFullNameRequired: 'Please enter full name',
@@ -1011,6 +1021,12 @@ mixin class AppLocale {
     prev: 'Quay lại',
     name: 'Tên',
     gender: 'Giới tính',
+    yearOfBirth: 'Năm sinh',
+    male: 'Nam',
+    female: 'Nữ',
+    expectedArrivalDate: 'Ngày giờ dự kiến đến',
+    occupation: 'Nghề nghiệp',
+    company: 'Công ty',
     registerBuyBlood: 'Đăng ký nhượng máu',
     approveBuyBlood: 'Duyệt yêu cầu nhượng máu',
     bloodDonationSchedule: 'Lịch hiến máu',
@@ -1259,6 +1275,7 @@ mixin class AppLocale {
     biometricAuthFailed: 'Xác thực sinh trắc học thất bại',
     biometricAuthSuccess: 'Đăng nhập thành công',
     enableBiometricLogin: 'Bật đăng nhập bằng sinh trắc học',
+    biometricAuth: 'Xác thực sinh trắc học',
     biometricAuthReason: 'Vui lòng xác thực để đăng nhập',
     biometricDeviceNotSupported: 'Thiết bị của bạn không hỗ trợ vân tay/Face ID. Vui lòng đăng nhập bằng tên đăng nhập và mật khẩu.',
     biometricNotLoggedIn: 'Bạn chưa đăng nhập. Vui lòng đăng nhập bằng tên đăng nhập và mật khẩu trước khi sử dụng đăng nhập bằng vân tay/Face ID.',
@@ -1267,6 +1284,8 @@ mixin class AppLocale {
     biometricAuthNotFound: 'Không tìm thấy thông tin đăng nhập. Vui lòng đăng nhập lại.',
     biometricTokenInvalid: 'Token không hợp lệ. Vui lòng đăng nhập lại.',
     biometricError: 'Lỗi: {error}',
+    biometricLockedToOtherAccount:
+        'Đăng nhập vân tay đã gắn với tài khoản khác. Vui lòng xóa đăng nhập vân tay trước khi đổi tài khoản.',
     loginUsernameRequired: 'Chưa nhập tên tài khoản hoặc CCCD/Căn cước',
     loginPasswordRequired: 'Chưa nhập mật khẩu',
     registerFullNameRequired: 'Chưa nhập họ tên',

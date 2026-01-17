@@ -179,7 +179,8 @@ class RegisterDonateBloodController extends BaseModelStateful {
     } else {
       ///
       await AppUtils.instance.showMessage(
-        AppLocale.pleaseUpdatePersonalInfoBeforeRegister.translate(Get.context!),
+        AppLocale.pleaseUpdatePersonalInfoBeforeRegister
+            .translate(Get.context!),
         context: Get.context,
       );
       Get.offNamed(Routes.profile);
@@ -393,12 +394,15 @@ class RegisterDonateBloodController extends BaseModelStateful {
               DateTime(ngayHienTai.year, ngayHienTai.month, ngayHienTai.day);
 
           if (ngayDuocHien.isAfter(ngayHienTai)) {
-            var loaiHien =
-                event?.loaiMau == LoaiMau.TieuCau.value ? AppLocale.platelets.translate(Get.context!) : AppLocale.blood.translate(Get.context!);
-            final message = AppLocale.notEnoughDaysToDonate.translate(Get.context!)
+            var loaiHien = event?.loaiMau == LoaiMau.TieuCau.value
+                ? AppLocale.platelets.translate(Get.context!)
+                : AppLocale.blood.translate(Get.context!);
+            final message = AppLocale.notEnoughDaysToDonate
+                .translate(Get.context!)
                 .replaceAll('{days}', khoangCachNgayDuocHienLai.toString())
                 .replaceAll('{type}', loaiHien)
-                .replaceAll('{date}', appCenter.authentication!.ngayHienMauGanNhat!.ddmmyyyy);
+                .replaceAll('{date}',
+                    appCenter.authentication!.ngayHienMauGanNhat!.ddmmyyyy);
             await AppUtils.instance.showMessage(
               message,
               context: Get.context,
@@ -483,10 +487,18 @@ class RegisterDonateBloodController extends BaseModelStateful {
   Future<void> init() async {
     try {
       showLoading();
-      final province = await _getProvince();
-      final ward = await _getWard();
-      final district = await _getDistrict();
-      final questions = await getQuestions();
+      final results = await Future.wait([
+        _getProvince(),
+        _getWard(),
+        _getDistrict(),
+        getQuestions(),
+      ]);
+
+      final province = results[0] as GeneralResponse<Province>;
+      final ward = results[1] as GeneralResponse<Ward>;
+      final district = results[2] as GeneralResponse<District>;
+      final questions = results[3] as List<Question>;
+
       if (questions.isNotEmpty) {
         this.questions = questions;
       }
@@ -609,8 +621,8 @@ class RegisterDonateBloodController extends BaseModelStateful {
         ///
       } else {
         hideLoading();
-        final errorMessage = response.message?.isNotEmpty == true 
-            ? response.message! 
+        final errorMessage = response.message?.isNotEmpty == true
+            ? response.message!
             : "Đăng ký thất bại. Vui lòng thử lại sau.";
         AppUtils.instance.showToast(errorMessage);
       }

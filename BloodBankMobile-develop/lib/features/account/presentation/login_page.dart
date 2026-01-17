@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:blood_donation/app/theme/colors.dart';
 import 'package:blood_donation/app/theme/icons.dart';
 import 'package:blood_donation/base/base_view/base_view_stateful.dart';
@@ -31,6 +33,7 @@ class _LoginPageState extends BaseViewStateful<LoginPage, LoginController> {
 
   bool _showPassword = false;
   bool _biometricAvailable = false;
+  bool _hasStoredTokens = false;
   String _biometricTypeName = 'Biometric';
   final BiometricAuthService _biometricAuthService = BiometricAuthService();
 
@@ -38,15 +41,28 @@ class _LoginPageState extends BaseViewStateful<LoginPage, LoginController> {
   void initState() {
     super.initState();
     _checkBiometricAvailability();
+    _checkStoredTokens();
   }
 
   Future<void> _checkBiometricAvailability() async {
     final isAvailable = await _biometricAuthService.isAvailable();
     final biometricTypeName =
         await _biometricAuthService.getBiometricTypeName();
+    log("[LoginPage] Biometric availability check - isAvailable: $isAvailable, type: $biometricTypeName");
     setState(() {
       _biometricAvailable = isAvailable;
       _biometricTypeName = biometricTypeName;
+    });
+  }
+
+  /// Kiểm tra xem có tokens đã lưu trong secure storage không
+  /// Chỉ hiển thị button biometric nếu có token đã lưu
+  Future<void> _checkStoredTokens() async {
+    final hasTokens = await controller.hasStoredTokens();
+    log("[LoginPage] Stored tokens check - hasTokens: $hasTokens");
+    log("[LoginPage] Button biometric will show: ${_biometricAvailable && hasTokens}");
+    setState(() {
+      _hasStoredTokens = hasTokens;
     });
   }
 
@@ -87,7 +103,7 @@ class _LoginPageState extends BaseViewStateful<LoginPage, LoginController> {
                             spacing: 40,
                           ),
                           buildButtonLogin(context),
-                          if (_biometricAvailable) ...[
+                          if (_biometricAvailable && _hasStoredTokens) ...[
                             const SizedBox(height: 20),
                             buildBiometricLoginButton(context),
                           ],
@@ -269,6 +285,7 @@ class _LoginPageState extends BaseViewStateful<LoginPage, LoginController> {
     return Center(
       child: InkWell(
         onTap: () {
+          log("[LoginPage] Biometric login button tapped");
           controller.loginWithBiometric(context);
         },
         borderRadius: BorderRadius.circular(50),

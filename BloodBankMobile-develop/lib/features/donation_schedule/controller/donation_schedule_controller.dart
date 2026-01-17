@@ -78,8 +78,12 @@ class DonationScheduleController extends BaseModelStateful {
       var loaiHien =
           event?.loaiMau == LoaiMau.TieuCau.value ? "tiểu cầu" : "máu";
       var rs = await AppUtils.instance.showMessageConfirmCancel(
-        AppLocale.donationScheduleConfirmDonate.translate(Get.context!).replaceAll('{type}', loaiHien),
-        AppLocale.donationScheduleConfirmDonateMessage.translate(Get.context!).replaceAll('{type}', loaiHien),
+        AppLocale.donationScheduleConfirmDonate
+            .translate(Get.context!)
+            .replaceAll('{type}', loaiHien),
+        AppLocale.donationScheduleConfirmDonateMessage
+            .translate(Get.context!)
+            .replaceAll('{type}', loaiHien),
         context: Get.context,
       );
       if (rs == true) {
@@ -96,8 +100,12 @@ class DonationScheduleController extends BaseModelStateful {
       var loaiHien =
           event?.loaiMau == LoaiMau.TieuCau.value ? "tiểu cầu" : "máu";
       var rs = await AppUtils.instance.showMessageConfirmCancel(
-        AppLocale.donationScheduleConfirmDonate.translate(Get.context!).replaceAll('{type}', loaiHien),
-        AppLocale.donationScheduleConfirmDonateMessage.translate(Get.context!).replaceAll('{type}', loaiHien),
+        AppLocale.donationScheduleConfirmDonate
+            .translate(Get.context!)
+            .replaceAll('{type}', loaiHien),
+        AppLocale.donationScheduleConfirmDonateMessage
+            .translate(Get.context!)
+            .replaceAll('{type}', loaiHien),
         context: Get.context,
       );
       if (rs == true) {
