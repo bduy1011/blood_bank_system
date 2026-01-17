@@ -76,7 +76,7 @@ class _AddFeedbackSupportPageState
               )),
           centerTitle: true,
           title: Text(
-            "Góp ý/ phản hồi",
+            AppLocale.feedbackTitle.translate(context),
             style:
                 context.myTheme.textThemeT1.title.copyWith(color: Colors.white),
           ),
@@ -95,7 +95,7 @@ class _AddFeedbackSupportPageState
               child: ListView(
                 children: [
                   Text(
-                    'Chúng tôi đánh giá cao phản hồi của bạn. Vui lòng điền vào mẫu dưới đây.',
+                    AppLocale.feedbackIntroMessage.translate(context),
                     style: context.myTheme.textThemeT1.body
                         .copyWith(fontSize: 16, fontWeight: FontWeight.w500),
                     textAlign: TextAlign.center,
@@ -103,9 +103,9 @@ class _AddFeedbackSupportPageState
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Họ tên',
-                      border: OutlineInputBorder(
+                    decoration: InputDecoration(
+                      labelText: AppLocale.fullname.translate(context),
+                      border: const OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(8.0))),
                     ),
                     validator: (value) {
@@ -129,7 +129,7 @@ class _AddFeedbackSupportPageState
                         return null;
                       }
                       if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                        return 'Please enter a valid email address';
+                        return AppLocale.feedbackEmailInvalid.translate(context);
                       }
                       return null;
                     },
@@ -137,9 +137,9 @@ class _AddFeedbackSupportPageState
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _feedbackController,
-                    decoration: const InputDecoration(
-                      labelText: 'Nội dung góp ý/ phản hồi',
-                      border: OutlineInputBorder(
+                    decoration: InputDecoration(
+                      labelText: AppLocale.feedbackContentPlaceholder.translate(context),
+                      border: const OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(8.0))),
                     ),
                     maxLines: 5,
@@ -171,9 +171,9 @@ class _AddFeedbackSupportPageState
                         Container(
                           alignment: Alignment.center,
                           height: 45,
-                          child: const Text(
-                            'Gửi',
-                            style: TextStyle(color: Colors.white, fontSize: 18),
+                          child: Text(
+                            AppLocale.send.translate(context),
+                            style: const TextStyle(color: Colors.white, fontSize: 18),
                           ),
                         ),
                       ],

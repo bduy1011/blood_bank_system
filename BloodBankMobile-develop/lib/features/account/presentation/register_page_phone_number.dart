@@ -59,7 +59,7 @@ class _RegisterPagePhoneNumberState
                 )),
             centerTitle: true,
             title: Text(
-              "Đăng ký tài khoản",
+              AppLocale.registerAccount.translate(context),
               style: context.myTheme.textThemeT1.title
                   .copyWith(color: Colors.white),
             ),

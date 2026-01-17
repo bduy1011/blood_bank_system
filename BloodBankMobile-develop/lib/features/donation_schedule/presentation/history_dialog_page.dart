@@ -352,7 +352,10 @@ class _HistoryDialogPageState
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 30),
         child: Text(
-          'Không có dữ liệu từ ngày ${controller.startDate?.ddmmyyyy} đến ngày  ${controller.endDate?.ddmmyyyy}',
+          AppLocale.noDataFromDateToDate
+              .translate(context)
+              .replaceAll('{fromDate}', controller.startDate?.ddmmyyyy ?? '')
+              .replaceAll('{toDate}', controller.endDate?.ddmmyyyy ?? ''),
           style: Get.context?.myTheme.textThemeT1.body,
           textAlign: TextAlign.center,
         ),
