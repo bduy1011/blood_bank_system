@@ -1,4 +1,4 @@
-﻿using BB.CR.Models;
+using BB.CR.Models;
 using BB.CR.Providers.Bases;
 using BB.CR.Repositories.Bases;
 using BB.CR.Repositories.UseCases;
@@ -37,6 +37,23 @@ namespace BB.CR.Repositories.Implements
             return response;
         }
 
+        public async Task<ReturnResponse<DonorSignatureInfoView>> GetDonorSignatureAsync(
+            long id,
+            bool includeImage,
+            ILogger logger,
+            IMapper mapper,
+            string? identityCard)
+        {
+            using var context = new BloodBankContext();
+
+            var response = await BaseUseCase.ExecuteAsync(
+                async () => await DangKyHienMauUseCase.GetDonorSignatureAsync(id, includeImage, identityCard, context).ConfigureAwait(false),
+                logger,
+                context).ConfigureAwait(false);
+
+            return response;
+        }
+
         public async Task<ReturnResponse<List<DangKyHienMauView>>> LoadAsync(DangKyHienMauCriteria criteria
             , ILogger logger
             , IMapper mapper
@@ -63,6 +80,26 @@ namespace BB.CR.Repositories.Implements
                 , logger
                 , context
                 , transaction).ConfigureAwait(false);
+
+            return response;
+        }
+
+        public async Task<ReturnResponse<DonorSignatureInfoView>> SaveDonorSignatureAsync(
+            long id,
+            DonorSignatureSaveRequest request,
+            ILogger logger,
+            IMapper mapper,
+            string? identityCard,
+            string? deviceId)
+        {
+            using var context = new BloodBankContext();
+            using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
+
+            var response = await BaseUseCase.ExecuteAsync(
+                async () => await DangKyHienMauUseCase.SaveDonorSignatureAsync(id, request, identityCard, deviceId, context).ConfigureAwait(false),
+                logger,
+                context,
+                transaction).ConfigureAwait(false);
 
             return response;
         }

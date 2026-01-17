@@ -20,6 +20,7 @@ import '../../../models/feedback_respose.dart';
 import '../../../models/giao_dich_template.dart';
 import '../../../models/giaodich_response.dart';
 import '../../../models/news_response.dart';
+import '../../../models/donor_signature_info.dart';
 import '../../../models/register_donation_blood_history_response.dart';
 import '../../../models/register_reponse.dart';
 
@@ -189,6 +190,20 @@ abstract class BackendClient {
       cancelRegisterDonateBlood(
           @Body() Map<String, dynamic> body, @Path("id") String id,
           {@DioOptions() Options? options});
+
+  @GET('api/dang-ky-hien-mau/donor-signature/{id}?includeImage={includeImage}')
+  Future<GeneralResponseMap<DonorSignatureInfo>> getDonorSignatureInfo(
+    @Path("id") String id,
+    @Path("includeImage") bool includeImage, {
+    @DioOptions() Options? options,
+  });
+
+  @POST('api/dang-ky-hien-mau/donor-signature/{id}')
+  Future<GeneralResponseMap<DonorSignatureInfo>> saveDonorSignature(
+    @Path("id") String id,
+    @Body() Map<String, dynamic> body, {
+    @DioOptions() Options? options,
+  });
   @GET('api/dm-nguoi-hien-mau/get/{identityCard}?phoneNumber={phoneNumber}')
   Future<GeneralResponseMap<BloodDonor>> getDMNguoiHienMauByIdCard(
       @Path("identityCard") String identityCard,

@@ -1,10 +1,18 @@
+import 'dart:convert';
+
 import 'package:blood_donation/core/localization/app_locale.dart';
+import 'package:blood_donation/features/donor_signature/presentation/donor_signature_page.dart';
 import 'package:blood_donation/utils/extension/context_ext.dart';
 import 'package:blood_donation/utils/extension/datetime_extension.dart';
+import 'package:blood_donation/utils/app_utils.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:screen_brightness/screen_brightness.dart';
+
+import '../../app/app_util/app_center.dart';
 
 class ViewQrImageData extends StatefulWidget {
   const ViewQrImageData({
@@ -28,12 +36,104 @@ class ViewQrImageData extends StatefulWidget {
 class _ViewQrImageDataState extends State<ViewQrImageData> {
   double _previousBrightness = 0.5;
   // final double _previousApplicationBrightness = 0.5;
+  final appCenter = GetIt.instance<AppCenter>();
+
+  bool _isLoadingSignature = false;
+  bool _isSigned = false;
+  DateTime? _signedAt;
+  DonorSignatureResult? _signatureResult;
 
   @override
   void initState() {
     super.initState();
     // setSystemBrightness(1.0); // Set brightness to 100%
     setApplicationBrightness(1.0);
+    _loadSignatureStatus();
+  }
+
+  Future<void> _loadSignatureStatus() async {
+    setState(() => _isLoadingSignature = true);
+    try {
+      final response = await appCenter.backendProvider.getDonorSignatureInfo(
+        registerId: widget.idRegister,
+        includeImage: false,
+      );
+      if (response?.status == 200 && response?.data != null) {
+        setState(() {
+          _isSigned = response!.data!.isSigned;
+          _signedAt = response.data!.signedAt;
+        });
+      }
+    } catch (_) {
+      // ignore
+    } finally {
+      if (mounted) setState(() => _isLoadingSignature = false);
+    }
+  }
+
+  Future<void> _viewSignatureIfAny() async {
+    try {
+      EasyLoading.show(status: 'Đang tải chữ ký...');
+      final response = await appCenter.backendProvider.getDonorSignatureInfo(
+        registerId: widget.idRegister,
+        includeImage: true,
+      );
+      EasyLoading.dismiss();
+
+      if (response?.status == 200 && response?.data != null) {
+        final base64Str = response!.data!.signatureBase64;
+        if (base64Str != null && base64Str.isNotEmpty) {
+          final bytes = base64Decode(base64Str);
+          setState(() {
+            _signatureResult = DonorSignatureResult(bytes);
+            _signedAt = response.data!.signedAt;
+            _isSigned = true;
+          });
+        } else {
+          AppUtils.instance.showToast('Chưa có ảnh chữ ký.');
+        }
+      } else {
+        AppUtils.instance.showToast(response?.message ?? 'Không tải được chữ ký');
+      }
+    } catch (e) {
+      EasyLoading.dismiss();
+      AppUtils.instance.showToast('Không tải được chữ ký');
+    }
+  }
+
+  Future<void> _signNow() async {
+    if (_isSigned) return;
+
+    final result = await Get.to(
+      () => const DonorSignaturePage(title: 'Ký xác nhận tiếp nhận'),
+      fullscreenDialog: true,
+    );
+
+    if (result is! DonorSignatureResult) return;
+
+    try {
+      EasyLoading.show(status: 'Đang lưu chữ ký...');
+      final response = await appCenter.backendProvider.saveDonorSignature(
+        registerId: widget.idRegister,
+        signatureBase64Png: result.base64Png,
+        updateStatusToDaTiepNhan: true,
+      );
+      EasyLoading.dismiss();
+
+      if (response?.status == 200 && response?.data != null) {
+        setState(() {
+          _isSigned = true;
+          _signedAt = response!.data!.signedAt ?? DateTime.now();
+          _signatureResult = result;
+        });
+        AppUtils.instance.showToast('Đã lưu chữ ký.');
+      } else {
+        AppUtils.instance.showToast(response?.message ?? 'Lưu chữ ký thất bại');
+      }
+    } catch (e) {
+      EasyLoading.dismiss();
+      AppUtils.instance.showToast('Lưu chữ ký thất bại');
+    }
   }
 
   Future<double> get systemBrightness async {
@@ -139,8 +239,9 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
               topRight: Radius.circular(30),
             ),
           ),
-          child: Center(
-            child: Container(
+          child: SafeArea(
+            top: false,
+            child: SingleChildScrollView(
               padding: const EdgeInsets.all(15),
               child: Column(
                 children: [
@@ -151,17 +252,96 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
                     version: QrVersions.auto,
                     size: 320,
                     gapless: false,
-                    // embeddedImage:
-                    //     const AssetImage('assets/icons/app_icon_circle.png'),
                     embeddedImageStyle: const QrEmbeddedImageStyle(
                       size: Size(80, 80),
                     ),
                   ),
+                  const SizedBox(height: 14),
+                  _buildSignatureSection(context),
+                  SizedBox(height: MediaQuery.of(context).padding.bottom + 8),
                 ],
               ),
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildSignatureSection(BuildContext context) {
+    final signedAtText =
+        _signedAt != null ? ' • ${_signedAt!.ddmmyyyy} ${_signedAt!.timeHourString}' : '';
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color.fromARGB(255, 248, 243, 243),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.black12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.edit, size: 18, color: Color(0xff5c0101)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  _isSigned ? 'Đã ký xác nhận$signedAtText' : 'Chưa ký xác nhận',
+                  style: context.myTheme.textThemeT1.body.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              if (_isLoadingSignature)
+                const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          if (_signatureResult?.pngBytes != null)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                color: Colors.white,
+                padding: const EdgeInsets.all(8),
+                child: Image.memory(
+                  _signatureResult!.pngBytes,
+                  height: 90,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+          if (_signatureResult?.pngBytes != null) const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _isSigned ? null : _signNow,
+                  child: Text(_isSigned ? 'Đã ký' : 'Ký xác nhận tiếp nhận'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              OutlinedButton(
+                onPressed: _isSigned ? _viewSignatureIfAny : null,
+                child: const Text('Xem'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Lưu ý: chữ ký này là chữ ký tay của người hiến để xác nhận tiếp nhận.',
+            style: context.myTheme.textThemeT1.body.copyWith(
+              color: Colors.black54,
+              fontSize: 12,
+            ),
+          ),
+        ],
       ),
     );
   }

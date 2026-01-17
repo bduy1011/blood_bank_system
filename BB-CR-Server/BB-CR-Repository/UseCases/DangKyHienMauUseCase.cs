@@ -1,4 +1,5 @@
-﻿using BB.CR.Models;
+using BB.CR.Models;
+using BB.CR.Providers;
 using BB.CR.Providers.Bases;
 using BB.CR.Providers.Extensions;
 using BB.CR.Providers.Messages;
@@ -8,12 +9,61 @@ using BB.CR.Views.Criterias;
 using Mapster;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using System.IO;
+using System.Text.Json;
 using System.Net;
 
 namespace BB.CR.Repositories.UseCases
 {
     internal class DangKyHienMauUseCase
     {
+        private static string GetSignatureRootPath()
+        {
+            // NOTE:
+            // Settings.PathActual in this project is configured as a URL (e.g. http://localhost:8090/images/)
+            // for serving static files, NOT a filesystem folder path.
+            // If we try to use it as a directory path, it will throw "Illegal characters in path".
+            if (!string.IsNullOrWhiteSpace(Settings.PathActual))
+            {
+                if (Uri.TryCreate(Settings.PathActual, UriKind.Absolute, out var uri)
+                    && (uri.Scheme.Equals("http", StringComparison.OrdinalIgnoreCase)
+                        || uri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase)))
+                {
+                    // fall back to local folder
+                }
+                else
+                {
+                    return Settings.PathActual!;
+                }
+            }
+
+            // Fallback when PathActual is not configured
+            return Path.Combine(AppContext.BaseDirectory, "App_Data");
+        }
+
+        private static string GetDonorSignatureDir(long id)
+        {
+            return Path.Combine(GetSignatureRootPath(), "signatures", "dang-ky-hien-mau", id.ToString());
+        }
+
+        private static string GetDonorSignatureFilePath(long id)
+        {
+            return Path.Combine(GetDonorSignatureDir(id), "donor-signature.png");
+        }
+
+        private static string GetDonorSignatureMetaPath(long id)
+        {
+            return Path.Combine(GetDonorSignatureDir(id), "donor-signature.json");
+        }
+
+        private sealed class DonorSignatureMeta
+        {
+            public DateTime SignedAt { get; set; }
+            public string? IdentityCard { get; set; }
+            public string? DeviceId { get; set; }
+            public string? MimeType { get; set; }
+        }
+
         public static async Task<ReturnResponse<DangKyHienMauView>> GetAsync(long id, BloodBankContext context, IMapper mapper)
         {
             var response = new ReturnResponse<DangKyHienMauView>();
@@ -55,6 +105,191 @@ namespace BB.CR.Repositories.UseCases
 
                 response.Success(view, CommonResources.Ok);
             }
+            return response;
+        }
+
+        public static async Task<ReturnResponse<DonorSignatureInfoView>> GetDonorSignatureAsync(
+            long id,
+            bool includeImage,
+            string? identityCard,
+            BloodBankContext context)
+        {
+            var response = new ReturnResponse<DonorSignatureInfoView>();
+
+            if (string.IsNullOrWhiteSpace(identityCard))
+            {
+                response.Error(HttpStatusCode.Unauthorized, "Unauthorized");
+                return response;
+            }
+
+            var reg = await context.DangKyHienMau.AsNoTracking()
+                .FirstOrDefaultAsync(i => i.Id == id && i.CMND == identityCard)
+                .ConfigureAwait(false);
+
+            if (reg is null)
+            {
+                response.Error(HttpStatusCode.NotFound, CommonResources.NotFound);
+                return response;
+            }
+
+            var filePath = GetDonorSignatureFilePath(id);
+            var metaPath = GetDonorSignatureMetaPath(id);
+
+            if (!File.Exists(filePath))
+            {
+                response.Success(new DonorSignatureInfoView
+                {
+                    IsSigned = false,
+                    SignedAt = null,
+                    MimeType = null,
+                    SignatureBase64 = null
+                }, CommonResources.Ok);
+                return response;
+            }
+
+            DonorSignatureMeta? meta = null;
+            try
+            {
+                if (File.Exists(metaPath))
+                {
+                    var metaJson = await File.ReadAllTextAsync(metaPath).ConfigureAwait(false);
+                    meta = JsonSerializer.Deserialize<DonorSignatureMeta>(metaJson);
+                }
+            }
+            catch
+            {
+                // ignore meta errors
+            }
+
+            var signedAt = meta?.SignedAt;
+            if (!signedAt.HasValue)
+            {
+                try
+                {
+                    signedAt = File.GetLastWriteTime(filePath);
+                }
+                catch
+                {
+                    signedAt = null;
+                }
+            }
+
+            string? base64 = null;
+            if (includeImage)
+            {
+                var bytes = await File.ReadAllBytesAsync(filePath).ConfigureAwait(false);
+                base64 = Convert.ToBase64String(bytes);
+            }
+
+            response.Success(new DonorSignatureInfoView
+            {
+                IsSigned = true,
+                SignedAt = signedAt,
+                MimeType = meta?.MimeType ?? "image/png",
+                SignatureBase64 = base64
+            }, CommonResources.Ok);
+
+            return response;
+        }
+
+        public static async Task<ReturnResponse<DonorSignatureInfoView>> SaveDonorSignatureAsync(
+            long id,
+            DonorSignatureSaveRequest request,
+            string? identityCard,
+            string? deviceId,
+            BloodBankContext context)
+        {
+            var response = new ReturnResponse<DonorSignatureInfoView>();
+
+            if (string.IsNullOrWhiteSpace(identityCard))
+            {
+                response.Error(HttpStatusCode.Unauthorized, "Unauthorized");
+                return response;
+            }
+
+            if (request is null || string.IsNullOrWhiteSpace(request.SignatureBase64))
+            {
+                response.Error(HttpStatusCode.Conflict, "Vui lòng cung cấp chữ ký (Base64).");
+                return response;
+            }
+
+            var reg = await context.DangKyHienMau
+                .FirstOrDefaultAsync(i => i.Id == id && i.CMND == identityCard)
+                .ConfigureAwait(false);
+
+            if (reg is null)
+            {
+                response.Error(HttpStatusCode.NotFound, CommonResources.NotFound);
+                return response;
+            }
+
+            // Decode base64 (support optional data URI prefix)
+            var b64 = request.SignatureBase64.Trim();
+            var commaIdx = b64.IndexOf(',');
+            if (commaIdx >= 0 && b64[..commaIdx].Contains("base64", StringComparison.OrdinalIgnoreCase))
+                b64 = b64[(commaIdx + 1)..];
+
+            byte[] bytes;
+            try
+            {
+                bytes = Convert.FromBase64String(b64);
+            }
+            catch
+            {
+                response.Error(HttpStatusCode.Conflict, "Chữ ký Base64 không hợp lệ.");
+                return response;
+            }
+
+            // Guard size (2MB)
+            if (bytes.Length == 0 || bytes.Length > (2 * 1024 * 1024))
+            {
+                response.Error(HttpStatusCode.Conflict, "Kích thước chữ ký không hợp lệ.");
+                return response;
+            }
+
+            var dir = GetDonorSignatureDir(id);
+            Directory.CreateDirectory(dir);
+
+            var filePath = GetDonorSignatureFilePath(id);
+            var metaPath = GetDonorSignatureMetaPath(id);
+
+            await File.WriteAllBytesAsync(filePath, bytes).ConfigureAwait(false);
+
+            var now = DateTime.Now;
+            var meta = new DonorSignatureMeta
+            {
+                SignedAt = now,
+                IdentityCard = identityCard,
+                DeviceId = deviceId,
+                MimeType = string.IsNullOrWhiteSpace(request.MimeType) ? "image/png" : request.MimeType
+            };
+
+            try
+            {
+                var metaJson = JsonSerializer.Serialize(meta, new JsonSerializerOptions { WriteIndented = true });
+                await File.WriteAllTextAsync(metaPath, metaJson).ConfigureAwait(false);
+            }
+            catch
+            {
+                // ignore meta write errors
+            }
+
+            // Optional: update status to "Đã tiếp nhận" when donor signed
+            if (request.UpdateStatusToDaTiepNhan && reg.TinhTrang == TinhTrangDangKyHienMau.DaDangKy)
+            {
+                reg.TinhTrang = TinhTrangDangKyHienMau.DaTiepNhan;
+                context.DangKyHienMau.Update(reg);
+                await context.SaveChangesAsync().ConfigureAwait(false);
+            }
+
+            response.Success(new DonorSignatureInfoView
+            {
+                IsSigned = true,
+                SignedAt = now,
+                MimeType = meta.MimeType,
+                SignatureBase64 = null
+            }, CommonResources.Ok);
+
             return response;
         }
 

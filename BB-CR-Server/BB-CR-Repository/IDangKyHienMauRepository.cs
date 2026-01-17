@@ -1,4 +1,4 @@
-﻿using BB.CR.Models;
+using BB.CR.Models;
 using BB.CR.Providers.Bases;
 using BB.CR.Views;
 using BB.CR.Views.Criterias;
@@ -13,5 +13,20 @@ namespace BB.CR.Repositories
         Task<ReturnResponse<DangKyHienMauView>> CreateAsync(DangKyHienMau model, ILogger logger, IMapper mapper, string? userCode, string? identityCard);
         Task<ReturnResponse<DangKyHienMauView>> UpdateAsync(long id, DangKyHienMau model, ILogger logger, IMapper mapper);
         Task<ReturnResponse<DangKyHienMauView>> GetAsync(long id, ILogger logger, IMapper mapper);
+
+        Task<ReturnResponse<DonorSignatureInfoView>> GetDonorSignatureAsync(
+            long id,
+            bool includeImage,
+            ILogger logger,
+            IMapper mapper,
+            string? identityCard);
+
+        Task<ReturnResponse<DonorSignatureInfoView>> SaveDonorSignatureAsync(
+            long id,
+            DonorSignatureSaveRequest request,
+            ILogger logger,
+            IMapper mapper,
+            string? identityCard,
+            string? deviceId);
     }
 }

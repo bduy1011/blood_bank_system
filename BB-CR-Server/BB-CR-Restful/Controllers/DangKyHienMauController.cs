@@ -1,4 +1,4 @@
-﻿using BB.CR.Models;
+using BB.CR.Models;
 using BB.CR.Providers.Bases;
 using BB.CR.Providers.Extensions;
 using BB.CR.Repositories;
@@ -96,6 +96,30 @@ namespace BB.CR.Rest.Controllers
             var response = await BaseHandler.ExecuteAsync(
                 async () => await dangKyHienMauRepository.UpdateAsync(id, model, logger, mapper).ConfigureAwait(false)
                 , logger).ConfigureAwait(false);
+
+            return Ok(response);
+        }
+
+        [HttpGet("donor-signature/{id}"), SwaggerOperation(Summary = "Lấy chữ ký tay của người hiến (nếu có)")]
+        public async Task<IActionResult> GetDonorSignatureAsync(long id, [FromQuery] bool includeImage = false)
+        {
+            var response = await BaseHandler.ExecuteAsync(
+                async () => await dangKyHienMauRepository
+                    .GetDonorSignatureAsync(id, includeImage, logger, mapper, this.GetIdentityCard())
+                    .ConfigureAwait(false),
+                logger).ConfigureAwait(false);
+
+            return Ok(response);
+        }
+
+        [HttpPost("donor-signature/{id}"), SwaggerOperation(Summary = "Lưu chữ ký tay của người hiến (Base64 PNG)")]
+        public async Task<IActionResult> SaveDonorSignatureAsync(long id, [FromBody] DonorSignatureSaveRequest request)
+        {
+            var response = await BaseHandler.ExecuteAsync(
+                async () => await dangKyHienMauRepository
+                    .SaveDonorSignatureAsync(id, request, logger, mapper, this.GetIdentityCard(), this.GetDevice())
+                    .ConfigureAwait(false),
+                logger).ConfigureAwait(false);
 
             return Ok(response);
         }

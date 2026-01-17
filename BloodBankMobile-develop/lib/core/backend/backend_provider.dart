@@ -7,6 +7,7 @@ import 'package:blood_donation/models/authentication.dart';
 import 'package:blood_donation/models/blood_donation_event.dart';
 import 'package:blood_donation/models/blood_type.dart';
 import 'package:blood_donation/models/district.dart';
+import 'package:blood_donation/models/donor_signature_info.dart';
 import 'package:blood_donation/models/general_response.dart';
 import 'package:blood_donation/models/giaodich_response.dart';
 import 'package:blood_donation/models/province.dart';
@@ -537,6 +538,35 @@ class BackendProvider {
       return await _client.getRegisterDonateBloodById(id);
     } catch (e, s) {
       log("getRegisterDonateBloodById()", error: e, stackTrace: s);
+    }
+    return null;
+  }
+
+  Future<GeneralResponseMap<DonorSignatureInfo>?> getDonorSignatureInfo({
+    required String registerId,
+    bool includeImage = false,
+  }) async {
+    try {
+      return await _client.getDonorSignatureInfo(registerId, includeImage);
+    } catch (e, s) {
+      log("getDonorSignatureInfo()", error: e, stackTrace: s);
+    }
+    return null;
+  }
+
+  Future<GeneralResponseMap<DonorSignatureInfo>?> saveDonorSignature({
+    required String registerId,
+    required String signatureBase64Png,
+    bool updateStatusToDaTiepNhan = true,
+  }) async {
+    try {
+      return await _client.saveDonorSignature(registerId, {
+        "signatureBase64": signatureBase64Png,
+        "mimeType": "image/png",
+        "updateStatusToDaTiepNhan": updateStatusToDaTiepNhan,
+      });
+    } catch (e, s) {
+      log("saveDonorSignature()", error: e, stackTrace: s);
     }
     return null;
   }
