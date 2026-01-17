@@ -203,20 +203,20 @@ class _BloodLocationsDonatePageState extends BaseViewStateful<
                 padding: const EdgeInsets.only(top: 5),
                 color: Colors.transparent,
                 alignment: Alignment.center,
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.qr_code,
                       color: AppColor.mainColor,
                       size: 16,
                     ),
-                    HSpacing(
+                    const HSpacing(
                       spacing: 4,
                     ),
                     Text(
-                      "Xuất mã QR",
-                      style: TextStyle(color: AppColor.mainColor),
+                      AppLocale.exportQRCode.translate(context),
+                      style: const TextStyle(color: AppColor.mainColor),
                     ),
                   ],
                 ),
@@ -267,20 +267,20 @@ class _BloodLocationsDonatePageState extends BaseViewStateful<
       child: Container(
         padding: const EdgeInsets.only(top: 5),
         color: Colors.transparent,
-        child: const Row(
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
+            const Icon(
               Icons.delete,
               color: AppColor.mainColor,
               size: 16,
             ),
-            HSpacing(
+            const HSpacing(
               spacing: 4,
             ),
             Text(
-              "Hủy đăng ký",
-              style: TextStyle(color: AppColor.mainColor),
+              AppLocale.cancelRegistration.translate(context),
+              style: const TextStyle(color: AppColor.mainColor),
             ),
           ],
         ),
@@ -297,7 +297,7 @@ class _BloodLocationsDonatePageState extends BaseViewStateful<
           width: 3,
         ),
         Text(
-          "Tình trạng: ${item.tinhTrangDescription}",
+          "${AppLocale.status.translate(context)}: ${item.tinhTrangDescription}",
           style:
               context.myTheme.textThemeT1.body.copyWith(color: Colors.black87),
         ),
@@ -374,11 +374,11 @@ class _BloodLocationsDonatePageState extends BaseViewStateful<
           child: RichText(
             textAlign: TextAlign.center,
             text: TextSpan(
-              text: 'Cập nhật CCCD/Căn cước',
+              text: AppLocale.updateIdCard.translate(context),
               style: context.myTheme.textThemeT1.body,
               children: [
                 TextSpan(
-                  text: 'Tại đây',
+                  text: AppLocale.here.translate(context),
                   recognizer: TapGestureRecognizer()
                     ..onTap = () async {
                       ///
@@ -388,8 +388,9 @@ class _BloodLocationsDonatePageState extends BaseViewStateful<
                   style: context.myTheme.textThemeT1.body.copyWith(
                       fontWeight: FontWeight.w500, color: AppColor.mainColor),
                 ),
-                const TextSpan(
-                  text: ' để xem lịch sử đăng ký hiến máu của bạn.',
+                TextSpan(
+                  text: AppLocale.toViewDonationRegisterHistory
+                      .translate(context),
                 )
               ],
             ),
@@ -406,7 +407,10 @@ class _BloodLocationsDonatePageState extends BaseViewStateful<
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 30),
         child: Text(
-          'Không có dữ liệu từ ngày ${controller.startDate?.ddmmyyyy} đến ngày  ${controller.endDate?.ddmmyyyy}',
+          AppLocale.noDataFromDateToDate
+              .translate(context)
+              .replaceAll('{fromDate}', controller.startDate?.ddmmyyyy ?? '')
+              .replaceAll('{toDate}', controller.endDate?.ddmmyyyy ?? ''),
           style: Get.context?.myTheme.textThemeT1.body,
           textAlign: TextAlign.center,
         ),

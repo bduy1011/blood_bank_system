@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 
 import '../../../app/config/routes.dart';
 import '../../../base/base_view/base_view.dart';
+import '../../../core/localization/app_locale.dart';
 import '../../../utils/app_utils.dart';
 
 class ChangePasswordController extends BaseModelStateful {
@@ -57,16 +58,15 @@ class ChangePasswordController extends BaseModelStateful {
     var oldPassword = oldPasswordController.text;
 
     if (oldPassword.trim().isEmpty) {
-      AppUtils.instance.showMessage("Chưa nhập mật khẩu cũ");
+      AppUtils.instance.showMessage(AppLocale.changePasswordOldPasswordRequired.translate(Get.context!), context: Get.context);
       return;
     }
     if (password.trim().isEmpty) {
-      AppUtils.instance.showMessage("Chưa nhập mật khẩu");
+      AppUtils.instance.showMessage(AppLocale.registerPasswordRequired.translate(Get.context!), context: Get.context);
       return;
     }
     if (password.trim() != confirmPassword.trim()) {
-      AppUtils.instance
-          .showMessage("Mật khẩu và xác nhận mật khẩu không giống nhau");
+      AppUtils.instance.showMessage(AppLocale.registerPasswordNotMatch.translate(Get.context!), context: Get.context);
       return;
     }
 
@@ -87,16 +87,18 @@ class ChangePasswordController extends BaseModelStateful {
         // await appCenter.backendProvider.saveAuthentication(authenticated!);
         // autoGotoHomePage();
 
-        await AppUtils.instance.showMessage("Thay đổi mật khẩu thành công");
+        await AppUtils.instance.showMessage(AppLocale.changePasswordSuccess.translate(Get.context!), context: Get.context);
         Get.back();
         return;
       }
-      AppUtils.instance
-          .showMessage("Thay đổi mật khẩu thất bại\n${response.message}");
+      AppUtils.instance.showMessage(
+        "${AppLocale.changePasswordFailed.translate(Get.context!)}\n${response.message}",
+        context: Get.context,
+      );
     } catch (e, t) {
       log("setPassword()", error: e, stackTrace: t);
       // TODO
-      AppUtils.instance.showMessage("Thay đổi mật khẩu thất bại");
+      AppUtils.instance.showMessage(AppLocale.changePasswordFailed.translate(Get.context!), context: Get.context);
     }
     hideLoading();
   }

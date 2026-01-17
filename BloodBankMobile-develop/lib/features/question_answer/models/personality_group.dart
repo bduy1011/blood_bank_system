@@ -1,3 +1,4 @@
+import 'package:blood_donation/core/localization/app_locale.dart';
 import 'package:flutter/material.dart';
 
 enum PersonalityGroup {
@@ -18,40 +19,40 @@ enum PersonalityGroup {
   health,
   delay;
 
-  String get title {
+  String title(BuildContext context) {
     switch (this) {
       case PersonalityGroup.location:
-        return 'ĐỊA ĐIỂM HIẾN MÁU Ở ĐÂU?';
+        return AppLocale.qaDonationLocation.translate(context);
       case PersonalityGroup.time:
-        return 'THỜI GIAN TIẾP NHẬN ĐĂNG KÝ HIẾN MÁU NHƯ THẾ NÀO?';
+        return AppLocale.qaDonationTime.translate(context);
       case PersonalityGroup.condition:
-        return 'TIÊU CHUẨN KHI HIẾN MÁU, TIỂU CẦU?';
+        return AppLocale.qaDonationConditions.translate(context);
       case PersonalityGroup.note:
-        return 'LƯU Ý GÌ KHI ĐẾN HIẾN MÁU?';
+        return AppLocale.qaDonationNotes.translate(context);
       case PersonalityGroup.image:
-        return 'CẨM NANG';
+        return AppLocale.qaDonationHandbook.translate(context);
       case PersonalityGroup.benefit:
-        return 'QUYỀN LỢI KHI HIẾN MÁU TÌNH NGUYỆN?';
+        return AppLocale.qaDonationBenefits.translate(context);
       case PersonalityGroup.testing:
-        return 'MÁU CỦA TÔI SẼ LÀM NHỮNG XÉT NGHIỆM GÌ?';
+        return AppLocale.qaBloodTesting.translate(context);
       case PersonalityGroup.cmnd:
-        return 'TẠI SAO HIẾN MÁU PHẢI CÓ CCCD/CĂN CƯỚC?';
+        return AppLocale.qaWhyNeedIdCard.translate(context);
       case PersonalityGroup.contagious:
-        return 'KHI HIẾN MÁU CÓ THỂ BỊ NHIỄM BỆNH KHÔNG?';
+        return AppLocale.qaCanGetInfected.translate(context);
       case PersonalityGroup.unwell:
-        return 'CẢM THẤY KHÔNG KHỎE SAU KHI HIẾN MÁU?';
+        return AppLocale.qaFeelUnwell.translate(context);
       case PersonalityGroup.signs:
-        return 'CÓ DẤU HIỆU SƯNG, PHÙ NƠI VẾT CHÍCH?';
+        return AppLocale.qaSwellingSigns.translate(context);
       case PersonalityGroup.preparedonate:
-        return 'NGÀY MAI TÔI SẼ HIẾN MÁU, TÔI NÊN CHUẨN BỊ NHƯ THẾ NÀO?';
+        return AppLocale.qaPrepareForDonation.translate(context);
       case PersonalityGroup.abnormal:
-        return 'KHI PHÁT HIỆN BẤT THƯỜNG, CẢM THẤY KHÔNG AN TOÀN VỚI TÚI MÁU VỪA HIẾN?';
+        return AppLocale.qaAbnormalSituation.translate(context);
       case PersonalityGroup.needblood:
-        return 'TẠI SAO CÓ NHIỀU NGƯỜI CẦN PHẢI ĐƯỢC TRUYỀN MÁU?';
+        return AppLocale.qaWhyNeedBlood.translate(context);
       case PersonalityGroup.health:
-        return 'HIẾN MÁU NHÂN ĐẠO CÓ HẠI ĐẾN SỨC KHOẺ KHÔNG?';
+        return AppLocale.qaIsDonationHarmful.translate(context);
       case PersonalityGroup.delay:
-        return 'NHỮNG TRƯỜNG HỢP NÀO CẦN PHẢI TRÌ HOÃN HIẾN MÁU?';
+        return AppLocale.qaPostponeDonation.translate(context);
     }
   }
 

@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:android_id/android_id.dart';
 import 'package:blood_donation/app/app_util/app_center.dart';
+import 'package:blood_donation/core/localization/app_locale.dart';
+import 'package:blood_donation/utils/extension/context_ext.dart';
 import 'package:blood_donation/utils/extension/string_ext.dart';
 import 'package:blood_donation/utils/firebase_manager.dart';
 import 'package:blood_donation/utils/widget/alert_update_app.dart';
@@ -14,7 +16,6 @@ import 'package:toastification/toastification.dart';
 import 'package:uuid/uuid.dart';
 
 import '../models/app_version.dart';
-import './extension/context_ext.dart';
 import 'agoris_utils.dart';
 import 'widget/dialog_input_widget.dart';
 import 'widget/dialog_widget.dart';
@@ -58,7 +59,7 @@ class AppUtils {
         return AppDialogInput(
           message: message,
           title: title,
-          buttonTitle: "Xác nhận",
+          buttonTitle: AppLocale.confirm.translate(context ?? Get.context!),
           onTap: () {
             isConfirm = true;
             Get.back();
@@ -82,7 +83,7 @@ class AppUtils {
         return AppDialog(
             message: message,
             title: title,
-            buttonTitle: "Xác nhận",
+            buttonTitle: AppLocale.confirm.translate(context ?? Get.context!),
             onTap: () {
               isConfirm = true;
               Get.back();
@@ -102,7 +103,7 @@ class AppUtils {
         return AppDialog(
           message: message,
           title: title,
-          buttonTitle: "Xác nhận",
+          buttonTitle: AppLocale.confirm.translate(context ?? Get.context!),
           isCancel: true,
           onTap: () {
             isConfirm = true;
@@ -194,7 +195,7 @@ class AppUtils {
       );
     } catch (e) {
       print(e);
-      showToast("Có lỗi xãy ra, xin vui long thử lại sau");
+      showToast(AppLocale.errorOccurredPleaseRetry.translate(Get.context!));
       // TODO
     }
   }
@@ -255,8 +256,8 @@ class AppUtils {
         (version.deadLineUpdate())) {
       AlertUpdate.show(
           context: context,
-          version.updateTitle ?? "Đã có version mới",
-          version.updateContent ?? "Vui lòng cập nhật version mới!",
+          version.updateTitle ?? AppLocale.newVersionAvailable.translate(context),
+          version.updateContent ?? AppLocale.pleaseUpdateAppVersion.translate(context),
           updateUrl,
           version.isForceUpdate ?? false, updateAction: (isUpdate) {
         ///

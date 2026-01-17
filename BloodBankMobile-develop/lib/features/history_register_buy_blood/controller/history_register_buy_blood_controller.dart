@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 
 import '../../../app/app_util/enum.dart';
 import '../../../app/config/routes.dart';
+import '../../../core/localization/app_locale.dart';
 import '../../../models/blood_type.dart';
 import '../../../models/giaodich_response.dart';
 import '../../../utils/app_utils.dart';
@@ -106,8 +107,8 @@ class HistoryRegisterBuyBloodController extends BaseModelStateful {
   Future<void> deleteItem(GiaodichResponse item) async {
     ///
     var result = await AppUtils.instance.showMessageConfirmCancel(
-      "Xác nhận",
-      "Xác nhận hủy yêu cầu nhượng máu này?",
+      AppLocale.confirm.translate(Get.context!),
+      AppLocale.historyConfirmCancelBuyBlood.translate(Get.context!),
       context: Get.context,
     );
     if (result == true) {
@@ -118,9 +119,9 @@ class HistoryRegisterBuyBloodController extends BaseModelStateful {
         if (response.status == 200) {
           historys.remove(item);
           refresh();
-          AppUtils.instance.showToast("Hủy yêu cầu nhượng máu thành công");
+          AppUtils.instance.showToast(AppLocale.historyCancelBuyBloodSuccess.translate(Get.context!));
         } else {
-          AppUtils.instance.showToast("Hủy yêu cầu nhượng máu thất bại");
+          AppUtils.instance.showToast(AppLocale.historyCancelBuyBloodFailed.translate(Get.context!));
         }
       } catch (e, s) {
         log("deleteItem()", error: e, stackTrace: s);

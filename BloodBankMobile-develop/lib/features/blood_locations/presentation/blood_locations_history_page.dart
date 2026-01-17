@@ -100,7 +100,7 @@ class _BloodLocationsHistoryPageState extends BaseViewStateful<
                     controller.appCenter.authentication?.dmNguoiHienMau
                                 ?.soLanHienMau !=
                             null
-                        ? "Số lần đã hiến máu: ${controller.appCenter.authentication?.dmNguoiHienMau?.soLanHienMau}"
+                        ? "${AppLocale.numberOfBloodDonations.translate(context)}: ${controller.appCenter.authentication?.dmNguoiHienMau?.soLanHienMau}"
                         : "",
                     style: context.myTheme.textThemeT1.title)
               ],
@@ -160,7 +160,7 @@ class _BloodLocationsHistoryPageState extends BaseViewStateful<
           children: [
             Column(
               children: [
-                Text("Lần $index",
+                Text(AppLocale.timeWithIndex.translate(context).replaceAll('{index}', '$index'),
                     style: const TextStyle(
                         fontSize: 13,
                         color: Colors.grey,
@@ -236,7 +236,7 @@ class _BloodLocationsHistoryPageState extends BaseViewStateful<
                     ),
                     Text(
                       item.ngayThu != null
-                          ? "Tiếp nhận lúc: ${DateFormat("dd/MM/yyyy HH:mm").format(item.ngayThu!)}"
+                          ? "${AppLocale.receivedAt.translate(context)} ${DateFormat("dd/MM/yyyy HH:mm").format(item.ngayThu!)}"
                           : "",
                       style: context.myTheme.textThemeT1.body
                           .copyWith(color: Colors.black87),
@@ -251,7 +251,7 @@ class _BloodLocationsHistoryPageState extends BaseViewStateful<
                       width: 3,
                     ),
                     Text(
-                      "Điều chế lúc:   ${DateFormat("dd/MM/yyyy HH:mm").format(item.ngaySanXuat ?? item.ngayThu!.add(const Duration(hours: 3, minutes: 27)))}",
+                      "${AppLocale.processedAt.translate(context)} ${DateFormat("dd/MM/yyyy HH:mm").format(item.ngaySanXuat ?? item.ngayThu!.add(const Duration(hours: 3, minutes: 27)))}",
                       style: context.myTheme.textThemeT1.body
                           .copyWith(color: Colors.black87),
                     ),
@@ -389,11 +389,11 @@ class _BloodLocationsHistoryPageState extends BaseViewStateful<
           child: RichText(
             textAlign: TextAlign.center,
             text: TextSpan(
-              text: 'Cập nhật CCCD/Căn cước ',
+              text: '${AppLocale.updateIdCard.translate(context)} ',
               style: context.myTheme.textThemeT1.body,
               children: [
                 TextSpan(
-                  text: 'Tại đây',
+                  text: AppLocale.here.translate(context),
                   recognizer: TapGestureRecognizer()
                     ..onTap = () async {
                       ///
@@ -403,8 +403,8 @@ class _BloodLocationsHistoryPageState extends BaseViewStateful<
                   style: context.myTheme.textThemeT1.body.copyWith(
                       fontWeight: FontWeight.w500, color: AppColor.mainColor),
                 ),
-                const TextSpan(
-                  text: ' để xem lịch sử hiến máu của bạn.',
+                TextSpan(
+                  text: AppLocale.toViewDonationHistory.translate(context),
                 )
               ],
             ),
@@ -421,7 +421,9 @@ class _BloodLocationsHistoryPageState extends BaseViewStateful<
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 30),
         child: Text(
-          'Không có dữ liệu${controller.startDate?.ddmmyyyy != null ? " từ ngày ${controller.startDate?.ddmmyyyy}" : ""}${controller.endDate?.ddmmyyyy != null ? " đến ngày  ${controller.endDate?.ddmmyyyy}" : ""}',
+          AppLocale.noDataFromDateToDate.translate(context)
+              .replaceAll('{fromDate}', controller.startDate?.ddmmyyyy ?? '')
+              .replaceAll('{toDate}', controller.endDate?.ddmmyyyy ?? ''),
           style: Get.context?.myTheme.textThemeT1.body,
           textAlign: TextAlign.center,
         ),

@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../app/app_util/enum.dart';
+import '../../../core/localization/app_locale.dart';
 import '../../../models/answer_question.dart';
 import '../../../models/answer_question_detail.dart';
 import '../../../models/blood_donation_event.dart';
@@ -65,8 +66,8 @@ class RegisterDonateBloodController extends BaseModelStateful {
   void onBack() async {
     // TODO: implement onBack
     var result = await AppUtils.instance.showMessageConfirmCancel(
-      "Xác nhận",
-      "Xác nhận thoát màn hình đăng ký hiến máu",
+      AppLocale.confirm.translate(Get.context!),
+      AppLocale.confirmExitRegisterDonateBloodMessage.translate(Get.context!),
       context: Get.context,
     );
     if (result == true) {
@@ -178,7 +179,7 @@ class RegisterDonateBloodController extends BaseModelStateful {
     } else {
       ///
       await AppUtils.instance.showMessage(
-        "Vui lòng nhập cập nhật thông tin cá nhân trước khi đăng ký hiến máu!",
+        AppLocale.pleaseUpdatePersonalInfoBeforeRegister.translate(Get.context!),
         context: Get.context,
       );
       Get.offNamed(Routes.profile);
@@ -316,7 +317,7 @@ class RegisterDonateBloodController extends BaseModelStateful {
       List<AnswerQuestionDetail> updatedDetails) async {
     if (updatedDetails.any((e) => e.yesAnswer == true)) {
       var rs = await AppUtils.instance.showMessageConfirmCancel(
-        "Xác nhận",
+        AppLocale.confirm.translate(Get.context!),
         "Một (hoặc nhiều) câu trả lời đang chọn là 'Có'\r\nBạn có muốn đăng ký ?",
         context: Get.context,
       );
@@ -357,7 +358,7 @@ class RegisterDonateBloodController extends BaseModelStateful {
         if (response.data?.isNotEmpty == true) {
           ///
           await AppUtils.instance.showMessage(
-            "Bạn đã đăng ký lịch hiến máu (khác) trong ngày. Vui lòng kiểm tra và hủy trước khi đăng ký mới!",
+            AppLocale.alreadyRegisteredSameDay.translate(Get.context!),
             context: Get.context,
           );
           Get.back();
@@ -393,9 +394,13 @@ class RegisterDonateBloodController extends BaseModelStateful {
 
           if (ngayDuocHien.isAfter(ngayHienTai)) {
             var loaiHien =
-                event?.loaiMau == LoaiMau.TieuCau.value ? "tiểu cầu" : "máu";
+                event?.loaiMau == LoaiMau.TieuCau.value ? AppLocale.platelets.translate(Get.context!) : AppLocale.blood.translate(Get.context!);
+            final message = AppLocale.notEnoughDaysToDonate.translate(Get.context!)
+                .replaceAll('{days}', khoangCachNgayDuocHienLai.toString())
+                .replaceAll('{type}', loaiHien)
+                .replaceAll('{date}', appCenter.authentication!.ngayHienMauGanNhat!.ddmmyyyy);
             await AppUtils.instance.showMessage(
-              "Bạn chưa đủ số ngày quy định ($khoangCachNgayDuocHienLai ngày) để hiến $loaiHien.\nLần hiến $loaiHien gần nhất của bạn là ${appCenter.authentication!.ngayHienMauGanNhat!.ddmmyyyy}",
+              message,
               context: Get.context,
             );
             Get.back();
@@ -549,7 +554,7 @@ class RegisterDonateBloodController extends BaseModelStateful {
         // print('Name: $_name'); // Print the name
         // print('Email: $_email'); // Print the email
         AppUtils.instance.showMessage(
-          "Vui lòng nhập đủ thông tin\nđể tiếp tục!",
+          AppLocale.pleaseEnterFullInfo.translate(Get.context!),
           context: Get.context,
         );
         return;
@@ -589,7 +594,7 @@ class RegisterDonateBloodController extends BaseModelStateful {
         var registerDonationData = response.data!;
         hideLoading();
         await AppUtils.instance.showMessage(
-          "Đăng ký thành công",
+          AppLocale.registerDonateBloodSuccess.translate(Get.context!),
           context: Get.context,
         );
 

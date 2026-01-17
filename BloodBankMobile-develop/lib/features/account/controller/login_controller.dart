@@ -104,7 +104,7 @@ class LoginController extends BaseModelStateful {
         log("No tokens found");
         if (context.mounted) {
           await AppUtils.instance.showMessage(
-            'Bạn chưa đăng nhập. Vui lòng đăng nhập bằng tên đăng nhập và mật khẩu trước khi sử dụng đăng nhập bằng vân tay/Face ID.',
+            AppLocale.biometricNotLoggedIn.translate(context),
             context: context,
           );
         }
@@ -119,7 +119,7 @@ class LoginController extends BaseModelStateful {
         await clearStoredTokens();
         if (context.mounted) {
           await AppUtils.instance.showMessage(
-            'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại bằng tên đăng nhập và mật khẩu.',
+            AppLocale.biometricSessionExpired.translate(context),
             context: context,
           );
         }
@@ -138,7 +138,9 @@ class LoginController extends BaseModelStateful {
         final userDisplay = savedUserName != null 
             ? (savedUserCode != null ? "$savedUserName ($savedUserCode)" : savedUserName)
             : savedUserCode ?? '';
-        reason = "Đăng nhập với tài khoản: $userDisplay\n\n${reason}";
+        reason = AppLocale.biometricLoginWithAccount.translate(context)
+            .replaceAll('{account}', userDisplay)
+            .replaceAll('{reason}', reason);
       }
       
       final didAuthenticate = await biometricService.authenticate(
@@ -162,7 +164,7 @@ class LoginController extends BaseModelStateful {
         AppUtils.instance.hideLoading();
         if (context.mounted) {
           AppUtils.instance.showToast(
-              'Không tìm thấy thông tin đăng nhập. Vui lòng đăng nhập lại.');
+              AppLocale.biometricAuthNotFound.translate(context));
         }
         return;
       }
@@ -176,7 +178,7 @@ class LoginController extends BaseModelStateful {
         AppUtils.instance.hideLoading();
         if (context.mounted) {
           AppUtils.instance.showToast(
-              'Token không hợp lệ. Vui lòng đăng nhập lại.');
+              AppLocale.biometricTokenInvalid.translate(context));
         }
         await clearStoredTokens();
         return;
@@ -214,8 +216,9 @@ class LoginController extends BaseModelStateful {
       if (context.mounted) {
         final errorMessage = e.toString();
         log("Error details: $errorMessage");
+        final displayError = errorMessage.length > 50 ? "${errorMessage.substring(0, 50)}..." : errorMessage;
         AppUtils.instance.showToast(
-          'Lỗi: ${errorMessage.length > 50 ? "${errorMessage.substring(0, 50)}..." : errorMessage}',
+          AppLocale.biometricError.translate(context).replaceAll('{error}', displayError),
         );
       }
     }
@@ -260,11 +263,11 @@ class LoginController extends BaseModelStateful {
     try {
       FocusScope.of(context).requestFocus(FocusNode());
       if (username.trim().isEmpty) {
-        AppUtils.instance.showToast("Chưa nhập tên tài khoản hoặc CCCD/Căn cước");
+        AppUtils.instance.showToast(AppLocale.loginUsernameRequired.translate(context));
         return;
       }
       if (password.trim().isEmpty) {
-        AppUtils.instance.showToast("Chưa nhập mật khẩu");
+        AppUtils.instance.showToast(AppLocale.loginPasswordRequired.translate(context));
         return;
       }
       AppUtils.instance.showLoading();

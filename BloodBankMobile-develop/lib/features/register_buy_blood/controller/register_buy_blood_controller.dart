@@ -7,6 +7,7 @@ import 'package:blood_donation/utils/extension/datetime_extension.dart';
 import 'package:get/get.dart';
 
 import '../../../app/config/routes.dart';
+import '../../../core/localization/app_locale.dart';
 import '../../../models/cau_hinh_ton_kho_view.dart';
 import '../../../models/dm_don_vi_cap_mau_response.dart';
 import '../../../models/general_response.dart';
@@ -87,7 +88,7 @@ class RegisterBuyBloodController extends BaseModelStateful {
       ///
       AppUtils.instance
           .showMessage(
-        "Vui lòng nhập cập nhật thông tin cá nhân trước khi tạo yêu cầu nhượng máu!",
+        AppLocale.pleaseUpdatePersonalInfoBeforeBuyBlood.translate(Get.context!),
         context: Get.context,
       )
           .then((v) {
@@ -316,7 +317,8 @@ class RegisterBuyBloodController extends BaseModelStateful {
   bool checkAvailableTonKho() {
     if (cauHinhTonKho == null) {
       AppUtils.instance.showMessage(
-        "Hiện không có tồn trong ngày ${date.dateTimeString}, Vui lòng chọn ngày khác!",
+        AppLocale.registerBuyBloodNoInventoryToday.translate(Get.context!)
+            .replaceAll('{date}', date.dateTimeString),
         context: Get.context,
       );
       return false;
@@ -328,8 +330,11 @@ class RegisterBuyBloodController extends BaseModelStateful {
       for (GiaoDichConViews element2 in element.giaoDichConViews ?? []) {
         ///
         if ((element2.soLuong ?? 0) > (element2.soLuongTon ?? 0)) {
-          message +=
-              "Số lượng ${element2.maNhomMauDescription} của ${element.loaiSanPhamDescription} (${element2.soLuong ?? 0}) không được lớn hơn (${element2.soLuongTon ?? 0})\n";
+          message += AppLocale.registerBuyBloodQuantityExceeded.translate(Get.context!)
+              .replaceAll('{bloodType}', element2.maNhomMauDescription ?? '')
+              .replaceAll('{productType}', element.loaiSanPhamDescription ?? '')
+              .replaceAll('{quantity}', (element2.soLuong ?? 0).toString())
+              .replaceAll('{available}', (element2.soLuongTon ?? 0).toString()) + '\n';
         }
       }
     }
@@ -369,7 +374,7 @@ class RegisterBuyBloodController extends BaseModelStateful {
     ///
     //
     if (dmDonViCapMauCurrent == null) {
-      AppUtils.instance.showToast("Vui lòng chọn đơn vị cấp máu.");
+      AppUtils.instance.showToast(AppLocale.registerBuyBloodPleaseSelectUnit.translate(Get.context!));
       return;
     }
     if (!checkAvailableTonKho()) {

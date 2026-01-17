@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'dart:io';
+import 'package:blood_donation/core/localization/app_locale.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -83,7 +84,7 @@ class BiometricAuthService {
 
       // Trên thiết bị thật, để local_auth tự xử lý và hiển thị dialog
       final bool didAuthenticate = await _localAuth.authenticate(
-        localizedReason: reason ?? 'Vui lòng xác thực để đăng nhập',
+        localizedReason: reason ?? (context != null ? AppLocale.biometricAuthReason.translate(context) : 'Please authenticate to login'),
       );
       return didAuthenticate;
     } on PlatformException catch (e) {
@@ -108,11 +109,11 @@ class BiometricAuthService {
         barrierDismissible: false,
         builder: (BuildContext dialogContext) {
           return AlertDialog(
-            title: const Row(
+            title: Row(
               children: [
-                Icon(Icons.fingerprint, color: Colors.blue, size: 28),
-                SizedBox(width: 10),
-                Text('Mock Biometric Auth'),
+                const Icon(Icons.fingerprint, color: Colors.blue, size: 28),
+                const SizedBox(width: 10),
+                Text(AppLocale.biometricAuth.translate(context)),
               ],
             ),
             content: Column(
@@ -120,7 +121,7 @@ class BiometricAuthService {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  reason ?? 'Vui lòng xác thực để đăng nhập',
+                  reason ?? AppLocale.biometricAuthReason.translate(context),
                   style: const TextStyle(fontSize: 16),
                 ),
                 const SizedBox(height: 20),
@@ -131,14 +132,14 @@ class BiometricAuthService {
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: Colors.blue.shade200),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Icon(Icons.info_outline, color: Colors.blue, size: 20),
-                      SizedBox(width: 8),
+                      const Icon(Icons.info_outline, color: Colors.blue, size: 20),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'Emulator Mode - Simulating biometric authentication',
-                          style: TextStyle(
+                          AppLocale.emulatorMode.translate(context),
+                          style: const TextStyle(
                             fontSize: 12,
                             fontStyle: FontStyle.italic,
                             color: Colors.blue,
@@ -155,7 +156,7 @@ class BiometricAuthService {
                 onPressed: () {
                   Navigator.of(dialogContext).pop(false);
                 },
-                child: const Text('Hủy'),
+                child: Text(AppLocale.cancel.translate(context)),
               ),
               ElevatedButton(
                 onPressed: () {
@@ -165,15 +166,15 @@ class BiometricAuthService {
                   backgroundColor: Colors.blue,
                   foregroundColor: Colors.white,
                 ),
-                child: const Text('Xác thực thành công'),
+                child: Text(AppLocale.biometricAuthSuccess.translate(context)),
               ),
               TextButton(
                 onPressed: () {
                   Navigator.of(dialogContext).pop(false);
                 },
-                child: const Text(
-                  'Thất bại',
-                  style: TextStyle(color: Colors.red),
+                child: Text(
+                  AppLocale.biometricAuthFailed.translate(context),
+                  style: const TextStyle(color: Colors.red),
                 ),
               ),
             ],
@@ -217,10 +218,12 @@ class BiometricAuthService {
         return 'Biometric';
       }
 
+      // Note: This method returns a simple string, not localized
+      // The caller should handle localization if needed
       if (availableBiometrics.contains(BiometricType.face)) {
         return 'Face ID';
       } else if (availableBiometrics.contains(BiometricType.fingerprint)) {
-        return 'Vân tay';
+        return 'Fingerprint';
       } else if (availableBiometrics.contains(BiometricType.iris)) {
         return 'Iris';
       } else if (availableBiometrics.contains(BiometricType.strong)) {

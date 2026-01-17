@@ -217,8 +217,25 @@ mixin class AppLocale {
       'please_update_personal_info_before_register';
   static const String pleaseUpdatePersonalInfoBeforeBuyBlood =
       'please_update_personal_info_before_buy_blood';
+  static const String pleaseSelect = 'pleaseSelect';
+  static const String pleaseEnter = 'pleaseEnter';
+  static const String pleaseWait = 'pleaseWait';
+  static const String pleaseUpdateAppVersion = 'pleaseUpdateAppVersion';
+  static const String newVersionAvailable = 'newVersionAvailable';
   static const String saveChanges = 'save_changes';
+  static const String yearOfBirth = 'yearOfBirth';
+  static const String male = 'male';
+  static const String female = 'female';
+  static const String expectedArrivalDate = 'expectedArrivalDate';
+  static const String occupation = 'occupation';
+  static const String company = 'company';
+  static const String youAreRegisteringToDonate = 'youAreRegisteringToDonate';
+  static const String timeFromDate = 'timeFromDate';
   static const String selectDateTime = 'select_date_time';
+  static const String selectBloodDonationSchedule = 'selectBloodDonationSchedule';
+  static const String registeredCount = 'registeredCount';
+  static const String resendCode = 'resendCode';
+  static const String usernameWithIdCard = 'usernameWithIdCard';
   static const String notEnterOldPassword = 'not_enter_old_password';
   static const String notEnterPassword = 'not_enter_password';
   static const String changePasswordSuccess = 'change_password_success';
@@ -255,10 +272,69 @@ mixin class AppLocale {
   static const String updateInventorySuccess = 'update_inventory_success';
   static const String errorOccurredPleaseRetry = 'error_occurred_please_retry';
   static const String sendOtpSuccess = 'send_otp_success';
+  static const String otpIncorrect = 'otpIncorrect';
+  static const String otpSendSuccess = 'otpSendSuccess';
   static const String time = 'time';
   static const String invalidUsername = 'invalid_username';
   static const String scanIdCardToGetInfo = 'scan_id_card_to_get_info';
+  static const String publishedDate = 'publishedDate';
+  static const String fieldRequired = 'fieldRequired';
+  static const String qrCodeRegistration = 'qrCodeRegistration';
+  static const String eventId = 'eventId';
+  static const String registrationId = 'registrationId';
   static const String registeringToDonate = 'registering_to_donate';
+  // Question Answer - Personality Group Titles
+  static const String qaDonationLocation = 'qaDonationLocation';
+  static const String qaDonationTime = 'qaDonationTime';
+  static const String qaDonationConditions = 'qaDonationConditions';
+  static const String qaDonationNotes = 'qaDonationNotes';
+  static const String qaDonationHandbook = 'qaDonationHandbook';
+  static const String qaDonationBenefits = 'qaDonationBenefits';
+  static const String qaBloodTesting = 'qaBloodTesting';
+  static const String qaWhyNeedIdCard = 'qaWhyNeedIdCard';
+  static const String qaCanGetInfected = 'qaCanGetInfected';
+  static const String qaFeelUnwell = 'qaFeelUnwell';
+  static const String qaSwellingSigns = 'qaSwellingSigns';
+  static const String qaPrepareForDonation = 'qaPrepareForDonation';
+  static const String qaAbnormalSituation = 'qaAbnormalSituation';
+  static const String qaWhyNeedBlood = 'qaWhyNeedBlood';
+  static const String qaIsDonationHarmful = 'qaIsDonationHarmful';
+  static const String qaPostponeDonation = 'qaPostponeDonation';
+  // Question Answer - Content
+  static const String qaBloodTransfusionCenter = 'qaBloodTransfusionCenter';
+  static const String qaMorning = 'qaMorning';
+  static const String qaAfternoon = 'qaAfternoon';
+  static const String qaAge = 'qaAge';
+  static const String qaWeight = 'qaWeight';
+  static const String qaDistanceBetweenDonations = 'qaDistanceBetweenDonations';
+  static const String qaDistanceBetweenPlatelets = 'qaDistanceBetweenPlatelets';
+  static const String qaDiseases = 'qaDiseases';
+  static const String qaMenstrualCycle = 'qaMenstrualCycle';
+  static const String qaForFemale = 'qaForFemale';
+  static const String qaEatNormally = 'qaEatNormally';
+  static const String qaBringIdCard = 'qaBringIdCard';
+  static const String qaParkingLocation = 'qaParkingLocation';
+  static const String qaBenefitsContent = 'qaBenefitsContent';
+  static const String qaTestingContent = 'qaTestingContent';
+  static const String qaTestingResult = 'qaTestingResult';
+  static const String qaIdCardReason = 'qaIdCardReason';
+  static const String qaCannotGetInfected = 'qaCannotGetInfected';
+  static const String qaUnwellSymptoms = 'qaUnwellSymptoms';
+  static const String qaSwellingInstructions = 'qaSwellingInstructions';
+  static const String qaPrepareInstructions = 'qaPrepareInstructions';
+  static const String qaAbnormalInstructions = 'qaAbnormalInstructions';
+  static const String qaWhyNeedBloodReason = 'qaWhyNeedBloodReason';
+  static const String qaHealthContent = 'qaHealthContent';
+  static const String qaPostponeContent = 'qaPostponeContent';
+  static const String qaDonateBlood = 'qaDonateBlood';
+  static const String qaDonatePlatelets = 'qaDonatePlatelets';
+  static const String qaWeekendDonation = 'qaWeekendDonation';
+  static const String qaFromMondayToFriday = 'qaFromMondayToFriday';
+  static const String qaSecondSunday = 'qaSecondSunday';
+  static const String qaMayStopEarly = 'qaMayStopEarly';
+  static const String qaExtension = 'qaExtension';
+  static const String qaOr = 'qaOr';
+  static const String qaContactBusinessHours = 'qaContactBusinessHours';
   static const String platelets = 'platelets';
   static const String blood = 'blood';
   static const String at = 'at';
@@ -296,6 +372,77 @@ mixin class AppLocale {
   static const String biometricAuthSuccess = 'biometricAuthSuccess';
   static const String enableBiometricLogin = 'enableBiometricLogin';
   static const String biometricAuthReason = 'biometricAuthReason';
+  static const String biometricAuth = 'biometricAuth';
+  static const String emulatorMode = 'emulatorMode';
+  static const String biometricDeviceNotSupported = 'biometricDeviceNotSupported';
+  static const String biometricNotLoggedIn = 'biometricNotLoggedIn';
+  static const String biometricSessionExpired = 'biometricSessionExpired';
+  static const String biometricLoginWithAccount = 'biometricLoginWithAccount';
+  static const String biometricAuthNotFound = 'biometricAuthNotFound';
+  static const String biometricTokenInvalid = 'biometricTokenInvalid';
+  static const String biometricError = 'biometricError';
+  static const String loginUsernameRequired = 'loginUsernameRequired';
+  static const String loginPasswordRequired = 'loginPasswordRequired';
+  static const String registerFullNameRequired = 'registerFullNameRequired';
+  static const String registerFullNameInvalid = 'registerFullNameInvalid';
+  static const String registerUsernameRequired = 'registerUsernameRequired';
+  static const String registerPasswordRequired = 'registerPasswordRequired';
+  static const String registerPasswordMinLength = 'registerPasswordMinLength';
+  static const String registerPasswordNotMatch = 'registerPasswordNotMatch';
+  static const String registerFullNameAccountRequired = 'registerFullNameAccountRequired';
+  static const String registerPhoneRequired = 'registerPhoneRequired';
+  static const String registerPhoneInvalid = 'registerPhoneInvalid';
+  static const String registerSuccess = 'registerSuccess';
+  static const String registerFailed = 'registerFailed';
+  static const String alreadyRegisteredSameDay = 'alreadyRegisteredSameDay';
+  static const String notEnoughDaysToDonate = 'notEnoughDaysToDonate';
+  static const String registerDonateBloodSuccess = 'registerDonateBloodSuccess';
+  static const String scanQRSuccess = 'scanQRSuccess';
+  static const String scanQRError = 'scanQRError';
+  static const String changePasswordOldPasswordRequired = 'changePasswordOldPasswordRequired';
+  static const String forgotPasswordFullNameRequired = 'forgotPasswordFullNameRequired';
+  static const String forgotPasswordIDCardRequired = 'forgotPasswordIDCardRequired';
+  static const String forgotPasswordPhoneRequired = 'forgotPasswordPhoneRequired';
+  static const String forgotPasswordPhoneInvalidFormat = 'forgotPasswordPhoneInvalidFormat';
+  static const String forgotPasswordInfoSent = 'forgotPasswordInfoSent';
+  static const String forgotPasswordSendError = 'forgotPasswordSendError';
+  static const String homeDaysSinceLastDonation = 'homeDaysSinceLastDonation';
+  static const String homeLastDonationDate = 'homeLastDonationDate';
+  static const String homeWelcomeBack = 'homeWelcomeBack';
+  static const String homeNoDonationYet = 'homeNoDonationYet';
+  static const String profileIDCardInvalidFormat = 'profileIDCardInvalidFormat';
+  static const String profilePhoneInvalidFormat = 'profilePhoneInvalidFormat';
+  static const String profileDataUpdatedFromIDCard = 'profileDataUpdatedFromIDCard';
+  static const String profileBuyBloodAccountNote = 'profileBuyBloodAccountNote';
+  static const String feedbackSendSuccess = 'feedbackSendSuccess';
+  static const String feedbackPleaseUpdateInfoBeforeSend = 'feedbackPleaseUpdateInfoBeforeSend';
+  static const String registerBuyBloodNoInventoryToday = 'registerBuyBloodNoInventoryToday';
+  static const String registerBuyBloodQuantityExceeded = 'registerBuyBloodQuantityExceeded';
+  static const String registerBuyBloodPleaseSelectUnit = 'registerBuyBloodPleaseSelectUnit';
+  static const String routeNotFound = 'routeNotFound';
+  static const String donationScheduleTestResultReactive = 'donationScheduleTestResultReactive';
+  static const String donationScheduleConfirmDonate = 'donationScheduleConfirmDonate';
+  static const String donationScheduleConfirmDonateMessage = 'donationScheduleConfirmDonateMessage';
+  static const String managementNoInventoryToday = 'managementNoInventoryToday';
+  static const String managementErrorGettingInventory = 'managementErrorGettingInventory';
+  static const String managementNotification = 'managementNotification';
+  static const String managementPleaseEnterApproveQuantity = 'managementPleaseEnterApproveQuantity';
+  static const String managementApproveBuyBloodSuccess = 'managementApproveBuyBloodSuccess';
+  static const String managementRejectBuyBloodSuccess = 'managementRejectBuyBloodSuccess';
+  static const String managementConfirmRejectRequest = 'managementConfirmRejectRequest';
+  static const String historyCancelBuyBloodSuccess = 'historyCancelBuyBloodSuccess';
+  static const String historyCancelBuyBloodFailed = 'historyCancelBuyBloodFailed';
+  static const String historyConfirmCancelBuyBlood = 'historyConfirmCancelBuyBlood';
+  static const String bloodTransfusionCenter = 'bloodTransfusionCenter';
+  static const String bloodTransfusionCenterAddress = 'bloodTransfusionCenterAddress';
+  static const String exportQRCode = 'exportQRCode';
+  static const String cancelRegistration = 'cancelRegistration';
+  static const String status = 'status';
+  static const String noDataFromDateToDate = 'noDataFromDateToDate';
+  static const String cancelRegistrationSuccess = 'cancelRegistrationSuccess';
+  static const String receivedAt = 'receivedAt';
+  static const String processedAt = 'processedAt';
+  static const String timeWithIndex = 'timeWithIndex';
   static const String selectImageFromGallery = 'selectImageFromGallery';
   static const String noQRCodeFoundInImage = 'noQRCodeFoundInImage';
   static const String failedToReadQRFromImage = 'failedToReadQRFromImage';
@@ -513,6 +660,11 @@ mixin class AppLocale {
     contactAddress: 'Contact address',
     fromToDate: 'From {fromDate} to {toDate}',
     pleaseEnterApprovalQuantity: 'Please enter approval quantity',
+    pleaseSelect: 'Please select',
+    pleaseEnter: 'Please enter',
+    pleaseWait: 'Please wait',
+    pleaseUpdateAppVersion: 'Please update to the new version!',
+    newVersionAvailable: 'New version available',
     pleaseEnterFullInfo: 'Please enter full information\nto continue!',
     pleaseEnterFullNameBeforeSign: 'Please enter full name before signing',
     pleaseEnterIdCardBeforeSign: 'Please enter ID card before signing',
@@ -525,6 +677,56 @@ mixin class AppLocale {
         'Please update personal information before creating blood concession request!',
     saveChanges: 'Save changes',
     selectDateTime: 'Select date and time',
+    selectBloodDonationSchedule: 'Select blood donation schedule',
+    // Question Answer - Titles
+    qaDonationLocation: 'WHERE IS THE BLOOD DONATION LOCATION?',
+    qaDonationTime: 'WHAT IS THE BLOOD DONATION REGISTRATION TIME?',
+    qaDonationConditions: 'WHAT ARE THE STANDARDS FOR BLOOD AND PLATELET DONATION?',
+    qaDonationNotes: 'WHAT TO NOTE WHEN COMING TO DONATE BLOOD?',
+    qaDonationHandbook: 'HANDBOOK',
+    qaDonationBenefits: 'WHAT ARE THE BENEFITS OF VOLUNTARY BLOOD DONATION?',
+    qaBloodTesting: 'WHAT TESTS WILL MY BLOOD UNDERGO?',
+    qaWhyNeedIdCard: 'WHY DO I NEED ID CARD FOR BLOOD DONATION?',
+    qaCanGetInfected: 'CAN I GET INFECTED WHEN DONATING BLOOD?',
+    qaFeelUnwell: 'FEELING UNWELL AFTER DONATING BLOOD?',
+    qaSwellingSigns: 'HAVING SWELLING SIGNS AT THE INJECTION SITE?',
+    qaPrepareForDonation: 'I WILL DONATE BLOOD TOMORROW, HOW SHOULD I PREPARE?',
+    qaAbnormalSituation: 'WHEN DETECTING ABNORMALITIES, FEELING UNSAFE WITH THE BLOOD BAG JUST DONATED?',
+    qaWhyNeedBlood: 'WHY DO SO MANY PEOPLE NEED BLOOD TRANSFUSION?',
+    qaIsDonationHarmful: 'IS HUMANITARIAN BLOOD DONATION HARMFUL TO HEALTH?',
+    qaPostponeDonation: 'WHAT CASES NEED TO POSTPONE BLOOD DONATION?',
+    // Question Answer - Content
+    qaBloodTransfusionCenter: 'CHO RAY BLOOD TRANSFUSION CENTER',
+    qaMorning: 'Morning',
+    qaAfternoon: 'Afternoon',
+    qaAge: 'Age',
+    qaWeight: 'Weight',
+    qaDistanceBetweenDonations: 'Distance between 2 blood donations',
+    qaDistanceBetweenPlatelets: 'Distance between 2 platelet donations',
+    qaDiseases: 'Diseases',
+    qaMenstrualCycle: 'End of menstrual cycle',
+    qaForFemale: '(for females)',
+    qaEatNormally: 'Eat normally and',
+    qaBringIdCard: 'When coming to donate blood, please bring your ID card.',
+    qaParkingLocation: 'Blood donors park at Gate 3 - Cho Ray Hospital, Thuan Kieu Street.',
+    qaBenefitsContent: 'Rights and benefits for voluntary blood donors according to Circular No. 05/2017/TT-BYT...',
+    qaTestingContent: 'All blood units collected will be tested for blood type (ABO system, Rh system), HIV, hepatitis B virus, hepatitis C virus, syphilis, malaria.',
+    qaTestingResult: 'You will be notified of results, kept confidential and consulted (free of charge) when the above infectious diseases are detected.',
+    qaIdCardReason: 'Each blood unit must have a record containing information about the blood donor. According to regulations, this is a necessary procedure in the blood donation process to ensure the authenticity of information about the blood donor.',
+    qaCannotGetInfected: 'The blood collection needle is sterile, used only once per person, so it cannot transmit diseases to the blood donor.',
+    qaUnwellSymptoms: 'After donating blood, if you have symptoms such as dizziness, fatigue, nausea, etc., please contact the blood collection unit immediately for medical support.',
+    qaSwellingInstructions: 'After donating blood, if you have signs of swelling, edema at the injection site. Please do not worry too much, apply cold compress immediately to the swollen area and monitor the signs above. If it does not decrease after 24 hours, please contact the blood collection unit again for support.',
+    qaPrepareInstructions: '• Tonight you should not stay up too late (sleep before 23:00).\n• Should eat and not drink alcohol, beer before donating blood.\n• Bring ID card, sufficient personal documents and blood donation card (if any) when going to donate blood.',
+    qaAbnormalInstructions: 'After participating in blood donation, if you discover anything that makes you feel unsafe with the blood bag just donated (suddenly remember a risky behavior, have used any medication that you forgot to report to the doctor during examination, have tested POSITIVE for SARS-CoV-2 using rapid test or Real time RT-PCR technique, etc.) please report back to the blood collection unit where you participated in donation.',
+    qaWhyNeedBloodReason: 'Every hour hundreds of patients need to receive blood transfusion because:\n• Blood loss due to trauma, accidents, disasters, gastrointestinal bleeding...\n• Due to diseases causing anemia, bleeding: blood cancer, bone marrow failure, hemophilia...\n• Modern treatment methods require a lot of blood: cardiovascular surgery, organ transplantation...',
+    qaHealthContent: 'Blood donation according to medical guidance is not harmful to health. This has been proven by scientific and practical evidence:\n• Blood has many components, each component has a certain lifespan and is constantly renewed daily. For example: Red blood cells live for 120 days, plasma is constantly replaced and renewed. Scientific evidence shows that if each donation is less than 1/10 of the blood volume in the body, it is not harmful to health.\n• Many research projects have proven that after donating blood, blood indicators change slightly but still within normal physiological limits, not affecting the daily activities of the body.\n• In practice, millions of people have donated blood many times and their health is still completely good. In the world, there are people who have donated blood more than 400 times. In Vietnam, the person who has donated blood the most times has donated nearly 100 times, and their health is completely good.\n• Thus, each person if they feel good health, do not have infectious diseases transmitted through blood, meet blood donation standards, can donate blood 3-4 times a year, both not adversely affecting their own health, and ensuring good quality blood, safe for patients.',
+    qaPostponeContent: '• People who must postpone blood donation for 12 months from the time:\n   + Fully recovered after surgical interventions.\n   + Recovered from one of the diseases: malaria, syphilis, tuberculosis, tetanus, encephalitis, meningitis.\n   + End of rabies vaccination after being bitten by animals or injection, blood transfusion, blood products and biological products derived from blood.\n   + Childbirth or termination of pregnancy.\n\n• People who must postpone blood donation for 06 months from the time:\n   + Tattooing on the skin.\n   + Ear piercing, nose piercing, navel piercing or other parts of the body.\n   + Exposure to blood and body fluids from people at risk or infected with blood-borne diseases.\n   + Recovered from one of the diseases: typhoid, septicemia, snake bite, arterial occlusion, venous occlusion, osteomyelitis, pancreatitis.\n\n• People who must postpone blood donation for 04 weeks from the time:\n   + Recovered from one of the diseases: gastroenteritis, urinary tract infection, skin infection, bronchitis, pneumonia, measles, whooping cough, mumps, dengue fever, dysentery, rubella, cholera, mumps.\n   + End of vaccination for rubella, measles, typhoid, cholera, mumps, chickenpox, BCG.\n\n• People who must postpone blood donation for 07 days from the time:\n   + Recovered from one of the diseases: flu, cold, nasal allergy, pharyngitis, migraine headache.\n   + Vaccination with various vaccines, except those specified in Point c Clause 1 and Point b Clause 3 of this Article.\n\n• Some regulations related to occupation and special activities of blood donors: people doing certain jobs and performing the following special activities can only donate blood on days off or can only perform these jobs and activities at least 12 hours after donating blood:\n   + People working at height or depth: pilots, crane operators, workers working at height, mountaineers, miners, sailors, divers.\n   + People operating public transport vehicles: bus drivers, train drivers, ship drivers.\n   + Other cases: professional athletes, people doing heavy exercise, heavy training.',
+    qaDonateBlood: 'Blood donation',
+    qaDonatePlatelets: 'Platelet donation',
+    qaWeekendDonation: 'Weekend blood donation',
+    qaFromMondayToFriday: 'from Monday to Friday weekly',
+    qaSecondSunday: 'Second Sunday of each month',
+    qaMayStopEarly: '(May stop accepting registrations earlier when demand is met)',
     notEnterOldPassword: 'Please enter old password',
     notEnterPassword: 'Please enter password',
     changePasswordSuccess: 'Password changed successfully',
@@ -562,14 +764,24 @@ mixin class AppLocale {
     updateInventorySuccess: 'Inventory information updated successfully',
     errorOccurredPleaseRetry: 'An error occurred, please try again later',
     sendOtpSuccess: 'OTP sent successfully',
+    otpIncorrect: 'OTP code is incorrect',
+    otpSendSuccess: 'OTP sent successfully',
     time: 'Time',
     invalidUsername: 'Username must be ID card with 9 or 12 characters!',
     scanIdCardToGetInfo: 'Scan ID card to get information',
+    publishedDate: 'Published date',
+    fieldRequired: 'This field is required',
+    qrCodeRegistration: 'QR code registration for blood donation',
+    eventId: 'Event ID',
+    registrationId: 'Registration ID',
     registeringToDonate: 'You are registering to donate',
+    youAreRegisteringToDonate: 'You are registering to donate {type}',
+    registeredCount: 'Registered: {registered}/{total}',
     platelets: 'platelets',
     blood: 'blood',
     at: 'at',
     timeFrom: 'Time from',
+    timeFromDate: 'Time from {time} on {date}',
     day: 'day',
     noDataFromToDate: 'No data\nfrom {fromDate} to {toDate}',
     updateIdCard: 'Update ID card',
@@ -605,6 +817,75 @@ mixin class AppLocale {
     biometricAuthSuccess: 'Login successful',
     enableBiometricLogin: 'Enable biometric login',
     biometricAuthReason: 'Please authenticate to login',
+    biometricAuth: 'Biometric Authentication',
+    emulatorMode: 'Emulator Mode - Simulating biometric authentication',
+    biometricDeviceNotSupported: 'Your device does not support fingerprint/Face ID. Please login with username and password.',
+    biometricNotLoggedIn: 'You have not logged in. Please login with username and password before using fingerprint/Face ID login.',
+    biometricSessionExpired: 'Your login session has expired. Please login again with username and password.',
+    biometricLoginWithAccount: 'Login with account: {account}\n\n{reason}',
+    biometricAuthNotFound: 'Login information not found. Please login again.',
+    biometricTokenInvalid: 'Invalid token. Please login again.',
+    biometricError: 'Error: {error}',
+    loginUsernameRequired: 'Please enter username or ID card',
+    loginPasswordRequired: 'Please enter password',
+    registerFullNameRequired: 'Please enter full name',
+    registerFullNameInvalid: 'Invalid full name',
+    registerUsernameRequired: 'Please enter username',
+    registerPasswordRequired: 'Please enter password',
+    registerPasswordMinLength: 'Password must be at least 6 characters',
+    registerPasswordNotMatch: 'Password and confirm password do not match',
+    registerFullNameAccountRequired: 'Please enter account full name',
+    registerPhoneRequired: 'Please enter phone number',
+    registerPhoneInvalid: 'Invalid phone number',
+    registerSuccess: 'Account registration successful!',
+    registerFailed: 'Account registration failed!',
+    alreadyRegisteredSameDay: 'You have already registered for a blood donation (different) today. Please check and cancel before registering a new one!',
+    notEnoughDaysToDonate: 'You have not met the required number of days ({days} days) to donate {type}.\nYour last {type} donation was on {date}',
+    registerDonateBloodSuccess: 'Registration successful',
+    scanQRSuccess: 'QR code scanned successfully!',
+    scanQRError: 'Error reading QR code',
+    changePasswordOldPasswordRequired: 'Please enter old password',
+    forgotPasswordFullNameRequired: 'Please enter full name',
+    forgotPasswordIDCardRequired: 'Please enter ID card',
+    forgotPasswordPhoneRequired: 'Please enter phone number',
+    forgotPasswordPhoneInvalidFormat: 'Invalid phone number format',
+    forgotPasswordInfoSent: 'Information has been sent!',
+    forgotPasswordSendError: 'Error sending information',
+    homeDaysSinceLastDonation: 'It has been {days} days since you last donated blood!\n',
+    homeLastDonationDate: 'Your last blood donation: {date}',
+    homeWelcomeBack: 'Welcome back!',
+    homeNoDonationYet: "You haven't donated blood yet!",
+    profileIDCardInvalidFormat: 'ID card format is incorrect!',
+    profilePhoneInvalidFormat: 'Phone number format is incorrect!',
+    profileDataUpdatedFromIDCard: 'Data has been updated according to\nID card.\nIf you want to change, please contact\nCho Ray Blood Transfusion Center',
+    profileBuyBloodAccountNote: 'This is a blood concession registration account\nCannot edit information.',
+    feedbackSendSuccess: 'Sent successfully!',
+    feedbackPleaseUpdateInfoBeforeSend: 'Please update personal information before sending feedback!',
+    registerBuyBloodNoInventoryToday: 'Currently no inventory on {date}, Please choose another date!',
+    registerBuyBloodQuantityExceeded: 'Quantity {bloodType} of {productType} ({quantity}) cannot be greater than ({available})',
+    registerBuyBloodPleaseSelectUnit: 'Please select blood unit.',
+    routeNotFound: 'Route not found',
+    donationScheduleTestResultReactive: 'Your latest test result is Reactive, so you cannot register to donate blood',
+    donationScheduleConfirmDonate: 'Confirm donate {type}',
+    donationScheduleConfirmDonateMessage: 'Agree to register to donate {type}\rat this location?',
+    managementNoInventoryToday: 'Currently no inventory on {date}, please update inventory!',
+    managementErrorGettingInventory: 'Error getting inventory on {date}, please contact Technician!',
+    managementNotification: 'Notification',
+    managementPleaseEnterApproveQuantity: 'Please enter approve quantity',
+    managementApproveBuyBloodSuccess: 'Approve blood concession request successful.',
+    managementRejectBuyBloodSuccess: 'Reject blood concession request successful.',
+    managementConfirmRejectRequest: 'Confirm reject this request',
+    historyCancelBuyBloodSuccess: 'Cancel blood concession request successful',
+    historyCancelBuyBloodFailed: 'Cancel blood concession request failed',
+    historyConfirmCancelBuyBlood: 'Confirm cancel this blood concession request?',
+    exportQRCode: 'Export QR Code',
+    cancelRegistration: 'Cancel Registration',
+    status: 'Status',
+    noDataFromDateToDate: 'No data from {fromDate} to {toDate}',
+    cancelRegistrationSuccess: 'Cancel registration successful',
+    receivedAt: 'Received at:',
+    processedAt: 'Processed at:',
+    timeWithIndex: 'Time {index}',
     selectImageFromGallery: 'Select image from gallery',
     noQRCodeFoundInImage: 'No QR code found in the selected image',
     failedToReadQRFromImage: 'Failed to read QR code from image',
@@ -668,7 +949,7 @@ mixin class AppLocale {
     homeStatictics: "Thống kê",
     homeManagement: "Quản lý",
     search: "Tìm kiếm",
-    settings: "Settings",
+    settings: "Cài đặt",
     generalSetting: 'Cài đặt chung',
     updateInformation: 'Cập nhật thông tin',
     bloodDonationHistory: 'Lịch sử hiến máu',
@@ -818,6 +1099,11 @@ mixin class AppLocale {
     pleaseUpdatePersonalInfoBefore:
         'Vui lòng cập nhật thông tin cá nhân trước khi',
     expectedArrivalDateTime: 'Ngày giờ dự kiến đến',
+    pleaseSelect: 'Vui lòng chọn',
+    pleaseEnter: 'Vui lòng nhập',
+    pleaseWait: 'Vui lòng chờ',
+    pleaseUpdateAppVersion: 'Vui lòng cập nhật version mới!',
+    newVersionAvailable: 'Đã có version mới',
     contactAddress: 'Địa chỉ liên hệ',
     fromToDate: 'Từ {fromDate} đến {toDate}',
     pleaseEnterApprovalQuantity: 'Vui lòng nhập số lượng duyệt',
@@ -826,13 +1112,14 @@ mixin class AppLocale {
     pleaseEnterIdCardBeforeSign: 'Vui lòng nhập CCCD/Căn cước trước khi ký số',
     pleaseEnterFeedbackContent: 'Vui lòng nhập nội dung góp ý/ phản hồi',
     pleaseUpdatePersonalInfoBeforeFeedback:
-        'Vui lòng nhập cập nhật thông tin cá nhân trước khi gửi phản hồi!',
+        'Vui lòng cập nhật thông tin cá nhân trước khi gửi phản hồi!',
     pleaseUpdatePersonalInfoBeforeRegister:
-        'Vui lòng nhập cập nhật thông tin cá nhân trước khi đăng ký hiến máu!',
+        'Vui lòng cập nhật thông tin cá nhân trước khi đăng ký hiến máu!',
     pleaseUpdatePersonalInfoBeforeBuyBlood:
-        'Vui lòng nhập cập nhật thông tin cá nhân trước khi tạo yêu cầu nhượng máu!',
+        'Vui lòng cập nhật thông tin cá nhân trước khi tạo yêu cầu nhượng máu!',
     saveChanges: 'Lưu thay đổi',
     selectDateTime: 'Chọn ngày giờ',
+    selectBloodDonationSchedule: 'Chọn lịch hiến máu',
     notEnterOldPassword: 'Chưa nhập mật khẩu cũ',
     notEnterPassword: 'Chưa nhập mật khẩu',
     changePasswordSuccess: 'Thay đổi mật khẩu thành công',
@@ -869,15 +1156,74 @@ mixin class AppLocale {
     updateInventorySuccess: 'Cập nhật thông tin tồn kho thành công.',
     errorOccurredPleaseRetry: 'Có lỗi xãy ra, xin vui long thử lại sau',
     sendOtpSuccess: 'Gửi OTP thành công',
+    otpIncorrect: 'Mã OTP không chính xác',
+    otpSendSuccess: 'Gửi OTP thành công',
     time: 'Lần',
     invalidUsername:
         'Tên đăng nhập phải là CCCD/Căn cước có độ dài 9 hoặc 12 ký tự!',
     scanIdCardToGetInfo: 'Quét CCCD/Căn cước để lấy thông tin',
+    publishedDate: 'Ngày đăng',
+    fieldRequired: 'Trường này là bắt buộc',
+    qrCodeRegistration: 'Mã QR đăng ký hiến máu',
+    eventId: 'Id đợt',
+    registrationId: 'Id đăng ký',
     registeringToDonate: 'Bạn đang đăng ký hiến',
+    youAreRegisteringToDonate: 'Bạn đang đăng ký hiến {type}',
+    registeredCount: 'Đã đăng ký: {registered}/{total}',
     platelets: 'tiểu cầu',
     blood: 'máu',
+    // Question Answer - Titles
+    qaDonationLocation: 'ĐỊA ĐIỂM HIẾN MÁU Ở ĐÂU?',
+    qaDonationTime: 'THỜI GIAN TIẾP NHẬN ĐĂNG KÝ HIẾN MÁU NHƯ THẾ NÀO?',
+    qaDonationConditions: 'TIÊU CHUẨN KHI HIẾN MÁU, TIỂU CẦU?',
+    qaDonationNotes: 'LƯU Ý GÌ KHI ĐẾN HIẾN MÁU?',
+    qaDonationHandbook: 'CẨM NANG',
+    qaDonationBenefits: 'QUYỀN LỢI KHI HIẾN MÁU TÌNH NGUYỆN?',
+    qaBloodTesting: 'MÁU CỦA TÔI SẼ LÀM NHỮNG XÉT NGHIỆM GÌ?',
+    qaWhyNeedIdCard: 'TẠI SAO HIẾN MÁU PHẢI CÓ CCCD/CĂN CƯỚC?',
+    qaCanGetInfected: 'KHI HIẾN MÁU CÓ THỂ BỊ NHIỄM BỆNH KHÔNG?',
+    qaFeelUnwell: 'CẢM THẤY KHÔNG KHỎE SAU KHI HIẾN MÁU?',
+    qaSwellingSigns: 'CÓ DẤU HIỆU SƯNG, PHÙ NƠI VẾT CHÍCH?',
+    qaPrepareForDonation: 'NGÀY MAI TÔI SẼ HIẾN MÁU, TÔI NÊN CHUẨN BỊ NHƯ THẾ NÀO?',
+    qaAbnormalSituation: 'KHI PHÁT HIỆN BẤT THƯỜNG, CẢM THẤY KHÔNG AN TOÀN VỚI TÚI MÁU VỪA HIẾN?',
+    qaWhyNeedBlood: 'TẠI SAO CÓ NHIỀU NGƯỜI CẦN PHẢI ĐƯỢC TRUYỀN MÁU?',
+    qaIsDonationHarmful: 'HIẾN MÁU NHÂN ĐẠO CÓ HẠI ĐẾN SỨC KHOẺ KHÔNG?',
+    qaPostponeDonation: 'NHỮNG TRƯỜNG HỢP NÀO CẦN PHẢI TRÌ HOÃN HIẾN MÁU?',
+    // Question Answer - Content
+    qaBloodTransfusionCenter: 'TRUNG TÂM TRUYỀN MÁU CHỢ RẪY',
+    qaMorning: 'Buổi sáng',
+    qaAfternoon: 'Buổi chiều',
+    qaAge: 'Tuổi',
+    qaWeight: 'Cân nặng',
+    qaDistanceBetweenDonations: 'Khoảng cách giữa 2 lần hiến máu',
+    qaDistanceBetweenPlatelets: 'Khoảng cách giữa 2 lần hiến tiểu cầu',
+    qaDiseases: 'Bệnh lý',
+    qaMenstrualCycle: 'Kết thúc chu kỳ kinh nguyệt',
+    qaForFemale: '(đối với nữ)',
+    qaEatNormally: 'Ăn uống bình thường và',
+    qaBringIdCard: 'Khi đến hiến máu, quý vị vui lòng mang theo CCCD/Căn cước.',
+    qaParkingLocation: 'Người hiến máu gửi xe tại cổng 3 – Bệnh viện Chợ Rẫy, đường Thuận Kiều.',
+    qaBenefitsContent: 'Quyền lợi và chế độ đối với người hiến máu tình nguyện theo Thông tư số 05/2017/TT-BYT Quy định giá tối đa và chi phí phục vụ cho việc xác định giá một đơn vị máu toàn phần, chế phẩm máu đạt tiêu chuẩn:\n• Được khám và tư vấn sức khỏe miễn phí.\n• Được kiểm tra và thông báo kết quả các xét nghiệm máu (hoàn toàn bí mật): nhóm máu, HIV, virut viêm gan B, virut viêm gan C, giang mai, sốt rét. Trong trường hợp người hiến máu có nhiễm hoặc nghi ngờ các mầm bệnh này thì sẽ được Bác sỹ mời đến để tư vấn sức khỏe.\n• Được bồi dưỡng và chăm sóc theo các quy định hiện hành:\n   + Phục vụ ăn nhẹ tại chỗ: tương đương 30.000 đồng.\n   + Hỗ trợ chi phí đi lại (bằng tiền mặt): 50.000 đồng.\n   + Lựa chọn nhận quà tặng bằng hiện vật có giá trị như sau: Một đơn vị máu thể tích 250 ml: 100.000 đồng. Một đơn vị máu thể tích 350 ml: 150.000 đồng. Một đơn vị máu thể tích 450 ml: 180.000 đồng.\n   + Được cấp giấy chứng nhận hiến máu tình nguyện của Ban chỉ đạo hiến máu nhân đạo Tỉnh, Thành phố. Ngoài giá trị về mặt tôn vinh, giấy chứng nhận hiến máu có giá trị bồi hoàn máu, số lượng máu được bồi hoàn lại tối đa bằng lượng máu người hiến máu đã hiến. Giấy Chứng nhận này có giá trị tại các bệnh viện, các cơ sở y tế công lập trên toàn quốc.',
+    qaTestingContent: 'Tất cả những đơn vị máu thu được sẽ được kiểm tra nhóm máu (hệ ABO, hệ Rh), HIV, virus viêm gan B, virus viêm gan C, giang mai, sốt rét.',
+    qaTestingResult: 'Bạn sẽ được thông báo kết quả, được giữ kín và được tư vấn (miễn phí) khi phát hiện ra các bệnh nhiễm trùng nói trên.',
+    qaIdCardReason: 'Mỗi đơn vị máu đều phải có hồ sơ, trong đó có các thông tin về người hiến máu.\nTheo quy định, đây là một thủ tục cần thiết trong quy trình hiến máu để đảm bảo tính xác thực thông tin về người hiến máu.',
+    qaCannotGetInfected: 'Kim dây lấy máu vô trùng, chỉ sử dụng một lần cho một người, vì vậy không thể lây bệnh cho người hiến máu.',
+    qaUnwellSymptoms: 'Sau khi hiến máu, nếu có các triệu chứng chóng mặt, mệt mỏi, buồn nôn,... hãy liên hệ ngay cho đơn vị tiếp nhận máu để được hỗ trợ về mặt y khoa.',
+    qaSwellingInstructions: 'Sau khi hiến máu, nếu bạn có các dấu hiệu sưng, phù nơi vết chích. Xin đừng quá lo lắng, hãy chườm lạnh ngay vị trí sưng đó và theo dõi các dấu hiệu trên, nếu không giảm sau 24 giờ hãy liên hệ lại cho đơn vị tiếp nhận máu để được hỗ trợ.',
+    qaPrepareInstructions: '• Tối nay bạn không nên thức quá khuya (ngủ trước 23:00).\n• Nên ăn và không uống rượu, bia trước khi hiến máu.\n• Mang giấy CCCD/Căn cước, đủ giấy tờ tùy thân và thẻ hiến máu (nếu có) khi đi hiến máu.',
+    qaAbnormalInstructions: 'Sau khi tham gia hiến máu, nếu phát hiện có bất cứ điều gì khiến bạn cảm thấy không an toàn với túi máu vừa hiến (chợt nhớ ra 1 hành vi nguy cơ, có sử dụng loại thuốc nào đó mà bạn quên báo bác sĩ khi thăm khám, có xét nghiệm \'DƯƠNG TÍNH\' với SarS-CoV-2 bằng kỹ thuật test nhanh hoặc Real time RT-PCR,...) vui lòng báo lại cho đơn vị tiếp nhận túi máu nơi mà bạn đã tham gia hiến.',
+    qaWhyNeedBloodReason: 'Mỗi giờ có hàng trăm người bệnh cần phải được truyền máu vì:\n• Bị mất máu do chấn thương, tai nạn, thảm hoạ, xuất huyết tiêu hoá...\n• Do bị các bệnh gây thiếu máu, chảy máu: ung thư máu, suy tuỷ xương, máu khó đông...\n• Các phương pháp điều trị hiện đại cần truyền nhiều máu: phẫu thuật tim mạch, ghép tạng...',
+    qaHealthContent: 'Hiến máu theo hướng dẫn của thầy thuốc không có hại cho sức khỏe. Điều đó đã được chứng minh bằng các cơ sở khoa học và cơ sở thực tế:\n• Máu có nhiều thành phần, mỗi thành phần chỉ có đời sống nhất định và luôn luôn được đổi mới hằng ngày. Ví dụ: Hồng cầu sống được 120 ngày, huyết tương thường xuyên được thay thế và đổi mới. Cơ sở khoa học cho thấy, nếu mỗi lần hiến dưới 1/10 lượng máu trong cơ thể thì không có hại đến sức khỏe.\n• Nhiều công trình nghiên cứu đã chứng minh rằng, sau khi hiến máu, các chỉ số máu có thay đổi chút ít nhưng vẫn nằm trong giới hạn sinh lý bình thường không hề gây ảnh hưởng đến các hoạt động thường ngày của cơ thể.\n• Thực tế đã có hàng triệu người hiến máu nhiều lần mà sức khỏe vẫn hoàn toàn tốt. Trên thế giới có người hiến máu trên 400 lần. Ở Việt Nam, người hiến máu nhiều lần nhất đã hiến gần 100 lần, sức khỏe hoàn toàn tốt.\n• Như vậy, mỗi người nếu thấy sức khoẻ tốt, không có các bệnh lây nhiễm qua đường truyền máu, đạt tiêu chuẩn hiến máu thì có thể hiến máu từ 3-4 lần trong một năm, vừa không ảnh hưởng xấu đến sức khoẻ của bản thân, vừa đảm bảo máu có chất lượng tốt, an toàn cho người bệnh.',
+    qaPostponeContent: '• Những người phải trì hoãn hiến máu trong 12 tháng kể từ thời điểm:\n   + Phục hồi hoàn toàn sau các can thiệp ngoại khoa.\n   + Khỏi bệnh sau khi mắc một trong các bệnh sốt rét, giang mai, lao, uốn ván, viêm não, viêm màng não.\n   + Kết thúc đợt tiêm vắc xin phòng bệnh dại sau khi bị động vật cắn hoặc tiêm, truyền máu, chế phẩm máu và các chế phẩm sinh học nguồn gốc từ máu.\n   + Sinh con hoặc chấm dứt thai nghén.\n\n• Những người phải trì hoãn hiến máu trong 06 tháng kể từ thời điểm:\n   + Xăm trổ trên da.\n   + Bấm dái tai, bấm mũi, bấm rốn hoặc các vị trí khác của cơ thể.\n   + Phơi nhiễm với máu và dịch cơ thể từ người có nguy cơ hoặc đã nhiễm các bệnh lây truyền qua đường máu.\n   + Khỏi bệnh sau khi mắc một trong các bệnh thương hàn, nhiễm trùng huyết, bị rắn cắn, viêm tắc động mạch, viêm tắc tĩnh mạch, viêm tuỷ xương, viêm tụy.\n\n• Những người phải trì hoãn hiến máu trong 04 tuần kể từ thời điểm:\n   + Khỏi bệnh sau khi mắc một trong các bệnh viêm dạ dày ruột, viêm đường tiết niệu, viêm da nhiễm trùng, viêm phế quản, viêm phổi, sởi, ho gà, quai bị, sốt xuất huyết, kiết lỵ, rubella, tả, quai bị.\n   + Kết thúc đợt tiêm vắc xin phòng rubella, sởi, thương hàn, tả, quai bị, thủy đậu, BCG.\n\n• Những người phải trì hoãn hiến máu trong 07 ngày kể từ thời điểm:\n   + Khỏi bệnh sau khi mắc một trong các bệnh cúm, cảm lạnh, dị ứng mũi họng, viêm họng, đau nửa đầu Migraine.\n   + Tiêm các loại vắc xin, trừ các loại đã được quy định tại Điểm c Khoản 1 và Điểm b Khoản 3 Điều này.\n\n• Một số quy định liên quan đến nghề nghiệp và hoạt động đặc thù của người hiến máu: những người làm một số công việc và thực hiện các hoạt động đặc thù sau đây chỉ hiến máu trong ngày nghỉ hoặc chỉ được thực hiện các công việc, hoạt động này sau khi hiến máu tối thiểu 12 giờ:\n   + Người làm việc trên cao hoặc dưới độ sâu: phi công, lái cần cẩu, công nhân làm việc trên cao, người leo núi, thợ mỏ, thủy thủ, thợ lặn.\n   + Người vận hành các phương tiện giao thông công cộng: lái xe buýt, lái tàu hoả, lái tàu thuỷ.\n   + Các trường hợp khác: vận động viên chuyên nghiệp, người vận động nặng, tập luyện nặng.',
+    qaDonateBlood: 'Hiến máu',
+    qaDonatePlatelets: 'Hiến tiểu cầu',
+    qaWeekendDonation: 'Hiến máu cuối tuần',
+    qaFromMondayToFriday: 'từ thứ 2 đến thứ 6 hàng tuần',
+    qaSecondSunday: 'Chủ nhật tuần thứ 2 hàng tháng',
+    qaMayStopEarly: '(Có thể ngừng nhận đăng ký sớm hơn khi nhận nhu cầu)',
     at: 'tại:',
     timeFrom: 'Thời gian từ',
+    timeFromDate: 'Thời gian từ {time} ngày {date}',
     day: 'ngày',
     noDataFromToDate: 'Không có dữ liệu\r\ntừ {fromDate} đến {toDate}',
     updateIdCard: 'Cập nhật CCCD/Căn cước',
@@ -898,8 +1244,10 @@ mixin class AppLocale {
     extension: ' - số nội bộ ',
     or: ' hoặc ',
     contactDuringBusinessHours: ' (liên hệ trong giờ hành chính).',
-    version: 'Phiên bản: V.',
+    version: 'Phiên bản: ',
     updateDate: 'Ngày cập nhật: ',
+    bloodTransfusionCenter: 'TRUNG TÂM TRUYỀN MÁU CHỢ RẪY',
+    bloodTransfusionCenterAddress: 'Bệnh viện Chợ Rẫy - 201B Nguyễn Chí Thanh, phường 12, Quận 5, TP.Hồ Chí Minh.',
     thankYouForUsingApp:
         'Cảm ơn bạn đã sử dụng ứng dụng của chúng tôi!\nHãy để lại đánh giá để cải thiện thêm',
     rateApp: 'ĐÁNH GIÁ APP',
@@ -912,6 +1260,69 @@ mixin class AppLocale {
     biometricAuthSuccess: 'Đăng nhập thành công',
     enableBiometricLogin: 'Bật đăng nhập bằng sinh trắc học',
     biometricAuthReason: 'Vui lòng xác thực để đăng nhập',
+    biometricDeviceNotSupported: 'Thiết bị của bạn không hỗ trợ vân tay/Face ID. Vui lòng đăng nhập bằng tên đăng nhập và mật khẩu.',
+    biometricNotLoggedIn: 'Bạn chưa đăng nhập. Vui lòng đăng nhập bằng tên đăng nhập và mật khẩu trước khi sử dụng đăng nhập bằng vân tay/Face ID.',
+    biometricSessionExpired: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại bằng tên đăng nhập và mật khẩu.',
+    biometricLoginWithAccount: 'Đăng nhập với tài khoản: {account}\n\n{reason}',
+    biometricAuthNotFound: 'Không tìm thấy thông tin đăng nhập. Vui lòng đăng nhập lại.',
+    biometricTokenInvalid: 'Token không hợp lệ. Vui lòng đăng nhập lại.',
+    biometricError: 'Lỗi: {error}',
+    loginUsernameRequired: 'Chưa nhập tên tài khoản hoặc CCCD/Căn cước',
+    loginPasswordRequired: 'Chưa nhập mật khẩu',
+    registerFullNameRequired: 'Chưa nhập họ tên',
+    registerFullNameInvalid: 'Họ tên không hợp lệ',
+    registerUsernameRequired: 'Chưa nhập tên tài khoản',
+    registerPasswordRequired: 'Chưa nhập mật khẩu',
+    registerPasswordMinLength: 'Mật khẩu phải từ 6 ký tự',
+    registerPasswordNotMatch: 'Mật khẩu và xác nhận mật khẩu không giống nhau',
+    registerFullNameAccountRequired: 'Chưa nhập họ tên tài khoản',
+    registerPhoneRequired: 'Chưa nhập số điện thoại',
+    registerPhoneInvalid: 'Số điện thoại không đúng',
+    registerSuccess: 'Đăng ký tài khoản thành công!',
+    registerFailed: 'Đăng ký tài khoản thất bại!',
+    alreadyRegisteredSameDay: 'Bạn đã đăng ký lịch hiến máu (khác) trong ngày. Vui lòng kiểm tra và hủy trước khi đăng ký mới!',
+    notEnoughDaysToDonate: 'Bạn chưa đủ số ngày quy định ({days} ngày) để hiến {type}.\nLần hiến {type} gần nhất của bạn là {date}',
+    registerDonateBloodSuccess: 'Đăng ký thành công',
+    scanQRSuccess: 'Quét mã QR thành công!',
+    scanQRError: 'Lỗi khi đọc mã QR',
+    changePasswordOldPasswordRequired: 'Chưa nhập mật khẩu cũ',
+    forgotPasswordInfoSent: 'Thông tin đã được gửi!',
+    forgotPasswordSendError: 'Lỗi gửi thông tin',
+    homeDaysSinceLastDonation: 'Đã {days} ngày rồi bạn chưa hiến máu!\n',
+    homeLastDonationDate: 'Lần hiến máu gần nhất của bạn: {date}',
+    homeWelcomeBack: 'Chào mừng bạn quay trở lại!',
+    homeNoDonationYet: 'Bạn chưa hiến máu lần nào!',
+    profileIDCardInvalidFormat: 'CCCD/Căn cước không đúng định dạng!',
+    profilePhoneInvalidFormat: 'Số điện thoại không đúng định dạng!',
+    profileDataUpdatedFromIDCard: 'Dữ liệu đã được cập nhật theo\r\nCCCD/Căn cước.\r\nNếu bạn muốn thay đổi vui lòng liên hệ\r\nTrung Tâm Truyền Máu Chợ Rẫy',
+    profileBuyBloodAccountNote: 'Đây là tài khoản đăng ký nhượng máu\r\nKhông thể chỉnh sửa thông tin.',
+    feedbackSendSuccess: 'Gửi thành công!',
+    feedbackPleaseUpdateInfoBeforeSend: 'Vui lòng cập nhật thông tin cá nhân trước khi gửi phản hồi!',
+    registerBuyBloodNoInventoryToday: 'Hiện không có tồn trong ngày {date}, Vui lòng chọn ngày khác!',
+    registerBuyBloodQuantityExceeded: 'Số lượng {bloodType} của {productType} ({quantity}) không được lớn hơn ({available})',
+    registerBuyBloodPleaseSelectUnit: 'Vui lòng chọn đơn vị cấp máu.',
+    routeNotFound: 'Không tìm thấy đường đi',
+    donationScheduleTestResultReactive: 'Kết quả xét nghiệm gần nhất của bạn là Phản ứng, nên không thể đăng ký hiến máu',
+    donationScheduleConfirmDonate: 'Xác nhận hiến {type}',
+    donationScheduleConfirmDonateMessage: 'Đồng ý đăng ký hiến {type}\rtại địa điểm này?',
+    managementNoInventoryToday: 'Hiện không có tồn trong ngày {date}, vui lòng cập nhật tồn!',
+    managementErrorGettingInventory: 'Lỗi lấy tồn trong ngày {date}, vui lòng liên hệ Kỹ thuật viên!',
+    managementNotification: 'Thông báo',
+    managementPleaseEnterApproveQuantity: 'Vui lòng nhập số lượng duyệt',
+    managementApproveBuyBloodSuccess: 'Duyệt yêu cầu nhượng máu thành công.',
+    managementRejectBuyBloodSuccess: 'Từ chối yêu cầu nhượng máu thành công.',
+    managementConfirmRejectRequest: 'Xác nhận từ chối phiếu này',
+    historyCancelBuyBloodSuccess: 'Hủy yêu cầu nhượng máu thành công',
+    historyCancelBuyBloodFailed: 'Hủy yêu cầu nhượng máu thất bại',
+    historyConfirmCancelBuyBlood: 'Xác nhận hủy yêu cầu nhượng máu này?',
+    exportQRCode: 'Xuất mã QR',
+    cancelRegistration: 'Hủy đăng ký',
+    status: 'Tình trạng',
+    noDataFromDateToDate: 'Không có dữ liệu từ ngày {fromDate} đến ngày {toDate}',
+    cancelRegistrationSuccess: 'Hủy đăng ký thành công',
+    receivedAt: 'Tiếp nhận lúc:',
+    processedAt: 'Điều chế lúc:',
+    timeWithIndex: 'Lần {index}',
     selectImageFromGallery: 'Chọn ảnh từ thư viện',
     noQRCodeFoundInImage: 'Không tìm thấy QR code trong ảnh đã chọn',
     failedToReadQRFromImage: 'Không thể đọc QR code từ ảnh',

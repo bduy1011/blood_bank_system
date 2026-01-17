@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:blood_donation/app/theme/icons.dart';
 import 'package:blood_donation/base/base_view/base_view_stateful.dart';
+import 'package:blood_donation/core/localization/app_locale.dart';
 import 'package:blood_donation/utils/extension/context_ext.dart';
 import 'package:blood_donation/utils/widget/spacer_widget.dart';
 import 'package:flutter/material.dart';
@@ -184,9 +185,10 @@ class _ConfirmOtpState
                     ? RichText(
                         text: TextSpan(
                           children: [
-                            const TextSpan(
-                              text: "Vui lòng chờ ",
-                              style: TextStyle(color: Colors.black87),
+                            TextSpan(
+                              text:
+                                  "${AppLocale.pleaseWait.translate(context)} ",
+                              style: const TextStyle(color: Colors.black87),
                             ),
                             TextSpan(
                               text: "$_secondsRemaining'",
@@ -208,9 +210,9 @@ class _ConfirmOtpState
                           ///resend otp
                           reSendOtp();
                         },
-                        child: const Text(
-                          "Gửi lại mã",
-                          style: TextStyle(
+                        child: Text(
+                          AppLocale.resendCode.translate(context),
+                          style: const TextStyle(
                               color: Color.fromARGB(255, 229, 59, 59),
                               fontSize: 16),
                         ),

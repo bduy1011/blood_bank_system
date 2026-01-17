@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../app/app_util/enum.dart';
+import '../../../core/localization/app_locale.dart';
 import '../../../models/cau_hinh_ton_kho_view.dart';
 import '../../../models/dm_don_vi_cap_mau_response.dart';
 import '../../../models/general_response.dart';
@@ -164,7 +165,8 @@ class ApproveBuyBloodController extends BaseModelStateful {
                           e.cauHinhTonKhoChiTietConViews?.isNotEmpty == true) ==
                   null) {
                 AppUtils.instance.showMessage(
-                  "Hiện không có tồn trong ngày ${giaoDichDetail.ngay!.dateTimeString}, vui lòng cập nhật tồn!",
+                  AppLocale.managementNoInventoryToday.translate(Get.context!)
+                      .replaceAll('{date}', giaoDichDetail.ngay!.dateTimeString),
                   context: Get.context,
                 );
                 cauHinhTonKho = null;
@@ -191,7 +193,8 @@ class ApproveBuyBloodController extends BaseModelStateful {
     } catch (e) {
       // TODO
       AppUtils.instance.showMessage(
-        "Lỗi lấy tồn trong ngày ${giaoDichDetail.ngay!.dateTimeString}, vui lòng liên hệ Kỹ thuật viên!",
+        AppLocale.managementErrorGettingInventory.translate(Get.context!)
+            .replaceAll('{date}', giaoDichDetail.ngay!.dateTimeString),
         context: Get.context,
       );
     }
@@ -318,8 +321,8 @@ class ApproveBuyBloodController extends BaseModelStateful {
 
     if (totalApprove <= 0) {
       await AppUtils.instance.showMessageConfirmCancel(
-        "Thông báo",
-        "Vui lòng nhập số lượng duyệt",
+        AppLocale.managementNotification.translate(Get.context!),
+        AppLocale.managementPleaseEnterApproveQuantity.translate(Get.context!),
         context: Get.context,
       );
       return;
@@ -374,7 +377,7 @@ class ApproveBuyBloodController extends BaseModelStateful {
           .approveGiaoDich(giaoDichTemplate.giaoDichId?.toString() ?? "", body);
       hideLoading();
       if (response.status == 200) {
-        AppUtils.instance.showToast("Duyệt yêu cầu nhượng máu thành công.");
+        AppUtils.instance.showToast(AppLocale.managementApproveBuyBloodSuccess.translate(Get.context!));
 
         Get.back(result: {"approve": true});
       } else {
@@ -392,8 +395,8 @@ class ApproveBuyBloodController extends BaseModelStateful {
   void onCancel(
       GiaoDichTemplate giaoDichTemplate, GiaodichResponse item) async {
     var result = await AppUtils.instance.showMessageConfirmCancel(
-      "Xác nhận",
-      "Xác nhận từ chối phiếu này",
+      AppLocale.confirm.translate(Get.context!),
+      AppLocale.managementConfirmRejectRequest.translate(Get.context!),
       context: Get.context,
     );
     if (result == true) {
@@ -441,7 +444,7 @@ class ApproveBuyBloodController extends BaseModelStateful {
             giaoDichTemplate.giaoDichId?.toString() ?? "", body);
         hideLoading();
         if (response.status == 200) {
-          AppUtils.instance.showToast("Từ chối yêu cầu nhượng máu thành công.");
+          AppUtils.instance.showToast(AppLocale.managementRejectBuyBloodSuccess.translate(Get.context!));
 
           Get.back(result: {"approve": false});
         } else {

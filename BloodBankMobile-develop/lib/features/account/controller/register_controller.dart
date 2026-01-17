@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../base/base_view/base_view.dart';
+import '../../../core/localization/app_locale.dart';
 import '../../../models/citizen.dart';
 import '../../../utils/app_utils.dart';
 import '../../scan_qr_code/scan_qr_code_screen.dart';
@@ -51,33 +52,31 @@ class RegisterController extends BaseModelStateful {
       var confirmPassword = confirmPasswordRegisterController.text;
 
       if (fullName.trim().isEmpty) {
-        AppUtils.instance.showToast("Chưa nhập họ tên");
+        AppUtils.instance.showToast(AppLocale.registerFullNameRequired.translate(context));
         return;
       }
       if (fullName.trim().length < 6) {
-        AppUtils.instance.showToast("Họ tên không hợp lệ");
+        AppUtils.instance.showToast(AppLocale.registerFullNameInvalid.translate(context));
         return;
       }
       if (userName.trim().isEmpty) {
-        AppUtils.instance.showToast("Chưa nhập tên tài khoản");
+        AppUtils.instance.showToast(AppLocale.registerUsernameRequired.translate(context));
         return;
       }
       if (!userName.isNum || !(userName.length == 12 || userName.length == 9)) {
-        AppUtils.instance.showToast(
-            "Tên đăng nhập phải là CCCD/Căn cước có độ dài 9 hoặc 12 ký tự!");
+        AppUtils.instance.showToast(AppLocale.invalidUsername.translate(context));
         return;
       }
       if (password.trim().isEmpty) {
-        AppUtils.instance.showToast("Chưa nhập mật khẩu");
+        AppUtils.instance.showToast(AppLocale.registerPasswordRequired.translate(context));
         return;
       }
       if (password.trim().length < 6) {
-        AppUtils.instance.showToast("Mật khẩu phải từ 6 ký tự");
+        AppUtils.instance.showToast(AppLocale.registerPasswordMinLength.translate(context));
         return;
       }
       if (password.trim() != confirmPassword.trim()) {
-        AppUtils.instance
-            .showToast("Mật khẩu và xác nhận mật khẩu không giống nhau");
+        AppUtils.instance.showToast(AppLocale.registerPasswordNotMatch.translate(context));
         return;
       }
 
@@ -88,19 +87,20 @@ class RegisterController extends BaseModelStateful {
         // emit(state.copyWith(isAuthenticated: true));
         AppUtils.instance.hideLoading();
         await AppUtils.instance.showMessage(
-          "Đăng ký tài khoản thành công!",
+          AppLocale.registerSuccess.translate(context),
           context: Get.context,
         );
         await setUserName(userName);
         Get.back(result: true);
       } else {
         // emit(state.copyWith(isAuthenticated: false));
-        AppUtils.instance
-            .showToast("Đăng ký tài khoản thất bại!\n$isAuthenticated");
+        AppUtils.instance.showToast(
+          "${AppLocale.registerFailed.translate(context)}\n$isAuthenticated"
+        );
       }
     } catch (e, t) {
       log("register()", error: e, stackTrace: t);
-      AppUtils.instance.showToast("Đăng ký tài khoản thất bại!");
+      AppUtils.instance.showToast(AppLocale.registerFailed.translate(context));
     }
     AppUtils.instance.hideLoading();
   }
@@ -125,15 +125,15 @@ class RegisterController extends BaseModelStateful {
       var phoneNumber = phoneController.text.replaceAll(" ", "");
 
       if (fullName.trim().isEmpty) {
-        AppUtils.instance.showToast("Chưa nhập họ tên tài khoản");
+        AppUtils.instance.showToast(AppLocale.registerFullNameAccountRequired.translate(context));
         return;
       }
       if (phoneNumber.trim().isEmpty) {
-        AppUtils.instance.showToast("Chưa nhập số điện thoại");
+        AppUtils.instance.showToast(AppLocale.registerPhoneRequired.translate(context));
         return;
       }
       if (phoneNumber.trim().length != 10) {
-        AppUtils.instance.showToast("Số điện thoại không đúng");
+        AppUtils.instance.showToast(AppLocale.registerPhoneInvalid.translate(context));
         return;
       }
 
@@ -146,12 +146,13 @@ class RegisterController extends BaseModelStateful {
         Get.to(() => const ConfirmOtp());
       } else {
         // emit(state.copyWith(isAuthenticated: false));
-        AppUtils.instance
-            .showToast("Đăng ký tài khoản thất bại!\n$isAuthenticated");
+        AppUtils.instance.showToast(
+          "${AppLocale.registerFailed.translate(context)}\n$isAuthenticated"
+        );
       }
     } catch (e, t) {
       log("registerByPhoneNumber()", error: e, stackTrace: t);
-      AppUtils.instance.showToast("Đăng ký tài khoản thất bại!");
+      AppUtils.instance.showToast(AppLocale.registerFailed.translate(context));
     }
     AppUtils.instance.hideLoading();
   }
@@ -160,7 +161,7 @@ class RegisterController extends BaseModelStateful {
     try {
       var rs = await Get.to(
         () => ScanQrCodeScreen(
-          title: "Quét mã QR CCCD",
+          title: AppLocale.scanQRCCCD.translate(context),
           onScan: (code) async {
             try {
               // Parse QR code thành Citizen model
@@ -179,12 +180,12 @@ class RegisterController extends BaseModelStateful {
               usernameRegisterController.text = citizen.idCard;
               fullNameRegisterController.text = citizen.fullName;
 
-              AppUtils.instance.showToast("Quét mã QR thành công!");
+              AppUtils.instance.showToast(AppLocale.scanQRSuccess.translate(context));
 
               return true;
             } catch (e) {
               log("parseQRCode()", error: e);
-              AppUtils.instance.showToast("Lỗi khi đọc mã QR");
+              AppUtils.instance.showToast(AppLocale.scanQRError.translate(context));
               return false;
             }
           },
@@ -199,7 +200,7 @@ class RegisterController extends BaseModelStateful {
       return false;
     } catch (e, t) {
       log("scanQRCodeForRegistration()", error: e, stackTrace: t);
-      AppUtils.instance.showToast("Lỗi khi quét mã QR");
+      AppUtils.instance.showToast(AppLocale.scanQRError.translate(context));
       return false;
     }
   }

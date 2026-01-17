@@ -71,7 +71,7 @@ class _RegisterDonateBloodPageSecondState
                       isRequired: true,
                     ),
                     _buildTextField(
-                      label: "Năm sinh",
+                      label: AppLocale.yearOfBirth.translate(context),
                       isEnabled: widget
                               .state.appCenter.authentication?.dmNguoiHienMau ==
                           null,
@@ -84,32 +84,32 @@ class _RegisterDonateBloodPageSecondState
                       isRequired: true,
                     ),
                     buildDropdown<String>(
-                      hint: "Giới tính",
-                      list: ["Nam", "Nữ"],
+                      hint: AppLocale.gender.translate(context),
+                      list: [AppLocale.male.translate(context), AppLocale.female.translate(context)],
                       // getValue: (province) => province.codeProvince,
                       // getLabel: (province) => province.nameProvince,
                       onChanged: (value) {
                         setState(() {
                           widget.state.updateProfile(
-                            gioiTinh: value == "Nam",
+                            gioiTinh: value == AppLocale.male.translate(context),
                           );
                         });
                       },
                       value:
                           (widget.state.registerDonationBlood.gioiTinh == true)
-                              ? "Nam"
+                              ? AppLocale.male.translate(context)
                               : (widget.state.registerDonationBlood.gioiTinh ==
                                       false)
-                                  ? "Nữ"
+                                  ? AppLocale.female.translate(context)
                                   : null,
                       isRequired: true,
                       isSearch: false,
                       getValue: () =>
                           (widget.state.registerDonationBlood.gioiTinh == true)
-                              ? "Nam"
+                              ? AppLocale.male.translate(context)
                               : (widget.state.registerDonationBlood.gioiTinh ==
                                       false)
-                                  ? "Nữ"
+                                  ? AppLocale.female.translate(context)
                                   : null,
                     ),
                     _buildTextField(
@@ -132,9 +132,9 @@ class _RegisterDonateBloodPageSecondState
                       isRequired: true,
                       keyboardType: TextInputType.phone,
                     ),
-                    _buildDatePicker(context, 'Ngày giờ dự kiến đến'),
+                    _buildDatePicker(context, AppLocale.expectedArrivalDate.translate(context)),
                     _buildTextField(
-                      label: "Địa chỉ liên hệ",
+                      label: AppLocale.contactAddress.translate(context),
                       controller: widget.state.diaChiController,
                       onChanged: (value) {
                         widget.state.updateProfile(diaChiLienLac: value);
@@ -243,7 +243,7 @@ class _RegisterDonateBloodPageSecondState
                     //   isRequired: false,
                     // ),
                     _buildTextField(
-                      label: "Email",
+                      label: AppLocale.email.translate(context),
                       controller: widget.state.emailController,
                       onChanged: (value) {
                         widget.state.updateProfile(email: value);
@@ -251,7 +251,7 @@ class _RegisterDonateBloodPageSecondState
                       maxLength: 50,
                     ),
                     _buildTextField(
-                      label: "Nghề nghiệp",
+                      label: AppLocale.occupation.translate(context),
                       controller: widget.state.ngheNghiepController,
                       onChanged: (value) {
                         widget.state.updateProfile(ngheNghiep: value);
@@ -259,7 +259,7 @@ class _RegisterDonateBloodPageSecondState
                       maxLength: 50,
                     ),
                     _buildTextField(
-                      label: "Công ty",
+                      label: AppLocale.company.translate(context),
                       controller: widget.state.coQuanController,
                       onChanged: (value) {
                         widget.state.updateProfile(coQuan: value);
@@ -326,7 +326,7 @@ class _RegisterDonateBloodPageSecondState
         Padding(
           padding: const EdgeInsets.only(top: 16, bottom: 5),
           child: Text(
-            'Bạn đang đăng ký hiến ${widget.state.event?.loaiMau == LoaiMau.TieuCau.value ? "tiểu cầu" : "máu"} tại:',
+            AppLocale.youAreRegisteringToDonate.translate(context).replaceAll('{type}', widget.state.event?.loaiMau == LoaiMau.TieuCau.value ? AppLocale.platelets.translate(context) : AppLocale.blood.translate(context)),
             style: context.myTheme.textThemeT1.bigTitle
                 .copyWith(color: Colors.black),
           ),
@@ -354,7 +354,9 @@ class _RegisterDonateBloodPageSecondState
             ),
             Expanded(
               child: Text(
-                'Thời gian từ ${widget.state.event?.ngayGio != null ? DateFormat("HH:mm").format(widget.state.event!.ngayGio!) : ""} ngày ${widget.state.event?.ngayGio != null ? DateFormat("dd/MM/yyyy").format(widget.state.event!.ngayGio!) : ""}',
+                AppLocale.timeFromDate.translate(context)
+                    .replaceAll('{time}', widget.state.event?.ngayGio != null ? DateFormat("HH:mm").format(widget.state.event!.ngayGio!) : "")
+                    .replaceAll('{date}', widget.state.event?.ngayGio != null ? DateFormat("dd/MM/yyyy").format(widget.state.event!.ngayGio!) : ""),
                 style: context.myTheme.textThemeT1.title
                     .copyWith(color: Colors.black),
               ),
@@ -369,7 +371,7 @@ class _RegisterDonateBloodPageSecondState
                 ProcessWebviewDialog.instance.openGoogleMapRoadToUrlAddress(
                     widget.state.event?.googleMapLink ?? "");
               } else {
-                AppUtils.instance.showToast("Không tìm thấy đường đi");
+                AppUtils.instance.showToast(AppLocale.routeNotFound.translate(context));
               }
             },
             child: Container(
@@ -415,7 +417,7 @@ class _RegisterDonateBloodPageSecondState
         currentValue: value,
         height: 55,
         placeholder: hint,
-        hintSearch: "Tìm kiếm",
+        hintSearch: AppLocale.search.translate(context),
         isSearch: isSearch,
         onChange: (p0) {
           onChanged.call(p0);
@@ -425,7 +427,7 @@ class _RegisterDonateBloodPageSecondState
             ? (v) {
                 // print("value: $hint $value ${isRequired && value == null}");
                 if (isRequired && getValue.call() == null) {
-                  return "Vui lòng chọn $hint";
+                  return "${AppLocale.pleaseSelect.translate(context)} $hint";
                 }
                 return null;
               }
@@ -454,7 +456,7 @@ class _RegisterDonateBloodPageSecondState
         validator: isRequired
             ? (value) {
                 if (isRequired && value?.trim().isNotEmpty != true) {
-                  return "Vui lòng nhập $label";
+                  return "${AppLocale.pleaseEnter.translate(context)} $label";
                 }
                 return null;
               }
@@ -510,7 +512,7 @@ class _RegisterDonateBloodPageSecondState
         controller: TextEditingController(
             text: widget.state.registerDonationBlood.ngay != null
                 ? widget.state.registerDonationBlood.ngay!.dateTimeHourString
-                : "Chọn ngày giờ"),
+                : AppLocale.selectDateTime.translate(context)),
         decoration: InputDecoration(
           // labelText: label,
           label: label.isEmpty

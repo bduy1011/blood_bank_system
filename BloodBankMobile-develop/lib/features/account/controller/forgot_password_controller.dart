@@ -2,6 +2,7 @@ import 'package:blood_donation/base/base_view/base_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../core/localization/app_locale.dart';
 import '../../../utils/app_utils.dart';
 
 class ForgotPasswordController extends BaseModelStateful {
@@ -27,28 +28,28 @@ class ForgotPasswordController extends BaseModelStateful {
 
       if (hoTen.isEmpty) {
         AppUtils.instance.showMessage(
-          "Vui lòng nhập họ tên",
+          AppLocale.forgotPasswordFullNameRequired.translate(context),
           context: context,
         );
         return;
       }
       if (cmnd.isEmpty) {
         AppUtils.instance.showMessage(
-          "Vui lòng nhập cccd",
+          AppLocale.forgotPasswordIDCardRequired.translate(context),
           context: context,
         );
         return;
       }
       if (soDT.isEmpty) {
         AppUtils.instance.showMessage(
-          "Vui lòng nhập số điện thoại",
+          AppLocale.forgotPasswordPhoneRequired.translate(context),
           context: context,
         );
         return;
       }
       if (soDT.length != 10 || !soDT.isNum) {
         AppUtils.instance.showMessage(
-          "Số điện thoại không đúng định dạng",
+          AppLocale.forgotPasswordPhoneInvalidFormat.translate(context),
           context: context,
         );
         return;
@@ -67,7 +68,7 @@ class ForgotPasswordController extends BaseModelStateful {
       hideLoading();
       if (data.status == 200) {
         await AppUtils.instance.showMessage(
-          "Thông tin đã được gửi!",
+          AppLocale.forgotPasswordInfoSent.translate(context),
           context: context,
         );
         fullNameController.text = "";
@@ -75,7 +76,7 @@ class ForgotPasswordController extends BaseModelStateful {
         phoneController.text = "";
         Get.back();
       } else {
-        AppUtils.instance.showError("Lỗi gửi thông tin ${data.message}");
+        AppUtils.instance.showError("${AppLocale.forgotPasswordSendError.translate(context)} ${data.message}");
       }
     } catch (e) {
       // TODO

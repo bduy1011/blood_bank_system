@@ -107,7 +107,7 @@ class _NewsPageState extends BaseViewStateful<NewsPage, NewsController> {
                 // ),
                 const SizedBox(height: 8),
                 Text(
-                  'Ngày đăng: ${controller.data.value?.createdOn?.dateTimeHourString ?? ""}',
+                  '${AppLocale.publishedDate.translate(context)}: ${controller.data.value?.createdOn?.dateTimeHourString ?? ""}',
                   style: const TextStyle(
                     fontStyle: FontStyle.italic,
                     color: Colors.grey,

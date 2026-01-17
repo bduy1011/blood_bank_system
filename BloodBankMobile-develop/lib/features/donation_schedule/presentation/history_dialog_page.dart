@@ -56,7 +56,7 @@ class _HistoryDialogPageState
               )),
           centerTitle: true,
           title: Text(
-            "Chọn lịch hiến máu",
+            AppLocale.selectBloodDonationSchedule.translate(context),
             style:
                 context.myTheme.textThemeT1.title.copyWith(color: Colors.white),
           ),
@@ -220,7 +220,9 @@ class _HistoryDialogPageState
                     spacing: 4,
                   ),
                   Text(
-                    "Đã đăng ký: ${item.soLuongDangKyHienMau ?? 0}/${item.soLuongDuKien}",
+                    AppLocale.registeredCount.translate(context)
+                        .replaceAll('{registered}', '${item.soLuongDangKyHienMau ?? 0}')
+                        .replaceAll('{total}', '${item.soLuongDuKien}'),
                     style: context.myTheme.textThemeT1.body.copyWith(
                       color: const Color(0xff0020aa),
                       fontWeight: FontWeight.w500,
@@ -237,7 +239,7 @@ class _HistoryDialogPageState
                   ProcessWebviewDialog.instance
                       .openGoogleMapRoadToUrlAddress(item.googleMapLink ?? "");
                 } else {
-                  AppUtils.instance.showToast("Không tìm thấy đường đi");
+                  AppUtils.instance.showToast(AppLocale.routeNotFound.translate(context));
                 }
               },
               child: Container(

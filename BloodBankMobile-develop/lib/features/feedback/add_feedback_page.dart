@@ -1,5 +1,6 @@
 import 'package:blood_donation/app/theme/colors.dart';
 import 'package:blood_donation/base/base_view/base_view_stateful.dart';
+import 'package:blood_donation/core/localization/app_locale.dart';
 import 'package:blood_donation/features/feedback/controller/feedback_controller.dart';
 import 'package:blood_donation/utils/extension/context_ext.dart';
 import 'package:flutter/material.dart';
@@ -109,7 +110,7 @@ class _AddFeedbackSupportPageState
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Vui lòng nhập họ tên';
+                        return AppLocale.notEnterFullName.translate(context);
                       }
                       return null;
                     },
@@ -144,7 +145,8 @@ class _AddFeedbackSupportPageState
                     maxLines: 5,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Vui lòng nhập nội dung góp ý/ phản hồi';
+                        return AppLocale.pleaseEnterFeedbackContent
+                            .translate(context);
                       }
                       return null;
                     },

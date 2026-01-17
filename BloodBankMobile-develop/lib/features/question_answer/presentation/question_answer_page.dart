@@ -132,7 +132,7 @@ class _QuestionAnswerPageState
                 ),
                 Expanded(
                   child: Text(
-                    PersonalityGroup.values[index].title.toUpperCase(),
+                    PersonalityGroup.values[index].title(context).toUpperCase(),
                     style: context.myTheme.textThemeT1.title.copyWith(
                         color: controller.isExpandedList[index]
                             ? const Color.fromARGB(255, 117, 13, 13)
@@ -163,12 +163,12 @@ class _QuestionAnswerPageState
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           child: RichText(
             text: TextSpan(
-              text: "TRUNG TÂM TRUYỀN MÁU CHỢ RẪY",
+              text: AppLocale.bloodTransfusionCenter.translate(context),
               style: context.myTheme.textThemeT1.title
                   .copyWith(height: 1.2, fontWeight: FontWeight.w700),
               children: [
                 TextSpan(
-                  text: "\n\nĐịa chỉ: ",
+                  text: "\n\n${AppLocale.address.translate(context)} ",
                   style: context.myTheme.textThemeT1.title.copyWith(
                     height: 1.2,
                     fontSize: 16,
@@ -176,8 +176,7 @@ class _QuestionAnswerPageState
                   ),
                 ),
                 TextSpan(
-                  text:
-                      "Bệnh viện Chợ Rẫy - 201B Nguyễn Chí Thanh, phường 12, Quận 5, TP.Hồ Chí Minh.",
+                  text: AppLocale.bloodTransfusionCenterAddress.translate(context),
                   style: context.myTheme.textThemeT1.body.copyWith(
                     height: 1.2,
                     fontSize: 16,
@@ -185,7 +184,7 @@ class _QuestionAnswerPageState
                   ),
                 ),
                 TextSpan(
-                  text: "\n\nĐiện thoại: ",
+                  text: "\n\n${AppLocale.phone.translate(context)} ",
                   style: context.myTheme.textThemeT1.title.copyWith(
                     height: 1.2,
                     fontSize: 16,
@@ -216,7 +215,7 @@ class _QuestionAnswerPageState
                           },
                       ),
                       TextSpan(
-                        text: " - số nội bộ 1162 hoặc ",
+                        text: " ${AppLocale.extension.translate(context)} 1162 ${AppLocale.or.translate(context)} ",
                         style: context.myTheme.textThemeT1.body.copyWith(
                           height: 1.2,
                           fontSize: 16,
@@ -239,7 +238,7 @@ class _QuestionAnswerPageState
                           },
                       ),
                       TextSpan(
-                        text: " (liên hệ trong giờ hành chính).",
+                        text: " ${AppLocale.contactDuringBusinessHours.translate(context)}",
                         style: context.myTheme.textThemeT1.body.copyWith(
                           height: 1.2,
                           fontSize: 16,
@@ -256,7 +255,7 @@ class _QuestionAnswerPageState
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           child: RichText(
             text: TextSpan(
-              text: "Hiến máu: ",
+              text: "${AppLocale.qaDonateBlood.translate(context)}: ",
               style: context.myTheme.textThemeT1.title.copyWith(
                 height: 1.2,
                 fontWeight: FontWeight.w700,
@@ -265,7 +264,7 @@ class _QuestionAnswerPageState
               ),
               children: [
                 TextSpan(
-                  text: "từ thứ 2 đến thứ 6 hàng tuần.",
+                  text: "${AppLocale.qaFromMondayToFriday.translate(context)}.",
                   style: context.myTheme.textThemeT1.body.copyWith(
                     height: 1.2,
                     fontSize: 16,
@@ -273,7 +272,7 @@ class _QuestionAnswerPageState
                   ),
                 ),
                 TextSpan(
-                  text: "\n •  Buổi sáng: ",
+                  text: "\n •  ${AppLocale.qaMorning.translate(context)}: ",
                   style: context.myTheme.textThemeT1.title.copyWith(
                     height: 1.2,
                     fontSize: 16,
@@ -289,7 +288,7 @@ class _QuestionAnswerPageState
                   ),
                 ),
                 TextSpan(
-                  text: "\n •  Buổi chiều: ",
+                  text: "\n •  ${AppLocale.qaAfternoon.translate(context)}: ",
                   style: context.myTheme.textThemeT1.title.copyWith(
                     height: 1.2,
                     fontSize: 16,
@@ -305,7 +304,7 @@ class _QuestionAnswerPageState
                   ),
                 ),
                 TextSpan(
-                  text: "\n\nHiến tiểu cầu: ",
+                  text: "\n\n${AppLocale.qaDonatePlatelets.translate(context)}: ",
                   style: context.myTheme.textThemeT1.title.copyWith(
                     height: 1.2,
                     fontWeight: FontWeight.w700,
@@ -314,7 +313,7 @@ class _QuestionAnswerPageState
                   ),
                 ),
                 TextSpan(
-                  text: "từ thứ 2 đến thứ 6 hàng tuần.",
+                  text: "${AppLocale.qaFromMondayToFriday.translate(context)}.",
                   style: context.myTheme.textThemeT1.body.copyWith(
                     height: 1.2,
                     fontSize: 16,
@@ -322,7 +321,7 @@ class _QuestionAnswerPageState
                   ),
                 ),
                 TextSpan(
-                  text: "\n •  Buổi sáng: ",
+                  text: "\n •  ${AppLocale.qaMorning.translate(context)}: ",
                   style: context.myTheme.textThemeT1.title.copyWith(
                     height: 1.2,
                     fontSize: 16,
@@ -330,8 +329,7 @@ class _QuestionAnswerPageState
                   ),
                 ),
                 TextSpan(
-                  text:
-                      "7:00 - 9:00 (Có thể ngừng nhận đăng ký sớm hơn khi nhận nhu cầu).",
+                  text: "7:00 - 9:00 ${AppLocale.qaMayStopEarly.translate(context)}",
                   style: context.myTheme.textThemeT1.body.copyWith(
                     height: 1.2,
                     fontSize: 16,
@@ -339,7 +337,7 @@ class _QuestionAnswerPageState
                   ),
                 ),
                 TextSpan(
-                  text: "\n\nHiến máu cuối tuần: ",
+                  text: "\n\n${AppLocale.qaWeekendDonation.translate(context)}: ",
                   style: context.myTheme.textThemeT1.title.copyWith(
                     height: 1.2,
                     fontWeight: FontWeight.w700,
@@ -348,7 +346,7 @@ class _QuestionAnswerPageState
                   ),
                 ),
                 TextSpan(
-                  text: "Chủ nhật tuần thứ 2 hàng tháng.",
+                  text: "${AppLocale.qaSecondSunday.translate(context)}.",
                   style: context.myTheme.textThemeT1.body.copyWith(
                     height: 1.2,
                     fontSize: 16,
@@ -356,7 +354,7 @@ class _QuestionAnswerPageState
                   ),
                 ),
                 TextSpan(
-                  text: "\n •  Buổi sáng: ",
+                  text: "\n •  ${AppLocale.qaMorning.translate(context)}: ",
                   style: context.myTheme.textThemeT1.title.copyWith(
                     height: 1.2,
                     fontSize: 16,
@@ -372,7 +370,7 @@ class _QuestionAnswerPageState
                   ),
                 ),
                 TextSpan(
-                  text: "\n •  Buổi chiều: ",
+                  text: "\n •  ${AppLocale.qaAfternoon.translate(context)}: ",
                   style: context.myTheme.textThemeT1.title.copyWith(
                     height: 1.2,
                     fontSize: 16,
@@ -396,7 +394,7 @@ class _QuestionAnswerPageState
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           child: RichText(
             text: TextSpan(
-              text: "• Tuổi: ",
+              text: "• ${AppLocale.qaAge.translate(context)}: ",
               style: context.myTheme.textThemeT1.title.copyWith(
                 height: 1.2,
                 fontSize: 16,
@@ -412,7 +410,7 @@ class _QuestionAnswerPageState
                   ),
                 ),
                 TextSpan(
-                  text: "\n•  Cân nặng: ",
+                  text: "\n•  ${AppLocale.qaWeight.translate(context)}: ",
                   style: context.myTheme.textThemeT1.title.copyWith(
                     height: 1.2,
                     fontSize: 16,
@@ -428,7 +426,7 @@ class _QuestionAnswerPageState
                   ),
                 ),
                 TextSpan(
-                  text: "\n•  Khoảng cách giữa 2 lần hiến máu: ",
+                  text: "\n•  ${AppLocale.qaDistanceBetweenDonations.translate(context)}: ",
                   style: context.myTheme.textThemeT1.title.copyWith(
                     height: 1.2,
                     fontSize: 16,
@@ -444,7 +442,7 @@ class _QuestionAnswerPageState
                   ),
                 ),
                 TextSpan(
-                  text: "\n•  Khoảng cách giữa 2 lần hiến tiểu cầu: ",
+                  text: "\n•  ${AppLocale.qaDistanceBetweenPlatelets.translate(context)}: ",
                   style: context.myTheme.textThemeT1.title.copyWith(
                     height: 1.2,
                     fontSize: 16,
@@ -461,7 +459,7 @@ class _QuestionAnswerPageState
                 ),
                 TextSpan(
                   text:
-                      "\n•  Bệnh lý: Không mắc các bệnh lây nhiễm qua đường truyền máu như ",
+                      "\n•  ${AppLocale.qaDiseases.translate(context)}: Không mắc các bệnh lây nhiễm qua đường truyền máu như ",
                   style: context.myTheme.textThemeT1.title.copyWith(
                     height: 1.2,
                     fontSize: 16,
@@ -486,7 +484,7 @@ class _QuestionAnswerPageState
                   ),
                 ),
                 TextSpan(
-                  text: "\n•  Kết thúc chu kỳ kinh nguyệt ",
+                  text: "\n•  ${AppLocale.qaMenstrualCycle.translate(context)} ",
                   style: context.myTheme.textThemeT1.title.copyWith(
                     height: 1.2,
                     fontSize: 16,
@@ -502,7 +500,7 @@ class _QuestionAnswerPageState
                   ),
                 ),
                 TextSpan(
-                  text: "(đối với nữ).",
+                  text: "${AppLocale.qaForFemale.translate(context)}",
                   style: context.myTheme.textThemeT1.title.copyWith(
                     height: 1.2,
                     fontSize: 16,
@@ -510,7 +508,7 @@ class _QuestionAnswerPageState
                   ),
                 ),
                 TextSpan(
-                  text: "\n•  Ăn uống bình thường và ",
+                  text: "\n•  ${AppLocale.qaEatNormally.translate(context)} ",
                   style: context.myTheme.textThemeT1.title.copyWith(
                     height: 1.2,
                     fontSize: 16,
@@ -534,8 +532,7 @@ class _QuestionAnswerPageState
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           child: RichText(
             text: TextSpan(
-              text:
-                  "•  Khi đến hiến máu, quý vị vui lòng mang theo CCCD/Căn cước.",
+              text: AppLocale.qaBringIdCard.translate(context),
               style: context.myTheme.textThemeT1.body.copyWith(
                 height: 1.2,
                 fontSize: 16,
@@ -543,8 +540,7 @@ class _QuestionAnswerPageState
               ),
               children: [
                 TextSpan(
-                  text:
-                      "\n•  Người hiến máu gửi xe tại cổng 3 – Bệnh viện Chợ Rẫy, đường Thuận Kiều.",
+                  text: "\n•  ${AppLocale.qaParkingLocation.translate(context)}",
                   style: context.myTheme.textThemeT1.body.copyWith(
                     height: 1.2,
                     fontSize: 16,
@@ -634,29 +630,13 @@ class _QuestionAnswerPageState
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           child: RichText(
             text: TextSpan(
-              text:
-                  "Quyền lợi và chế độ đối với người hiến máu tình nguyện theo Thông tư số 05/2017/TT-BYT Quy định giá tối đa và chi phí phục vụ cho việc xác định giá một đơn vị máu toàn phần, chế phẩm máu đạt tiêu chuẩn:",
+              text: AppLocale.qaBenefitsContent.translate(context),
               style: context.myTheme.textThemeT1.body.copyWith(
                 height: 1.2,
                 fontSize: 16,
                 fontWeight: FontWeight.w400,
               ),
-              children: [
-                TextSpan(
-                  text: "\n•  Được khám và tư vấn sức khỏe miễn phí."
-                      "\n•  Được kiểm tra và thông báo kết quả các xét nghiệm máu (hoàn toàn bí mật): nhóm máu, HIV, virut viêm gan B, virut viêm gan C, giang mai, sốt rét. Trong trường hợp người hiến máu có nhiễm hoặc nghi ngờ các mầm bệnh này thì sẽ được Bác sỹ mời đến để tư vấn sức khỏe."
-                      "\n•  Được bồi dưỡng và chăm sóc theo các quy định hiện hành:"
-                      "\n   + Phục vụ ăn nhẹ tại chỗ: tương đương 30.000 đồng."
-                      "\n   + Hỗ trợ chi phí đi lại (bằng tiền mặt): 50.000 đồng."
-                      "\n   + Lựa chọn nhận quà tặng bằng hiện vật có giá trị như sau: Một đơn vị máu thể tích 250 ml: 100.000 đồng. Một đơn vị máu thể tích 350 ml: 150.000 đồng. Một đơn vị máu thể tích 450 ml: 180.000 đồng."
-                      "\n   + Được cấp giấy chứng nhận hiến máu tình nguyện của Ban chỉ đạo hiến máu nhân đạo Tỉnh, Thành phố. Ngoài giá trị về mặt tôn vinh, giấy chứng nhận hiến máu có giá trị bồi hoàn máu, số lượng máu được bồi hoàn lại tối đa bằng lượng máu người hiến máu đã hiến. Giấy Chứng nhận này có giá trị tại các bệnh viện, các cơ sở y tế công lập trên toàn quốc.",
-                  style: context.myTheme.textThemeT1.body.copyWith(
-                    height: 1.2,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                  ),
-                )
-              ],
+              children: [],
             ),
           ),
         );
@@ -665,8 +645,7 @@ class _QuestionAnswerPageState
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           child: RichText(
             text: TextSpan(
-              text:
-                  "•  Tất cả những đơn vị máu thu được sẽ được kiểm tra nhóm máu (hệ ABO, hệ Rh), HIV, virus viêm gan B, virus viêm gan C, giang mai, sốt rét.",
+              text: AppLocale.qaTestingContent.translate(context),
               style: context.myTheme.textThemeT1.body.copyWith(
                 height: 1.2,
                 fontSize: 16,
@@ -674,8 +653,7 @@ class _QuestionAnswerPageState
               ),
               children: [
                 TextSpan(
-                  text:
-                      "\n•  Bạn sẽ được thông báo kết quả, được giữ kín và được tư vấn (miễn phí) khi phát hiện ra các bệnh nhiễm trùng nói trên.",
+                  text: "\n•  ${AppLocale.qaTestingResult.translate(context)}",
                   style: context.myTheme.textThemeT1.body.copyWith(
                     height: 1.2,
                     fontSize: 16,
@@ -691,8 +669,7 @@ class _QuestionAnswerPageState
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           child: RichText(
             text: TextSpan(
-                text:
-                    "Mỗi đơn vị máu đều phải có hồ sơ, trong đó có các thông tin về người hiến máu.\nTheo quy định, đây là một thủ tục cần thiết trong quy trình hiến máu để đảm bảo tính xác thực thông tin về người hiến máu.",
+                text: AppLocale.qaIdCardReason.translate(context),
                 style: context.myTheme.textThemeT1.body.copyWith(
                   height: 1.2,
                   fontSize: 16,
@@ -705,8 +682,7 @@ class _QuestionAnswerPageState
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           child: RichText(
             text: TextSpan(
-                text:
-                    "Kim dây lấy máu vô trùng, chỉ sử dụng một lần cho một người, vì vậy không thể lây bệnh cho người hiến máu.",
+                text: AppLocale.qaCannotGetInfected.translate(context),
                 style: context.myTheme.textThemeT1.body.copyWith(
                   height: 1.2,
                   fontSize: 16,
@@ -719,8 +695,7 @@ class _QuestionAnswerPageState
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           child: RichText(
             text: TextSpan(
-                text:
-                    "Sau khi hiến máu, nếu có các triệu chứng chóng mặt, mệt mỏi, buồn nôn,... hãy liên hệ ngay cho đơn vị tiếp nhận máu để được hỗ trợ về mặt y khoa.",
+                text: AppLocale.qaUnwellSymptoms.translate(context),
                 style: context.myTheme.textThemeT1.body.copyWith(
                   height: 1.2,
                   fontSize: 16,
@@ -733,8 +708,7 @@ class _QuestionAnswerPageState
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           child: RichText(
             text: TextSpan(
-                text:
-                    "Sau khi hiến máu, nếu bạn có các dấu hiệu sưng, phù nơi vết chích. Xin đừng quá lo lắng, hãy chườm lạnh ngay vị trí sưng đó và theo dõi các dấu hiệu trên, nếu không giảm sau 24 giờ hãy liên hệ lại cho đơn vị tiếp nhận máu để được hỗ trợ.",
+                text: AppLocale.qaSwellingInstructions.translate(context),
                 style: context.myTheme.textThemeT1.body.copyWith(
                   height: 1.2,
                   fontSize: 16,
@@ -747,10 +721,7 @@ class _QuestionAnswerPageState
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           child: RichText(
             text: TextSpan(
-                text:
-                    "•  Tối nay bạn không nên thức quá khuya (ngủ trước 23:00)."
-                    "\n•  Nên ăn và không uống rượu, bia trước khi hiến máu."
-                    "\n•  Mang giấy CCCD/Căn cước, đủ giấy tờ tùy thân và thẻ hiến máu (nếu có) khi đi hiến máu.",
+                text: AppLocale.qaPrepareInstructions.translate(context),
                 style: context.myTheme.textThemeT1.body.copyWith(
                   height: 1.2,
                   fontSize: 16,
@@ -763,8 +734,7 @@ class _QuestionAnswerPageState
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           child: RichText(
             text: TextSpan(
-                text:
-                    "Sau khi tham gia hiến máu, nếu phát hiện có bất cứ điều gì khiến bạn cảm thấy không an toàn với túi máu vừa hiến (chợt nhớ ra 1 hành vi nguy cơ, có sử dụng loại thuốc nào đó mà bạn quên báo bác sĩ khi thăm khám, có xét nghiệm 'DƯƠNG TÍNH' với SarS-CoV-2 bằng kỹ thuật test nhanh hoặc Real time RT-PCR,...) vui lòng báo lại cho đơn vị tiếp nhận túi máu nơi mà bạn đã tham gia hiến.",
+                text: AppLocale.qaAbnormalInstructions.translate(context),
                 style: context.myTheme.textThemeT1.body.copyWith(
                   height: 1.2,
                   fontSize: 16,
@@ -777,26 +747,13 @@ class _QuestionAnswerPageState
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           child: RichText(
             text: TextSpan(
-              text:
-                  "Mỗi giờ có hàng trăm người bệnh cần phải được truyền máu vì:",
+              text: AppLocale.qaWhyNeedBloodReason.translate(context),
               style: context.myTheme.textThemeT1.body.copyWith(
                 height: 1.2,
                 fontSize: 16,
                 fontWeight: FontWeight.w400,
               ),
-              children: [
-                TextSpan(
-                  text:
-                      "\n•  Bị mất máu do chấn thương, tai nạn, thảm hoạ, xuất huyết tiêu hoá..."
-                      "\n•  Do bị các bệnh gây thiếu máu, chảy máu: ung thư máu, suy tuỷ xương, máu khó đông..."
-                      "\n•  Các phương pháp điều trị hiện đại cần truyền nhiều máu: phẫu thuật tim mạch, ghép tạng...",
-                  style: context.myTheme.textThemeT1.body.copyWith(
-                    height: 1.2,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                  ),
-                )
-              ],
+              children: [],
             ),
           ),
         );
@@ -805,27 +762,13 @@ class _QuestionAnswerPageState
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           child: RichText(
             text: TextSpan(
-              text:
-                  "Hiến máu theo hướng dẫn của thầy thuốc không có hại cho sức khỏe. Điều đó đã được chứng minh bằng các cơ sở khoa học và cơ sở thực tế:",
+              text: AppLocale.qaHealthContent.translate(context),
               style: context.myTheme.textThemeT1.body.copyWith(
                 height: 1.2,
                 fontSize: 16,
                 fontWeight: FontWeight.w400,
               ),
-              children: [
-                TextSpan(
-                  text:
-                      "\n•  Máu có nhiều thành phần, mỗi thành phần chỉ có đời sống nhất định và luôn luôn được đổi mới hằng ngày. Ví dụ: Hồng cầu sống được 120 ngày, huyết tương thường xuyên được thay thế và đổi mới. Cơ sở khoa học cho thấy, nếu mỗi lần hiến dưới 1/10 lượng máu trong cơ thể thì không có hại đến sức khỏe."
-                      "\n•  Nhiều công trình nghiên cứu đã chứng minh rằng, sau khi hiến máu, các chỉ số máu có thay đổi chút ít nhưng vẫn nằm trong giới hạn sinh lý bình thường không hề gây ảnh hưởng đến các hoạt động thường ngày của cơ thể."
-                      "\n•  Thực tế đã có hàng triệu người hiến máu nhiều lần mà sức khỏe vẫn hoàn toàn tốt. Trên thế giới có người hiến máu trên 400 lần. Ở Việt Nam, người hiến máu nhiều lần nhất đã hiến gần 100 lần, sức khỏe hoàn toàn tốt."
-                      "\n•  Như vậy, mỗi người nếu thấy sức khoẻ tốt, không có các bệnh lây nhiễm qua đường truyền máu, đạt tiêu chuẩn hiến máu thì có thể hiến máu từ 3-4 lần trong một năm, vừa không ảnh hưởng xấu đến sức khoẻ của bản thân, vừa đảm bảo máu có chất lượng tốt, an toàn cho người bệnh.",
-                  style: context.myTheme.textThemeT1.body.copyWith(
-                    height: 1.2,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                  ),
-                )
-              ],
+              children: [],
             ),
           ),
         );
@@ -834,27 +777,7 @@ class _QuestionAnswerPageState
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           child: RichText(
             text: TextSpan(
-                text:
-                    "•  Những người phải trì hoãn hiến máu trong 12 tháng kể từ thời điểm:"
-                    "\n   + Phục hồi hoàn toàn sau các can thiệp ngoại khoa."
-                    "\n   + Khỏi bệnh sau khi mắc một trong các bệnh sốt rét, giang mai, lao, uốn ván, viêm não, viêm màng não."
-                    "\n   + Kết thúc đợt tiêm vắc xin phòng bệnh dại sau khi bị động vật cắn hoặc tiêm, truyền máu, chế phẩm máu và các chế phẩm sinh học nguồn gốc từ máu."
-                    "\n   + Sinh con hoặc chấm dứt thai nghén."
-                    "\n\n•  Những người phải trì hoãn hiến máu trong 06 tháng kể từ thời điểm:"
-                    "\n   + Xăm trổ trên da."
-                    "\n   + Bấm dái tai, bấm mũi, bấm rốn hoặc các vị trí khác của cơ thể."
-                    "\n   + Phơi nhiễm với máu và dịch cơ thể từ người có nguy cơ hoặc đã nhiễm các bệnh lây truyền qua đường máu."
-                    "\n   + Khỏi bệnh sau khi mắc một trong các bệnh thương hàn, nhiễm trùng huyết, bị rắn cắn, viêm tắc động mạch, viêm tắc tĩnh mạch, viêm tuỷ xương, viêm tụy."
-                    "\n\n•  Những người phải trì hoãn hiến máu trong 04 tuần kể từ thời điểm:"
-                    "\n   + Khỏi bệnh sau khi mắc một trong các bệnh viêm dạ dày ruột, viêm đường tiết niệu, viêm da nhiễm trùng, viêm phế quản, viêm phổi, sởi, ho gà, quai bị, sốt xuất huyết, kiết lỵ, rubella, tả, quai bị."
-                    "\n   + Kết thúc đợt tiêm vắc xin phòng rubella, sởi, thương hàn, tả, quai bị, thủy đậu, BCG."
-                    "\n\n•  Những người phải trì hoãn hiến máu trong 07 ngày kể từ thời điểm:"
-                    "\n   + Khỏi bệnh sau khi mắc một trong các bệnh cúm, cảm lạnh, dị ứng mũi họng, viêm họng, đau nửa đầu Migraine."
-                    "\n   + Tiêm các loại vắc xin, trừ các loại đã được quy định tại Điểm c Khoản 1 và Điểm b Khoản 3 Điều này."
-                    "\n\n•  Một số quy định liên quan đến nghề nghiệp và hoạt động đặc thù của người hiến máu: những người làm một số công việc và thực hiện các hoạt động đặc thù sau đây chỉ hiến máu trong ngày nghỉ hoặc chỉ được thực hiện các công việc, hoạt động này sau khi hiến máu tối thiểu 12 giờ:"
-                    "\n   + Người làm việc trên cao hoặc dưới độ sâu: phi công, lái cần cẩu, công nhân làm việc trên cao, người leo núi, thợ mỏ, thủy thủ, thợ lặn."
-                    "\n   + Người vận hành các phương tiện giao thông công cộng: lái xe buýt, lái tàu hoả, lái tàu thuỷ."
-                    "\n   + Các trường hợp khác: vận động viên chuyên nghiệp, người vận động nặng, tập luyện nặng.",
+                text: AppLocale.qaPostponeContent.translate(context),
                 style: context.myTheme.textThemeT1.body.copyWith(
                   height: 1.2,
                   fontSize: 16,

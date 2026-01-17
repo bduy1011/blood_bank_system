@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 
 import '../../../app/app_page/controller/app_page_controller.dart';
 import '../../../app/config/routes.dart';
+import '../../../core/localization/app_locale.dart';
 import '../../../models/blood_donor.dart';
 import '../../../utils/app_utils.dart';
 import '../../../utils/phone_number_formater.dart';
@@ -50,10 +51,10 @@ class ProfileController extends BaseModelStateful {
 
   String? getNote() {
     if (appCenter.authentication?.dmNguoiHienMau != null) {
-      return "Dữ liệu đã được cập nhật theo\r\nCCCD/Căn cước.\r\nNếu bạn muốn thay đổi vui lòng liên hệ\r\nTrung Tâm Truyền Máu Chợ Rẫy";
+      return AppLocale.profileDataUpdatedFromIDCard.translate(Get.context!);
     } else if (appCenter.authentication?.appRole ==
         AppRole.DangKyMuaMau.value) {
-      return "Đây là tài khoản đăng ký nhượng máu\r\nKhông thể chỉnh sửa thông tin.";
+      return AppLocale.profileBuyBloodAccountNote.translate(Get.context!);
     }
     return null;
   }
@@ -65,13 +66,13 @@ class ProfileController extends BaseModelStateful {
     var cccd = idCardController.text.trim().replaceAll(" ", "");
     var phoneNumber = phoneNumberController.text.trim().replaceAll(" ", "");
 
-    ///
+    /// 
     if (!cccd.isNum || !(cccd.length == 12 || cccd.length == 9)) {
-      AppUtils.instance.showToast("CCCD/Căn cước không đúng định dạng!");
+      AppUtils.instance.showToast(AppLocale.profileIDCardInvalidFormat.translate(context));
       return;
     }
     if (!phoneNumber.isNum || phoneNumber.length != 10) {
-      AppUtils.instance.showToast("Số điện thoại không đúng định dạng!");
+      AppUtils.instance.showToast(AppLocale.profilePhoneInvalidFormat.translate(context));
       return;
     }
 
@@ -116,25 +117,26 @@ class ProfileController extends BaseModelStateful {
 
         await backendProvider.saveAuthentication(appCenter.authentication!);
 
-        AppUtils.instance.showToast("Cập nhật tài khoản thành công");
+        AppUtils.instance.showToast(AppLocale.updateAccountSuccess.translate(context));
         hideLoading();
         refresh();
         Get.findOrNull<HomeController>()?.onRefresh();
 
-        ///
+        /// 
         if (dmNguoiHienMau != null) {
           backToHome();
         }
 
         return;
       }
-      AppUtils.instance
-          .showToast("Cập nhật tài khoản thất bại\n${response.message ?? ""}");
+      AppUtils.instance.showToast(
+        "${AppLocale.updateAccountFailed.translate(context)}\n${response.message ?? ""}"
+      );
     } catch (e, t) {
       print(e);
       print(t);
       // TODO
-      AppUtils.instance.showToast("Cập nhật tài khoản thất bại");
+      AppUtils.instance.showToast(AppLocale.updateAccountFailed.translate(context));
     }
     hideLoading();
   }
@@ -178,7 +180,7 @@ class ProfileController extends BaseModelStateful {
   Future<bool> scanQRCode() async {
     var rs = await Get.to(
       () => ScanQrCodeScreen(
-        title: "Quét mã QR CCCD/Căn cước",
+        title: AppLocale.scanQRCCCD.translate(Get.context!),
         onScan: (code) async {
           //
           var ls = code.split("|");

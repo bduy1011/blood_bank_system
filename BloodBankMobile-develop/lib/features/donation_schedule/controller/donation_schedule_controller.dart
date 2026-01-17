@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 
 import '../../../app/app_util/enum.dart';
 import '../../../app/config/routes.dart';
+import '../../../core/localization/app_locale.dart';
 import '../../../models/blood_donation_event.dart';
 import '../../../models/district.dart';
 import '../../../models/general_response.dart';
@@ -61,7 +62,8 @@ class DonationScheduleController extends BaseModelStateful {
   bool checkValidate() {
     if (appCenter.authentication?.duongTinhGanNhat == true) {
       AppUtils.instance.showMessage(
-          "Kết quả xét nghiệm gần nhất của bạn là Phản ứng, nên không thể đăng ký hiến máu");
+          AppLocale.donationScheduleTestResultReactive.translate(Get.context!),
+          context: Get.context);
       return false;
     }
 
@@ -76,8 +78,8 @@ class DonationScheduleController extends BaseModelStateful {
       var loaiHien =
           event?.loaiMau == LoaiMau.TieuCau.value ? "tiểu cầu" : "máu";
       var rs = await AppUtils.instance.showMessageConfirmCancel(
-        "Xác nhận hiến $loaiHien",
-        "Đồng ý đăng ký hiến $loaiHien\r\ntại địa điểm này?",
+        AppLocale.donationScheduleConfirmDonate.translate(Get.context!).replaceAll('{type}', loaiHien),
+        AppLocale.donationScheduleConfirmDonateMessage.translate(Get.context!).replaceAll('{type}', loaiHien),
         context: Get.context,
       );
       if (rs == true) {
@@ -94,8 +96,8 @@ class DonationScheduleController extends BaseModelStateful {
       var loaiHien =
           event?.loaiMau == LoaiMau.TieuCau.value ? "tiểu cầu" : "máu";
       var rs = await AppUtils.instance.showMessageConfirmCancel(
-        "Xác nhận hiến $loaiHien",
-        "Đồng ý đăng ký hiến $loaiHien\r\ntại địa điểm này?",
+        AppLocale.donationScheduleConfirmDonate.translate(Get.context!).replaceAll('{type}', loaiHien),
+        AppLocale.donationScheduleConfirmDonateMessage.translate(Get.context!).replaceAll('{type}', loaiHien),
         context: Get.context,
       );
       if (rs == true) {

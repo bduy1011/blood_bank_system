@@ -1,4 +1,5 @@
 import 'package:blood_donation/base/base_view/base_view_stateful.dart';
+import 'package:blood_donation/core/localization/app_locale.dart';
 import 'package:blood_donation/utils/extension/context_ext.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -48,7 +49,7 @@ class _AboutPageState extends BaseViewStateful<AboutPage, AboutController> {
                 color: Colors.white,
               )),
           title: Text(
-            "Thông tin ứng dụng",
+            AppLocale.appInformation.translate(context),
             style:
                 context.myTheme.textThemeT1.title.copyWith(color: Colors.white),
           ),
@@ -90,12 +91,12 @@ class _AboutPageState extends BaseViewStateful<AboutPage, AboutController> {
 
                 RichText(
                   text: TextSpan(
-                    text: "TRUNG TÂM TRUYỀN MÁU CHỢ RẪY",
+                    text: AppLocale.bloodTransfusionCenter.translate(context),
                     style: context.myTheme.textThemeT1.title
                         .copyWith(height: 1.2, fontWeight: FontWeight.w700),
                     children: [
                       TextSpan(
-                        text: "\n\nĐịa chỉ: ",
+                        text: "\n\n${AppLocale.address.translate(context)}: ",
                         style: context.myTheme.textThemeT1.title.copyWith(
                           height: 1.2,
                           fontSize: 16,
@@ -103,8 +104,7 @@ class _AboutPageState extends BaseViewStateful<AboutPage, AboutController> {
                         ),
                       ),
                       TextSpan(
-                        text:
-                            "Bệnh viện Chợ Rẫy - 201B Nguyễn Chí Thanh, phường 12, Quận 5, TP.Hồ Chí Minh.",
+                        text: AppLocale.bloodTransfusionCenterAddress.translate(context),
                         style: context.myTheme.textThemeT1.body.copyWith(
                           height: 1.2,
                           fontSize: 16,
@@ -112,7 +112,7 @@ class _AboutPageState extends BaseViewStateful<AboutPage, AboutController> {
                         ),
                       ),
                       TextSpan(
-                        text: "\n\nĐiện thoại: ",
+                        text: "\n\n${AppLocale.phone.translate(context)}: ",
                         style: context.myTheme.textThemeT1.title.copyWith(
                           height: 1.2,
                           fontSize: 16,
@@ -143,7 +143,7 @@ class _AboutPageState extends BaseViewStateful<AboutPage, AboutController> {
                                 },
                             ),
                             TextSpan(
-                              text: " - số nội bộ 1162 hoặc ",
+                              text: " ${AppLocale.extension.translate(context)} 1162 ${AppLocale.or.translate(context)} ",
                               style: context.myTheme.textThemeT1.body.copyWith(
                                 height: 1.2,
                                 fontSize: 16,
@@ -166,7 +166,7 @@ class _AboutPageState extends BaseViewStateful<AboutPage, AboutController> {
                                 },
                             ),
                             TextSpan(
-                              text: " (liên hệ trong giờ hành chính).",
+                              text: " ${AppLocale.contactDuringBusinessHours.translate(context)}",
                               style: context.myTheme.textThemeT1.body.copyWith(
                                 height: 1.2,
                                 fontSize: 16,
@@ -182,22 +182,22 @@ class _AboutPageState extends BaseViewStateful<AboutPage, AboutController> {
                 // Version and Date
                 Obx(
                   () => Text(
-                    'Phiên bản: V.${controller.appVersion.value}',
+                    '${AppLocale.version.translate(context)} V.${controller.appVersion.value}',
                     style: const TextStyle(
                         fontSize: 14, fontWeight: FontWeight.w500),
                   ),
                 ),
                 const SizedBox(height: 5),
-                const Text(
-                  'Ngày cập nhật: 24/02/2025',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                Text(
+                  '${AppLocale.updateDate.translate(context)} 24/02/2025',
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 50),
                 // Thank You Note
-                const Text(
-                  'Cảm ơn bạn đã sử dụng ứng dụng của chúng tôi!\nHãy để lại đánh giá để cải thiện thêm',
+                Text(
+                  AppLocale.thankYouForUsingApp.translate(context),
                   textAlign: TextAlign.start,
-                  style: TextStyle(fontSize: 14),
+                  style: const TextStyle(fontSize: 14),
                 ),
                 const SizedBox(height: 20),
                 Center(
@@ -215,9 +215,9 @@ class _AboutPageState extends BaseViewStateful<AboutPage, AboutController> {
                         // Add logic for reviewing the app here
                         controller.reviewAPP();
                       },
-                      child: const Text(
-                        'ĐÁNH GIÁ APP',
-                        style: TextStyle(
+                      child: Text(
+                        AppLocale.rateApp.translate(context),
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

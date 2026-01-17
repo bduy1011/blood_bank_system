@@ -1,3 +1,4 @@
+import 'package:blood_donation/core/localization/app_locale.dart';
 import 'package:blood_donation/utils/extension/context_ext.dart';
 import 'package:blood_donation/utils/extension/datetime_extension.dart';
 import 'package:flutter/material.dart';
@@ -112,7 +113,7 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           title: Text(
-            "Mã QR đăng ký hiến máu",
+            AppLocale.qrCodeRegistration.translate(context),
             style: context.myTheme.textThemeT1.title.copyWith(
               color: Colors.white,
             ),
@@ -202,9 +203,9 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
                 child: Text.rich(
                   TextSpan(
                     children: [
-                      const TextSpan(
-                        text: 'Thời gian: ',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                      TextSpan(
+                        text: '${AppLocale.time.translate(context)}: ',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       TextSpan(
                         text:
@@ -227,9 +228,9 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
                 child: Text.rich(
                   TextSpan(
                     children: [
-                      const TextSpan(
-                        text: 'Id đợt: ',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                      TextSpan(
+                        text: '${AppLocale.eventId.translate(context)}: ',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       TextSpan(
                         text: widget.idBloodDonation, // Giá trị ví dụ
@@ -251,9 +252,9 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
                 child: Text.rich(
                   TextSpan(
                     children: [
-                      const TextSpan(
-                        text: 'Id đăng ký: ',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                      TextSpan(
+                        text: '${AppLocale.registrationId.translate(context)}: ',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       TextSpan(
                         text: widget.idRegister, // Giá trị ví dụ

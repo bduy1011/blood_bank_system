@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../app/config/routes.dart';
+import '../../../core/localization/app_locale.dart';
 
 class FeedbackController extends BaseModelStateful {
   List<FeedbackResponse> feedbacks = [];
@@ -84,7 +85,7 @@ class FeedbackController extends BaseModelStateful {
       var data = await appCenter.backendProvider.createGopY(body: body);
       hideLoading();
       if (data.status == 200) {
-        AppUtils.instance.showToast("Gửi thành công!");
+        AppUtils.instance.showToast(AppLocale.feedbackSendSuccess.translate(Get.context!));
         Get.back();
       } else {
         AppUtils.instance.showToast("${data.message}");
@@ -102,9 +103,9 @@ class FeedbackController extends BaseModelStateful {
       await Get.toNamed(Routes.addFeedback);
       loadFeedback();
     } else {
-      ///
+      /// 
       await AppUtils.instance.showMessage(
-        "Vui lòng nhập cập nhật thông tin cá nhân trước khi gửi phản hồi!",
+        AppLocale.feedbackPleaseUpdateInfoBeforeSend.translate(Get.context!),
         context: Get.context,
       );
       Get.offNamed(Routes.profile);
