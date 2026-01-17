@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:blood_donation/core/localization/app_locale.dart';
 import 'package:blood_donation/features/donor_signature/presentation/donor_signature_page.dart';
@@ -9,6 +10,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
+import 'package:photo_view/photo_view.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 
@@ -34,7 +36,7 @@ class ViewQrImageData extends StatefulWidget {
 }
 
 class _ViewQrImageDataState extends State<ViewQrImageData> {
-  double _previousBrightness = 0.5;
+  // double _previousBrightness = 0.5;
   // final double _previousApplicationBrightness = 0.5;
   final appCenter = GetIt.instance<AppCenter>();
 
@@ -89,6 +91,7 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
             _signedAt = response.data!.signedAt;
             _isSigned = true;
           });
+          _openSignatureDialog(bytes);
         } else {
           AppUtils.instance.showToast('Chưa có ảnh chữ ký.');
         }
@@ -99,6 +102,57 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
       EasyLoading.dismiss();
       AppUtils.instance.showToast('Không tải được chữ ký');
     }
+  }
+
+  void _openSignatureDialog(Uint8List bytes) {
+    Get.dialog(
+      Dialog(
+        insetPadding: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: SizedBox(
+          height: 360,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                child: Row(
+                  children: [
+                    const Icon(Icons.draw, color: Color(0xff5c0101)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Chữ ký của bạn',
+                        style: Get.context?.myTheme.textThemeT1.title
+                            .copyWith(fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Get.back(),
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(16),
+                    bottomRight: Radius.circular(16),
+                  ),
+                  child: PhotoView(
+                    imageProvider: MemoryImage(bytes),
+                    backgroundDecoration: const BoxDecoration(color: Colors.white),
+                    minScale: PhotoViewComputedScale.contained,
+                    maxScale: PhotoViewComputedScale.covered * 3.0,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _signNow() async {
@@ -148,7 +202,6 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
 
   Future<void> setSystemBrightness(double brightness) async {
     try {
-      _previousBrightness = await systemBrightness;
       await ScreenBrightness.instance.setSystemScreenBrightness(brightness);
     } catch (e) {
       debugPrint(e.toString());
@@ -304,20 +357,46 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
             ],
           ),
           const SizedBox(height: 10),
-          if (_signatureResult?.pngBytes != null)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: Container(
-                color: Colors.white,
-                padding: const EdgeInsets.all(8),
-                child: Image.memory(
-                  _signatureResult!.pngBytes,
-                  height: 90,
-                  fit: BoxFit.contain,
-                ),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              width: double.infinity,
+              color: Colors.white,
+              padding: const EdgeInsets.all(10),
+              child: AspectRatio(
+                aspectRatio: 3.2, // giống khung ký thực tế
+                child: _signatureResult?.pngBytes != null
+                    ? InkWell(
+                        onTap: () => _openSignatureDialog(_signatureResult!.pngBytes),
+                        child: Image.memory(
+                          _signatureResult!.pngBytes,
+                          fit: BoxFit.contain,
+                        ),
+                      )
+                    : Center(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              _isSigned ? Icons.image_outlined : Icons.border_color,
+                              color: Colors.black38,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              _isSigned
+                                  ? 'Chưa tải ảnh chữ ký (bấm Xem)'
+                                  : 'Ký vào đây để xác nhận',
+                              style: context.myTheme.textThemeT1.body.copyWith(
+                                color: Colors.black54,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
               ),
             ),
-          if (_signatureResult?.pngBytes != null) const SizedBox(height: 10),
+          ),
+          const SizedBox(height: 10),
           Row(
             children: [
               Expanded(
@@ -328,8 +407,19 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
               ),
               const SizedBox(width: 10),
               OutlinedButton(
-                onPressed: _isSigned ? _viewSignatureIfAny : null,
-                child: const Text('Xem'),
+                onPressed: _isSigned
+                    ? () async {
+                        // Nếu đã có ảnh trong bộ nhớ thì mở luôn,
+                        // nếu chưa có thì tải từ server rồi mở.
+                        final bytes = _signatureResult?.pngBytes;
+                        if (bytes != null) {
+                          _openSignatureDialog(bytes);
+                          return;
+                        }
+                        await _viewSignatureIfAny();
+                      }
+                    : null,
+                child: Text(_signatureResult?.pngBytes != null ? 'Xem lớn' : 'Xem'),
               ),
             ],
           ),
