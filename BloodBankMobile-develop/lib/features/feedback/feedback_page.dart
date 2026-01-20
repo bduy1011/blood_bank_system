@@ -106,8 +106,17 @@ class _FeedbackSupportPageState
                               child: Text(
                                 controller.fromDate == null &&
                                         controller.toDate == null
-                                    ? 'Chọn khoảng thời gian'
-                                    : 'Từ ${controller.fromDate!.dateTimeString} đến ${controller.toDate!.dateTimeString}',
+                                    ? AppLocale.selectTimeRange
+                                        .translate(context)
+                                    : AppLocale.fromToDate
+                                        .translate(context)
+                                        .replaceAll(
+                                            '{fromDate}',
+                                            controller
+                                                .fromDate!.dateTimeString)
+                                        .replaceAll(
+                                            '{toDate}',
+                                            controller.toDate!.dateTimeString),
                                 textAlign: TextAlign.center,
                                 maxLines: 2,
                               ),
@@ -186,9 +195,10 @@ class _FeedbackSupportPageState
                     child: Container(
                       height: 50,
                       alignment: Alignment.centerLeft,
-                      child: const AutoSizeText(
-                        'THÔNG TIN LIÊN HỆ',
-                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      child: AutoSizeText(
+                        AppLocale.contactInformation.translate(context),
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 16),
                         textAlign: TextAlign.start,
                       ),
                     ),
@@ -231,9 +241,10 @@ class _FeedbackSupportPageState
                     child: Container(
                       height: 50,
                       alignment: Alignment.centerLeft,
-                      child: const AutoSizeText(
-                        'LIÊN HỆ QUA FANPAGE',
-                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      child: AutoSizeText(
+                        AppLocale.contactViaFanpage.translate(context),
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 16),
                         textAlign: TextAlign.start,
                       ),
                     ),
@@ -273,9 +284,10 @@ class _FeedbackSupportPageState
                     child: Container(
                       height: 50,
                       alignment: Alignment.centerLeft,
-                      child: const AutoSizeText(
-                        'GỬI YÊU CẦU TRỰC TIẾP',
-                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      child: AutoSizeText(
+                        AppLocale.sendRequestDirectly.translate(context),
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 16),
                         textAlign: TextAlign.start,
                       ),
                     ),
