@@ -1,8 +1,10 @@
 import 'package:blood_donation/app/app_util/enum.dart';
 import 'package:blood_donation/base/base_view/base_view.dart';
 import 'package:blood_donation/utils/extension/getx_extension.dart';
+import 'package:blood_donation/utils/secure_token_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../app/app_page/controller/app_page_controller.dart';
 import '../../../app/config/routes.dart';
@@ -20,6 +22,7 @@ class ProfileController extends BaseModelStateful {
   final TextEditingController phoneNumberController = TextEditingController();
   final TextEditingController passwordNumberController =
       TextEditingController();
+  final SecureTokenService _tokenService = SecureTokenService();
 
   String? get note => getNote();
 
@@ -78,6 +81,7 @@ class ProfileController extends BaseModelStateful {
 
     ///
     try {
+      final oldUserCode = appCenter.authentication?.userCode?.trim();
       var body = {
         "userCode": appCenter.authentication?.userCode,
         "name": fullnameController.text.trim(),
@@ -95,6 +99,11 @@ class ProfileController extends BaseModelStateful {
         isModIdCard: isModIdCard,
       );
       if (response.status == 200) {
+        final newUserCode = response.data?.userCode?.trim();
+        final shouldUpdateUserCode = newUserCode != null &&
+            newUserCode.isNotEmpty &&
+            newUserCode != oldUserCode;
+
         var dmNguoiHienMau =
             isModIdCard ? null : appCenter.authentication?.dmNguoiHienMau;
         if (response.data?.dmNguoiHienMau != null) {
@@ -106,6 +115,9 @@ class ProfileController extends BaseModelStateful {
         appCenter.authentication?.phoneNumber = phoneNumber;
         appCenter.authentication?.name = fullnameController.text;
         appCenter.authentication?.cmnd = cccd;
+        if (shouldUpdateUserCode) {
+          appCenter.authentication?.userCode = newUserCode;
+        }
         appCenter.authentication?.accessToken = isModIdCard
             ? response.data?.accessToken
             : appCenter.authentication?.accessToken;
@@ -116,6 +128,44 @@ class ProfileController extends BaseModelStateful {
             response.data?.duongTinhGanNhat;
 
         await backendProvider.saveAuthentication(appCenter.authentication!);
+
+        // Đảm bảo: logout ra login page sẽ show CCCD/userCode mới (vì login lấy prefs["userName"])
+        // và biometric/token cũng "đi theo CCCD mới" (update secure storage Authentication).
+        if (shouldUpdateUserCode) {
+          try {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString("userName", newUserCode);
+          } catch (_) {}
+
+          // Kiểm tra xem đã có authentication của user khác trong secure storage chưa
+          // Nếu có user khác, không ghi đè để tránh mất vân tay của user đó
+          try {
+            final existingAuth = await _tokenService.getAuthentication();
+            if (existingAuth?.userCode != null &&
+                appCenter.authentication?.userCode != null) {
+              final existingUserCode = existingAuth!.userCode!.trim();
+              final newUserCode = appCenter.authentication!.userCode!.trim();
+              final oldUserCodeTrimmed = oldUserCode?.trim();
+              
+              // Chỉ cập nhật nếu:
+              // 1. existingAuth.userCode == newUserCode (cùng user, cập nhật thông tin)
+              // 2. existingAuth.userCode == oldUserCode (cùng user, userCode thay đổi)
+              // Nếu không phải cả hai trường hợp trên → đây là user khác, không ghi đè
+              if (existingUserCode == newUserCode ||
+                  (oldUserCodeTrimmed != null && existingUserCode == oldUserCodeTrimmed)) {
+                // Cùng user → cập nhật authentication
+                await _tokenService.saveAuthentication(appCenter.authentication!);
+              } else {
+                // User khác → không ghi đè, giữ nguyên authentication của user đó
+                // Log để debug
+                print("[ProfileController] Biometric already linked to another account: ${existingAuth.userCode}. Skipping save to preserve biometric login.");
+              }
+            } else {
+              // Không có authentication trong secure storage → lưu bình thường
+              await _tokenService.saveAuthentication(appCenter.authentication!);
+            }
+          } catch (_) {}
+        }
 
         AppUtils.instance.showToast(AppLocale.updateAccountSuccess.translate(context));
         hideLoading();

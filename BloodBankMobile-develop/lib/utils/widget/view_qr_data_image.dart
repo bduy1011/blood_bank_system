@@ -6,11 +6,14 @@ import 'package:blood_donation/features/donor_signature/presentation/donor_signa
 import 'package:blood_donation/utils/extension/context_ext.dart';
 import 'package:blood_donation/utils/extension/datetime_extension.dart';
 import 'package:blood_donation/utils/app_utils.dart';
+import 'package:blood_donation/utils/printer/printer_settings.dart';
+import 'package:blood_donation/utils/printer/thermal_printer_service.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:photo_view/photo_view.dart';
+import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 
@@ -45,12 +48,123 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
   DateTime? _signedAt;
   DonorSignatureResult? _signatureResult;
 
+  bool _autoPrintTriggered = false;
+
   @override
   void initState() {
     super.initState();
     // setSystemBrightness(1.0); // Set brightness to 100%
     setApplicationBrightness(1.0);
     _loadSignatureStatus();
+
+    // Kiot: auto print QR right after opening this screen.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _tryAutoPrintForKiosk();
+    });
+  }
+
+  bool get _isKiosk => appCenter.kioskMode == 1;
+
+  Future<void> _tryAutoPrintForKiosk() async {
+    if (!_isKiosk) return;
+    if (_autoPrintTriggered) return;
+    _autoPrintTriggered = true;
+
+    try {
+      EasyLoading.show(status: 'Đang kết nối máy in...');
+
+      final okPerm = await ThermalPrinterService.instance.ensureBluetoothPermissions();
+      if (!okPerm) {
+        EasyLoading.dismiss();
+        AppUtils.instance.showToast('Chưa cấp quyền Bluetooth để in.');
+        await _showSelectPrinterBottomSheet(autoPrintAfterSelect: true);
+        return;
+      }
+
+      final paperMm =
+          (appCenter.kioskPrinterPaperMm == 80 || appCenter.kioskPrinterPaperMm == 58)
+              ? appCenter.kioskPrinterPaperMm
+              : await PrinterSettings.getPaperMm(defaultValue: 58);
+
+      final macFromServer = appCenter.kioskPrinterMac.trim();
+      final macFromLocal = (await PrinterSettings.getMacAddress()) ?? '';
+      final printerMac = macFromServer.isNotEmpty ? macFromServer : macFromLocal;
+
+      if (printerMac.isEmpty) {
+        EasyLoading.dismiss();
+        await _showSelectPrinterBottomSheet(autoPrintAfterSelect: true);
+        return;
+      }
+
+      final printed = await ThermalPrinterService.instance.printRegistrationQr(
+        printerMac: printerMac,
+        paperMm: paperMm,
+        qrData: widget.data,
+        nameBloodDonation: widget.nameBloodDonation,
+        timeBloodDonation: widget.timeBloodDonation,
+        idBloodDonation: widget.idBloodDonation,
+        idRegister: widget.idRegister,
+      );
+
+      EasyLoading.dismiss();
+      if (!printed) {
+        AppUtils.instance.showToast('In thất bại. Vui lòng kiểm tra máy in.');
+        await _showSelectPrinterBottomSheet(autoPrintAfterSelect: true);
+      } else {
+        AppUtils.instance.showToast('Đã in QR.');
+      }
+    } catch (_) {
+      EasyLoading.dismiss();
+      AppUtils.instance.showToast('In thất bại. Vui lòng thử lại.');
+    }
+  }
+
+  Future<void> _showSelectPrinterBottomSheet({required bool autoPrintAfterSelect}) async {
+    if (!mounted) return;
+
+    final enabled = await PrintBluetoothThermal.bluetoothEnabled;
+    if (!enabled) {
+      AppUtils.instance.showToast('Vui lòng bật Bluetooth để kết nối máy in.');
+      return;
+    }
+
+    EasyLoading.show(status: 'Đang tìm máy in đã ghép nối...');
+    final devices = await ThermalPrinterService.instance.getPairedPrinters();
+    EasyLoading.dismiss();
+
+    if (devices.isEmpty) {
+      AppUtils.instance.showToast('Không tìm thấy máy in Bluetooth đã ghép nối.');
+      return;
+    }
+
+    await showModalBottomSheet(
+      context: context,
+      useSafeArea: true,
+      showDragHandle: true,
+      builder: (_) {
+        return ListView.separated(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          itemCount: devices.length,
+          separatorBuilder: (_, __) => const Divider(height: 1),
+          itemBuilder: (_, i) {
+            final d = devices[i];
+            return ListTile(
+              leading: const Icon(Icons.print),
+              title: Text(d.name),
+              subtitle: Text(d.macAdress),
+              onTap: () async {
+                await PrinterSettings.setMacAddress(d.macAdress);
+                if (mounted) Get.back();
+                if (autoPrintAfterSelect) {
+                  _autoPrintTriggered = false; // allow retry after selecting
+                  await _tryAutoPrintForKiosk();
+                }
+              },
+            );
+          },
+        );
+      },
+    );
   }
 
   Future<void> _loadSignatureStatus() async {
@@ -309,6 +423,32 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
                       size: Size(80, 80),
                     ),
                   ),
+                  if (_isKiosk) ...[
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () async {
+                              _autoPrintTriggered = false;
+                              await _tryAutoPrintForKiosk();
+                            },
+                            icon: const Icon(Icons.print),
+                            label: const Text('In QR'),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        OutlinedButton(
+                          onPressed: () async {
+                            await _showSelectPrinterBottomSheet(
+                              autoPrintAfterSelect: false,
+                            );
+                          },
+                          child: const Text('Chọn máy in'),
+                        ),
+                      ],
+                    ),
+                  ],
                   const SizedBox(height: 14),
                   _buildSignatureSection(context),
                   SizedBox(height: MediaQuery.of(context).padding.bottom + 8),

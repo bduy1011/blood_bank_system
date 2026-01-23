@@ -463,6 +463,10 @@ class LoginController extends BaseModelStateful {
         
         // emit(state.copyWith(isAuthenticated: true));
         setUserName();
+        // Clear password field after successful login if rememberPassword is false
+        if (!rememberPassword) {
+          passwordController.clear();
+        }
         autoGotoHomePage(context);
       } else {
         // emit(state.copyWith(isAuthenticated: false));

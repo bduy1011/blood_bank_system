@@ -36,6 +36,14 @@ class AppCenter {
   int soNgayHienThiLichLayMau = 14;
   int showQRCodeOnlyDangKyId = 0;
 
+  /// Kiot (kiosk) config
+  /// - `KioskMode`: 1 = enable kiot mode
+  /// - `KioskPrinterMac`: Bluetooth MAC address (Android)
+  /// - `KioskPrinterPaperMm`: 58 or 80 (default 58)
+  int kioskMode = 0;
+  String kioskPrinterMac = "";
+  int kioskPrinterPaperMm = 58;
+
   void checkAuthentication({required BuildContext context}) async {
     log("[AppCenter] checkAuthentication() - START");
     log("[AppCenter] backendProvider.isAuthenticated: ${backendProvider.isAuthenticated}");

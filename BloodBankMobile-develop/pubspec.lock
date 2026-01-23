@@ -77,10 +77,10 @@ packages:
     dependency: transitive
     description:
       name: archive
-      sha256: cb6a278ef2dbb298455e1a713bda08524a175630ec643a242c399c932a0a1f7d
+      sha256: "2fde1607386ab523f7a36bb3e7edb43bd58e6edaf2ffb29d8a6d578b297fdbbd"
       url: "https://pub.dev"
     source: hosted
-    version: "3.6.1"
+    version: "4.0.7"
   args:
     dependency: transitive
     description:
@@ -377,6 +377,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.5"
+  esc_pos_utils_plus:
+    dependency: "direct main"
+    description:
+      name: esc_pos_utils_plus
+      sha256: "2a22d281cb6f04600ba3ebd607ad8df03a4b2446d814007d22525bab4d50c2ff"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.4"
   fading_edge_scrollview:
     dependency: transitive
     description:
@@ -870,13 +878,13 @@ packages:
     source: hosted
     version: "1.0.0"
   image:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: image
-      sha256: "2237616a36c0d69aef7549ab439b833fb7f9fb9fc861af2cc9ac3eedddd69ca8"
+      sha256: "492bd52f6c4fbb6ee41f781ff27765ce5f627910e1e0cbecfa3d9add5562604c"
       url: "https://pub.dev"
     source: hosted
-    version: "4.2.0"
+    version: "4.7.2"
   image_picker:
     dependency: "direct main"
     description:
@@ -1357,6 +1365,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.5.1"
+  posix:
+    dependency: transitive
+    description:
+      name: posix
+      sha256: "6323a5b0fa688b6a010df4905a56b00181479e6d10534cecfecede2aa55add61"
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.0.3"
+  print_bluetooth_thermal:
+    dependency: "direct main"
+    description:
+      name: print_bluetooth_thermal
+      sha256: "17b204a5340174c02acf5f6caf7279b5000344f1f1e1bcd01dbdbf912bce6e46"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.9"
   protobuf:
     dependency: transitive
     description:
@@ -1930,6 +1954,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.5"
+  win_ble:
+    dependency: transitive
+    description:
+      name: win_ble
+      sha256: "2a867e13c4b355b101fc2c6e2ac85eeebf965db34eca46856f8b478e93b41e96"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.1"
   xdg_directories:
     dependency: transitive
     description:

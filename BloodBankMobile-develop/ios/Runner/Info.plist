@@ -37,6 +37,10 @@
 	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>This app needs camera access to scan QR codes</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>This app needs Bluetooth to connect to the printer</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>This app needs Bluetooth to connect to the printer</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>This app uses Face ID to securely authenticate and log in</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>

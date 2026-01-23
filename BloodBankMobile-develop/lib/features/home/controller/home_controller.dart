@@ -198,7 +198,6 @@ class HomeController extends BaseModelStateful {
       case HomeCategory.homeManagement:
         Get.toNamed(Routes.management);
         break;
-      default:
     }
   }
 
@@ -314,6 +313,17 @@ class HomeController extends BaseModelStateful {
             case "ShowQRCodeOnlyDangKyId":
               appCenter.showQRCodeOnlyDangKyId = int.parse(
                   sys.value ?? appCenter.showQRCodeOnlyDangKyId.toString());
+              break;
+            case "KioskMode":
+              appCenter.kioskMode =
+                  int.tryParse(sys.value ?? '') ?? appCenter.kioskMode;
+              break;
+            case "KioskPrinterMac":
+              appCenter.kioskPrinterMac = sys.value ?? appCenter.kioskPrinterMac;
+              break;
+            case "KioskPrinterPaperMm":
+              appCenter.kioskPrinterPaperMm =
+                  int.tryParse(sys.value ?? '') ?? appCenter.kioskPrinterPaperMm;
               break;
             default:
               break;

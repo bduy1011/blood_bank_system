@@ -1,4 +1,4 @@
-﻿using BB.CR.Models;
+using BB.CR.Models;
 using BB.CR.Providers;
 using BB.CR.Providers.Bases;
 using BB.CR.Providers.Extensions;
@@ -30,13 +30,25 @@ namespace BB.CR.Repositories.UseCases
         {
             ReturnResponse<SystemUser> response = new();
 
-            SystemUser? systemUser = await context.SystemUser.AsNoTracking().FirstOrDefaultAsync(i => i.UserCode == code).ConfigureAwait(false);
+            // NOTE:
+            // UserCode là PRIMARY KEY của bảng SystemUser (BloodBankContext config).
+            // EF Core không "update" được primary key bằng context.Update() thông thường.
+            // Nếu cần đổi CCCD và đồng thời đổi UserCode = CCCD mới thì phải "rename" account:
+            // tạo record mới (UserCode mới) + xóa record cũ trong cùng transaction.
+            SystemUser? systemUser = await context.SystemUser.FirstOrDefaultAsync(i => i.UserCode == code).ConfigureAwait(false);
             if (systemUser is null)
                 response.Error(HttpStatusCode.NotFound, CommonResources.NotFound);
             else
             {
                 if (model.IdCardNr != systemUser.IdCardNr)
                 {
+                    model.IdCardNr = (model.IdCardNr ?? string.Empty).Trim();
+                    if (string.IsNullOrWhiteSpace(model.IdCardNr))
+                    {
+                        response.Error(HttpStatusCode.Conflict, string.Format(BzLogicResource.SystemUserCheckIdCard, model.IdCardNr));
+                        goto ReturnResponse;
+                    }
+
                     var isExistedSystemUser = await context.SystemUser.AsNoTracking().Where(i => i.IdCardNr == model.IdCardNr).ToListAsync().ConfigureAwait(false);
 
                     if (isExistedSystemUser.Count != 0)
@@ -59,16 +71,65 @@ namespace BB.CR.Repositories.UseCases
                     }
                 }
 
-                var data = mapper.Map<SystemUser>(model);
-                data.Password = systemUser.Password; // Vì đã ignore từ mapping => phải gán lại dữ liệu password đang có ở DB
-                data.CreatedOn = systemUser.CreatedOn;
+                // Apply updates on tracked entity (preserve password/otp flags/etc.)
+                systemUser.Name = model.Name;
+                systemUser.PhoneNumber = model.PhoneNumber;
+                systemUser.AppRole = model.AppRole;
+                systemUser.Active = model.Active;
+                systemUser.DeviceId = model.DeviceId;
+                systemUser.FireBaseToken = model.FireBaseToken;
+                systemUser.IdCardNr = model.IdCardNr;
 
-                context.SystemUser.Update(data);
-                int count = await context.SaveChangesAsync().ConfigureAwait(false);
-                if (count == 0)
-                    response.Error(HttpStatusCode.NoContent, CommonResources.NoContent);
+                // If IdCardNr changed and your business rule is UserCode = CCCD/CMND,
+                // then migrate (rename) UserCode to new CCCD.
+                var newUserCode = (systemUser.IdCardNr ?? string.Empty).Trim();
+                if (!string.IsNullOrWhiteSpace(newUserCode) && !string.Equals(newUserCode, code, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Prevent duplicate key
+                    var existedByUserCode = await context.SystemUser.AsNoTracking()
+                        .AnyAsync(i => i.UserCode == newUserCode)
+                        .ConfigureAwait(false);
+                    if (existedByUserCode)
+                    {
+                        response.Error(HttpStatusCode.Conflict, string.Format(BzLogicResource.AccountExisted, newUserCode));
+                        goto ReturnResponse;
+                    }
+
+                    var newSystemUser = new SystemUser
+                    {
+                        UserCode = newUserCode,
+                        Name = systemUser.Name,
+                        Password = systemUser.Password, // preserve hashed password
+                        AppRole = systemUser.AppRole,
+                        Active = systemUser.Active,
+                        DeviceId = systemUser.DeviceId,
+                        PhoneNumber = systemUser.PhoneNumber,
+                        OtpCode = systemUser.OtpCode,
+                        ExpiredOn = systemUser.ExpiredOn,
+                        AcceptedOtp = systemUser.AcceptedOtp,
+                        IsDataQLMau = systemUser.IsDataQLMau,
+                        IdCardNr = systemUser.IdCardNr,
+                        CreatedOn = systemUser.CreatedOn,
+                        FireBaseToken = systemUser.FireBaseToken,
+                    };
+
+                    await context.SystemUser.AddAsync(newSystemUser).ConfigureAwait(false);
+                    context.SystemUser.Remove(systemUser);
+                    int count = await context.SaveChangesAsync().ConfigureAwait(false);
+                    if (count == 0)
+                        response.Error(HttpStatusCode.NoContent, CommonResources.NoContent);
+                    else
+                        response.Success(newSystemUser, CommonResources.Ok);
+                }
                 else
-                    response.Success(data, CommonResources.Ok);
+                {
+                    context.SystemUser.Update(systemUser);
+                    int count = await context.SaveChangesAsync().ConfigureAwait(false);
+                    if (count == 0)
+                        response.Error(HttpStatusCode.NoContent, CommonResources.NoContent);
+                    else
+                        response.Success(systemUser, CommonResources.Ok);
+                }
             }
 
         ReturnResponse:
