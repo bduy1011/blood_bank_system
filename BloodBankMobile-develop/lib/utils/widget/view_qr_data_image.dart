@@ -8,6 +8,7 @@ import 'package:blood_donation/utils/extension/datetime_extension.dart';
 import 'package:blood_donation/utils/app_utils.dart';
 import 'package:blood_donation/utils/printer/printer_settings.dart';
 import 'package:blood_donation/utils/printer/thermal_printer_service.dart';
+import 'package:blood_donation/utils/secure_token_service.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -42,6 +43,7 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
   // double _previousBrightness = 0.5;
   // final double _previousApplicationBrightness = 0.5;
   final appCenter = GetIt.instance<AppCenter>();
+  final SecureTokenService _tokenService = SecureTokenService();
 
   bool _isLoadingSignature = false;
   bool _isSigned = false;
@@ -294,6 +296,21 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
           _signedAt = response!.data!.signedAt ?? DateTime.now();
           _signatureResult = result;
         });
+        
+        // Lưu chữ ký vào local storage theo userCode để tái sử dụng
+        final userCode = appCenter.authentication?.userCode;
+        if (userCode != null && userCode.isNotEmpty) {
+          try {
+            await _tokenService.saveUserSignature(
+              userCode: userCode,
+              signatureBase64Png: result.base64Png,
+            );
+          } catch (e) {
+            // Không block UI nếu không lưu được vào local storage
+            // Chữ ký đã được lưu trên server rồi
+          }
+        }
+        
         AppUtils.instance.showToast('Đã lưu chữ ký.');
       } else {
         AppUtils.instance.showToast(response?.message ?? 'Lưu chữ ký thất bại');
@@ -467,90 +484,206 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 248, 243, 243),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.black12),
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFFB22C2D).withOpacity(0.05),
+            Colors.white,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: _isSigned 
+              ? const Color(0xFFB22C2D).withOpacity(0.3)
+              : Colors.grey[300]!,
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header
           Row(
             children: [
-              const Icon(Icons.edit, size: 18, color: Color(0xff5c0101)),
-              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: _isSigned 
+                      ? const Color(0xFFB22C2D).withOpacity(0.15)
+                      : Colors.grey[200],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  _isSigned ? Icons.check_circle : Icons.edit_note,
+                  size: 22,
+                  color: _isSigned 
+                      ? const Color(0xFFB22C2D)
+                      : Colors.grey[600],
+                ),
+              ),
+              const SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  _isSigned ? 'Đã ký xác nhận$signedAtText' : 'Chưa ký xác nhận',
-                  style: context.myTheme.textThemeT1.body.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _isSigned ? 'Đã ký xác nhận' : 'Chưa ký xác nhận',
+                      style: context.myTheme.textThemeT1.body.copyWith(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                        color: _isSigned 
+                            ? const Color(0xFFB22C2D)
+                            : Colors.black87,
+                      ),
+                    ),
+                    if (_isSigned && signedAtText.isNotEmpty)
+                      Text(
+                        signedAtText.replaceFirst(' • ', ''),
+                        style: context.myTheme.textThemeT1.body.copyWith(
+                          color: Colors.black54,
+                          fontSize: 12,
+                        ),
+                      ),
+                  ],
                 ),
               ),
               if (_isLoadingSignature)
                 const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFB22C2D)),
+                  ),
                 ),
             ],
           ),
-          const SizedBox(height: 10),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              width: double.infinity,
+          const SizedBox(height: 16),
+          // Signature preview
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
               color: Colors.white,
-              padding: const EdgeInsets.all(10),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey[200]!),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.03),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
               child: AspectRatio(
-                aspectRatio: 3.2, // giống khung ký thực tế
+                aspectRatio: 3.2,
                 child: _signatureResult?.pngBytes != null
                     ? InkWell(
                         onTap: () => _openSignatureDialog(_signatureResult!.pngBytes),
-                        child: Image.memory(
-                          _signatureResult!.pngBytes,
-                          fit: BoxFit.contain,
-                        ),
-                      )
-                    : Center(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
+                        child: Stack(
                           children: [
-                            Icon(
-                              _isSigned ? Icons.image_outlined : Icons.border_color,
-                              color: Colors.black38,
+                            Image.memory(
+                              _signatureResult!.pngBytes,
+                              fit: BoxFit.contain,
                             ),
-                            const SizedBox(width: 8),
-                            Text(
-                              _isSigned
-                                  ? 'Chưa tải ảnh chữ ký (bấm Xem)'
-                                  : 'Ký vào đây để xác nhận',
-                              style: context.myTheme.textThemeT1.body.copyWith(
-                                color: Colors.black54,
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.6),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(
+                                  Icons.zoom_in,
+                                  color: Colors.white,
+                                  size: 16,
+                                ),
                               ),
                             ),
                           ],
+                        ),
+                      )
+                    : Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey[50],
+                          border: Border.all(
+                            color: Colors.grey[300]!,
+                            style: BorderStyle.solid,
+                            width: 2,
+                          ),
+                        ),
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                _isSigned ? Icons.image_outlined : Icons.edit_note,
+                                color: Colors.grey[400],
+                                size: 40,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                _isSigned
+                                    ? 'Chưa tải ảnh chữ ký'
+                                    : 'Chưa có chữ ký',
+                                style: context.myTheme.textThemeT1.body.copyWith(
+                                  color: Colors.grey[500],
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
               ),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 16),
+          // Action buttons
           Row(
             children: [
               Expanded(
-                child: ElevatedButton(
+                child: ElevatedButton.icon(
                   onPressed: _isSigned ? null : _signNow,
-                  child: Text(_isSigned ? 'Đã ký' : 'Ký xác nhận tiếp nhận'),
+                  icon: Icon(
+                    _isSigned ? Icons.check_circle : Icons.edit,
+                    size: 20,
+                  ),
+                  label: Text(
+                    _isSigned ? 'Đã ký' : 'Ký xác nhận tiếp nhận',
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFB22C2D),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    elevation: _isSigned ? 0 : 2,
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
-              OutlinedButton(
+              OutlinedButton.icon(
                 onPressed: _isSigned
                     ? () async {
-                        // Nếu đã có ảnh trong bộ nhớ thì mở luôn,
-                        // nếu chưa có thì tải từ server rồi mở.
                         final bytes = _signatureResult?.pngBytes;
                         if (bytes != null) {
                           _openSignatureDialog(bytes);
@@ -559,16 +692,47 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
                         await _viewSignatureIfAny();
                       }
                     : null,
-                child: Text(_signatureResult?.pngBytes != null ? 'Xem lớn' : 'Xem'),
+                icon: const Icon(Icons.visibility, size: 18),
+                label: Text(
+                  _signatureResult?.pngBytes != null ? 'Xem lớn' : 'Xem',
+                  style: const TextStyle(fontSize: 14),
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFFB22C2D),
+                  side: const BorderSide(color: Color(0xFFB22C2D)),
+                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
-          Text(
-            'Lưu ý: chữ ký này là chữ ký tay của người hiến để xác nhận tiếp nhận.',
-            style: context.myTheme.textThemeT1.body.copyWith(
-              color: Colors.black54,
-              fontSize: 12,
+          const SizedBox(height: 12),
+          // Note
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.blue[50],
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.blue[100]!),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.info_outline, size: 18, color: Colors.blue[700]),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Lưu ý: chữ ký này là chữ ký tay của người hiến để xác nhận tiếp nhận.',
+                    style: context.myTheme.textThemeT1.body.copyWith(
+                      color: Colors.blue[900],
+                      fontSize: 12,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

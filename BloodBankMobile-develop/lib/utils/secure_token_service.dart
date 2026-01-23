@@ -37,6 +37,10 @@ class SecureTokenService {
   static String _keyPasswordForUsername(String username) =>
       '$_passwordKeyPrefix${username.trim()}';
 
+  static const String _signatureKeyPrefix = 'user_signature_';
+  static String _keySignatureForUserCode(String userCode) =>
+      '$_signatureKeyPrefix${userCode.trim()}';
+
   /// Lưu mật khẩu đăng nhập vào secure storage (Keychain/Keystore)
   ///
   /// - Lưu `last_login_username` để lần sau có thể tự nạp đúng mật khẩu
@@ -344,6 +348,58 @@ class SecureTokenService {
     } catch (e) {
       log("updateAccessToken() error: $e");
       rethrow;
+    }
+  }
+
+  /// Lưu chữ ký của user vào secure storage (theo userCode)
+  /// Chữ ký được lưu dạng Base64 PNG
+  Future<void> saveUserSignature({
+    required String userCode,
+    required String signatureBase64Png,
+  }) async {
+    try {
+      final code = userCode.trim();
+      if (code.isEmpty || signatureBase64Png.isEmpty) return;
+      
+      final key = _keySignatureForUserCode(code);
+      await _storage.write(key: key, value: signatureBase64Png);
+      log("[SecureTokenService] ✓ User signature saved for userCode: $code");
+    } catch (e) {
+      log("[SecureTokenService] saveUserSignature() error: $e");
+      rethrow;
+    }
+  }
+
+  /// Lấy chữ ký đã lưu của user (theo userCode)
+  /// Trả về null nếu không tìm thấy
+  Future<String?> getUserSignature({required String userCode}) async {
+    try {
+      final code = userCode.trim();
+      if (code.isEmpty) return null;
+      
+      final key = _keySignatureForUserCode(code);
+      final signature = await _storage.read(key: key);
+      if (signature != null && signature.isNotEmpty) {
+        log("[SecureTokenService] ✓ User signature retrieved for userCode: $code");
+      }
+      return signature;
+    } catch (e) {
+      log("[SecureTokenService] getUserSignature() error: $e");
+      return null;
+    }
+  }
+
+  /// Xóa chữ ký đã lưu của user (theo userCode)
+  Future<void> deleteUserSignature({required String userCode}) async {
+    try {
+      final code = userCode.trim();
+      if (code.isEmpty) return;
+      
+      final key = _keySignatureForUserCode(code);
+      await _storage.delete(key: key);
+      log("[SecureTokenService] ✓ User signature deleted for userCode: $code");
+    } catch (e) {
+      log("[SecureTokenService] deleteUserSignature() error: $e");
     }
   }
 

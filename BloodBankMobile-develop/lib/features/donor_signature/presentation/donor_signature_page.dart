@@ -3,8 +3,11 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:blood_donation/utils/extension/context_ext.dart';
+import 'package:blood_donation/utils/secure_token_service.dart';
+import 'package:blood_donation/app/app_util/app_center.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 
 class DonorSignatureResult {
   final Uint8List pngBytes;
@@ -29,8 +32,43 @@ class DonorSignaturePage extends StatefulWidget {
 class _DonorSignaturePageState extends State<DonorSignaturePage> {
   final GlobalKey _padKey = GlobalKey();
   final List<Offset?> _points = <Offset?>[];
+  final SecureTokenService _tokenService = SecureTokenService();
+  final appCenter = GetIt.instance<AppCenter>();
+  
+  bool _hasSavedSignature = false;
+  Uint8List? _savedSignatureBytes;
 
   bool get _hasInk => _points.any((p) => p != null);
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedSignature();
+  }
+
+  Future<void> _loadSavedSignature() async {
+    final userCode = appCenter.authentication?.userCode;
+    if (userCode != null && userCode.isNotEmpty) {
+      final savedSignature = await _tokenService.getUserSignature(userCode: userCode);
+      if (savedSignature != null && savedSignature.isNotEmpty) {
+        try {
+          final bytes = base64Decode(savedSignature);
+          setState(() {
+            _hasSavedSignature = true;
+            _savedSignatureBytes = bytes;
+          });
+        } catch (e) {
+          // Ignore decode errors
+        }
+      }
+    }
+  }
+
+  Future<void> _useSavedSignature() async {
+    if (_savedSignatureBytes != null) {
+      Get.back(result: DonorSignatureResult(_savedSignatureBytes!));
+    }
+  }
 
   Future<Uint8List?> _exportPng() async {
     final renderObject = _padKey.currentContext?.findRenderObject();
@@ -49,8 +87,9 @@ class _DonorSignaturePageState extends State<DonorSignaturePage> {
     // Draw strokes
     final paint = Paint()
       ..color = Colors.black
-      ..strokeWidth = 3.0
+      ..strokeWidth = 3.5
       ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
       ..style = PaintingStyle.stroke;
 
     for (int i = 0; i < _points.length - 1; i++) {
@@ -144,91 +183,311 @@ class _DonorSignaturePageState extends State<DonorSignaturePage> {
               topRight: Radius.circular(30),
             ),
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 6),
-                Text(
-                  'Vui lòng ký vào khung bên dưới.',
-                  style: context.myTheme.textThemeT1.body.copyWith(
-                    color: Colors.black87,
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header section
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFB22C2D).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.edit_note,
+                          color: Color(0xFFB22C2D),
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Ký xác nhận tiếp nhận',
+                              style: context.myTheme.textThemeT1.title.copyWith(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Vui lòng ký vào khung bên dưới',
+                              style: context.myTheme.textThemeT1.body.copyWith(
+                                color: Colors.black54,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 12),
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: Colors.black12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 6),
-                        )
+                  // Hiển thị option dùng chữ ký đã lưu nếu có
+                  if (_hasSavedSignature) ...[
+                    const SizedBox(height: 20),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFB22C2D).withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: const Color(0xFFB22C2D).withOpacity(0.2),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFB22C2D).withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(
+                                  Icons.history,
+                                  color: Color(0xFFB22C2D),
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Chữ ký đã lưu',
+                                      style: context.myTheme.textThemeT1.body.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Bạn có thể dùng lại chữ ký đã lưu trước đó',
+                                      style: context.myTheme.textThemeT1.body.copyWith(
+                                        color: Colors.black54,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: _useSavedSignature,
+                              icon: const Icon(Icons.check_circle, size: 20),
+                              label: const Text(
+                                'Dùng chữ ký đã lưu',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFB22C2D),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                elevation: 0,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(
+                            'HOẶC KÝ MỚI',
+                            style: context.myTheme.textThemeT1.body.copyWith(
+                              color: Colors.black54,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                        ),
+                        Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
                       ],
                     ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(14),
-                      child: GestureDetector(
-                        onPanStart: (d) {
-                          final box = _padKey.currentContext?.findRenderObject();
-                          if (box is RenderBox) {
-                            setState(() {
-                              _points.add(box.globalToLocal(d.globalPosition));
-                            });
-                          }
-                        },
-                        onPanUpdate: (d) {
-                          final box = _padKey.currentContext?.findRenderObject();
-                          if (box is RenderBox) {
-                            setState(() {
-                              _points.add(box.globalToLocal(d.globalPosition));
-                            });
-                          }
-                        },
-                        onPanEnd: (_) => setState(() => _points.add(null)),
-                        child: RepaintBoundary(
-                          key: _padKey,
-                          child: CustomPaint(
-                            // IMPORTANT: pass a new list instance so painter repaints
-                            painter: _SignaturePainter(List<Offset?>.from(_points)),
-                            child: const SizedBox.expand(),
+                  ],
+                  const SizedBox(height: 20),
+                  // Signature pad
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Colors.grey[300]!,
+                          width: 2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.08),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
                           ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(18),
+                        child: Stack(
+                          children: [
+                            // Background pattern (subtle lines)
+                            CustomPaint(
+                              painter: _BackgroundPatternPainter(),
+                              child: const SizedBox.expand(),
+                            ),
+                            // Signature canvas
+                            GestureDetector(
+                              onPanStart: (d) {
+                                final box = _padKey.currentContext?.findRenderObject();
+                                if (box is RenderBox) {
+                                  setState(() {
+                                    _points.add(box.globalToLocal(d.globalPosition));
+                                  });
+                                }
+                              },
+                              onPanUpdate: (d) {
+                                final box = _padKey.currentContext?.findRenderObject();
+                                if (box is RenderBox) {
+                                  setState(() {
+                                    _points.add(box.globalToLocal(d.globalPosition));
+                                  });
+                                }
+                              },
+                              onPanEnd: (_) => setState(() => _points.add(null)),
+                              child: RepaintBoundary(
+                                key: _padKey,
+                                child: CustomPaint(
+                                  painter: _SignaturePainter(List<Offset?>.from(_points)),
+                                  child: Container(
+                                    color: Colors.transparent,
+                                    child: _hasInk
+                                        ? null
+                                        : Center(
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(
+                                                  Icons.edit_note,
+                                                  size: 48,
+                                                  color: Colors.grey[300],
+                                                ),
+                                                const SizedBox(height: 8),
+                                                Text(
+                                                  'Ký vào đây',
+                                                  style: context.myTheme.textThemeT1.body.copyWith(
+                                                    color: Colors.grey[400],
+                                                    fontSize: 14,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: _save,
-                    icon: const Icon(Icons.save),
-                    label: const Text('Lưu chữ ký'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFB22C2D),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                  const SizedBox(height: 20),
+                  // Action buttons
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: ElevatedButton.icon(
+                          onPressed: _save,
+                          icon: const Icon(Icons.check_circle, size: 22),
+                          label: const Text(
+                            'Lưu chữ ký',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFB22C2D),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            elevation: 2,
+                          ),
+                        ),
                       ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _hasInk ? _clear : null,
+                          icon: const Icon(Icons.refresh, size: 20),
+                          label: const Text(
+                            'Xóa',
+                            style: TextStyle(fontSize: 14),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.black87,
+                            side: BorderSide(color: Colors.grey[400]!),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  // Note
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.blue[50],
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.blue[100]!),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.info_outline, size: 18, color: Colors.blue[700]),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Bạn có thể bấm "Xóa" để ký lại trước khi lưu.',
+                            style: context.myTheme.textThemeT1.body.copyWith(
+                              color: Colors.blue[900],
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Bạn có thể bấm “Xoá” để ký lại trước khi lưu.',
-                  style: context.myTheme.textThemeT1.body.copyWith(
-                    color: Colors.black54,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -246,8 +505,9 @@ class _SignaturePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = Colors.black
-      ..strokeWidth = 3.0
+      ..strokeWidth = 3.5
       ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
       ..style = PaintingStyle.stroke;
 
     for (int i = 0; i < points.length - 1; i++) {
@@ -264,3 +524,24 @@ class _SignaturePainter extends CustomPainter {
       oldDelegate.points != points;
 }
 
+class _BackgroundPatternPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.grey[200]!
+      ..strokeWidth = 0.5;
+
+    // Vẽ đường kẻ ngang mờ
+    const lineSpacing = 30.0;
+    for (double y = lineSpacing; y < size.height; y += lineSpacing) {
+      canvas.drawLine(
+        Offset(0, y),
+        Offset(size.width, y),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _BackgroundPatternPainter oldDelegate) => false;
+}
