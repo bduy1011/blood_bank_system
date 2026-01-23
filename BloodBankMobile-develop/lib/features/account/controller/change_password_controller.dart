@@ -7,12 +7,15 @@ import '../../../app/config/routes.dart';
 import '../../../base/base_view/base_view.dart';
 import '../../../core/localization/app_locale.dart';
 import '../../../utils/app_utils.dart';
+import '../../../utils/secure_token_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ChangePasswordController extends BaseModelStateful {
   final TextEditingController oldPasswordController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
       TextEditingController();
+  final SecureTokenService _tokenService = SecureTokenService();
 
   @override
   void onBack() {
@@ -86,6 +89,24 @@ class ChangePasswordController extends BaseModelStateful {
       if (response.status == 200) {
         // await appCenter.backendProvider.saveAuthentication(authenticated!);
         // autoGotoHomePage();
+
+        // Lưu lại mật khẩu mới (secure storage) sau khi đổi mật khẩu thành công
+        // Chỉ lưu nếu đang bật "Ghi nhớ mật khẩu"
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          final remember = prefs.getBool("rememberPassword") ?? true;
+          if (remember) {
+            final username = appCenter.authentication?.userCode;
+            if (username != null && username.trim().isNotEmpty) {
+              await _tokenService.saveLoginCredentials(
+                username: username,
+                password: password,
+              );
+            }
+          }
+        } catch (e) {
+          log("[ChangePasswordController] saveLoginCredentials error: $e");
+        }
 
         await AppUtils.instance.showMessage(AppLocale.changePasswordSuccess.translate(Get.context!), context: Get.context);
         Get.back();

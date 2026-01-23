@@ -30,6 +30,100 @@ class SecureTokenService {
   static const String _keyUserCode = 'user_code';
   static const String _keyUserName = 'user_name';
   static const String _keyAuthentication = 'authentication'; // Lưu toàn bộ Authentication object
+  static const String _keyLastLoginUsername = 'last_login_username';
+  static const String _keyLastLoginPassword = 'last_login_password';
+
+  static const String _passwordKeyPrefix = 'login_password_';
+  static String _keyPasswordForUsername(String username) =>
+      '$_passwordKeyPrefix${username.trim()}';
+
+  /// Lưu mật khẩu đăng nhập vào secure storage (Keychain/Keystore)
+  ///
+  /// - Lưu `last_login_username` để lần sau có thể tự nạp đúng mật khẩu
+  /// - Lưu mật khẩu theo từng username để tránh ghi đè khi đổi user
+  Future<void> saveLoginCredentials({
+    required String username,
+    required String password,
+  }) async {
+    final u = username.trim();
+    if (u.isEmpty || password.isEmpty) return;
+    try {
+      await _storage.write(key: _keyLastLoginUsername, value: u);
+      await _storage.write(key: _keyLastLoginPassword, value: password);
+      await _storage.write(key: _keyPasswordForUsername(u), value: password);
+    } catch (e) {
+      log("saveLoginCredentials() error: $e");
+      rethrow;
+    }
+  }
+
+  /// Lấy username lần đăng nhập gần nhất (nếu có)
+  Future<String?> getLastLoginUsername() async {
+    try {
+      return await _storage.read(key: _keyLastLoginUsername);
+    } catch (e) {
+      log("getLastLoginUsername() error: $e");
+      return null;
+    }
+  }
+
+  /// Lấy mật khẩu đã lưu. Nếu không truyền username thì lấy theo last_login_username.
+  Future<String?> getLoginPassword({String? username}) async {
+    try {
+      final u = (username ?? await getLastLoginUsername())?.trim();
+      if (u == null || u.isEmpty) {
+        // fallback: nếu chỉ lưu theo key "last_login_password"
+        return await _storage.read(key: _keyLastLoginPassword);
+      }
+      return await _storage.read(key: _keyPasswordForUsername(u)) ??
+          await _storage.read(key: _keyLastLoginPassword);
+    } catch (e) {
+      log("getLoginPassword() error: $e");
+      return null;
+    }
+  }
+
+  /// Xóa mật khẩu đã lưu (theo username hoặc theo last_login_username nếu null).
+  /// Không xóa token/authentication, chỉ xóa credential.
+  Future<void> deleteSavedPassword({String? username}) async {
+    try {
+      final u = (username ?? await getLastLoginUsername())?.trim();
+      if (u != null && u.isNotEmpty) {
+        await _storage.delete(key: _keyPasswordForUsername(u));
+      }
+
+      // Nếu last_login_username trùng thì xóa luôn các key "last_*"
+      final lastU = (await _storage.read(key: _keyLastLoginUsername))?.trim();
+      if (lastU != null &&
+          lastU.isNotEmpty &&
+          (u == null || u.isEmpty || lastU == u)) {
+        await _storage.delete(key: _keyLastLoginUsername);
+        await _storage.delete(key: _keyLastLoginPassword);
+      }
+    } catch (e) {
+      log("deleteSavedPassword() error: $e");
+      rethrow;
+    }
+  }
+
+  /// Xóa toàn bộ mật khẩu đã lưu (mọi username) + last_*.
+  /// Không xóa token/authentication, chỉ xóa credential.
+  Future<void> clearSavedPasswords() async {
+    try {
+      await _storage.delete(key: _keyLastLoginUsername);
+      await _storage.delete(key: _keyLastLoginPassword);
+
+      final all = await _storage.readAll();
+      final passwordKeys =
+          all.keys.where((k) => k.startsWith(_passwordKeyPrefix)).toList();
+      for (final k in passwordKeys) {
+        await _storage.delete(key: k);
+      }
+    } catch (e) {
+      log("clearSavedPasswords() error: $e");
+      rethrow;
+    }
+  }
 
   /// Lưu access token và refresh token vào secure storage
   /// 
@@ -269,6 +363,13 @@ class SecureTokenService {
       log("[SecureTokenService] ✓ Deleted user_name");
       await _storage.delete(key: _keyAuthentication);
       log("[SecureTokenService] ✓ Deleted authentication object");
+      // Clear saved login credentials (passwords)
+      try {
+        await clearSavedPasswords();
+      } catch (e) {
+        // Không fail toàn bộ logout nếu không xóa được hết credential keys
+        log("[SecureTokenService] ⚠️ clearTokens() - failed clearing password keys: $e");
+      }
       log("[SecureTokenService] clearTokens() - SUCCESS - All tokens cleared");
     } catch (e) {
       log("[SecureTokenService] ❌ clearTokens() error: $e");

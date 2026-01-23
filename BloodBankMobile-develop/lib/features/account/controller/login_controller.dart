@@ -21,6 +21,7 @@ class LoginController extends BaseModelStateful {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   SharedPreferences? prefs;
+  bool rememberPassword = true;
 
   ///
 
@@ -38,10 +39,58 @@ class LoginController extends BaseModelStateful {
   @override
   Future<void> onInit() async {
     prefs = await SharedPreferences.getInstance();
-    initUserName();
+    await initRememberPassword();
+    await initUserName();
+    if (rememberPassword) {
+      await initSavedPassword();
+    }
 
     ///
     super.onInit();
+  }
+
+  Future<void> initRememberPassword() async {
+    rememberPassword = prefs?.getBool("rememberPassword") ?? true;
+  }
+
+  Future<void> setRememberPassword(bool value) async {
+    rememberPassword = value;
+    await prefs?.setBool("rememberPassword", value);
+    if (!value) {
+      // Nếu tắt ghi nhớ → xóa toàn bộ mật khẩu đã lưu + clear field password
+      try {
+        await _tokenService.clearSavedPasswords();
+      } catch (e) {
+        log("clearSavedPasswords() error: $e");
+      }
+      // Không clear field ngay để user vẫn có thể bấm Login tiếp với mật khẩu đang nhập.
+      // (Chỉ đảm bảo là mật khẩu không còn được lưu trong secure storage)
+    } else {
+      // Nếu bật lại → thử nạp password theo username hiện tại
+      await initSavedPassword();
+    }
+  }
+
+  Future<void> onUsernameChanged(String username) async {
+    try {
+      // Nếu không bật ghi nhớ -> username đổi thì clear password để tránh dùng nhầm
+      if (!rememberPassword) {
+        if (passwordController.text.isNotEmpty) {
+          passwordController.text = "";
+        }
+        return;
+      }
+
+      final saved = await _tokenService.getLoginPassword(username: username);
+      if (saved != null && saved.isNotEmpty) {
+        passwordController.text = saved;
+      } else if (passwordController.text.isNotEmpty) {
+        // Nếu user đổi sang account khác mà không có password lưu, clear để tránh dùng nhầm
+        passwordController.text = "";
+      }
+    } catch (e) {
+      log("onUsernameChanged() error: $e");
+    }
   }
 
   Future<void> initUserName() async {
@@ -49,6 +98,20 @@ class LoginController extends BaseModelStateful {
     var userName = prefs?.getString("userName");
     if (userName?.isNotEmpty == true) {
       usernameController.text = userName ?? "";
+    }
+  }
+
+  Future<void> initSavedPassword() async {
+    try {
+      final saved = await _tokenService.getLoginPassword(
+        username: usernameController.text,
+      );
+      if (saved != null && saved.isNotEmpty) {
+        passwordController.text = saved;
+      }
+    } catch (e) {
+      // Không block UI nếu không đọc được secure storage
+      log("initSavedPassword() error: $e");
     }
   }
 
@@ -354,6 +417,28 @@ class LoginController extends BaseModelStateful {
       final isAuthenticated =
           await backendProvider.login(username: username, password: password);
       if (isAuthenticated != null) {
+        // Lưu mật khẩu (secure storage) sau khi login thành công (chỉ khi bật "Ghi nhớ mật khẩu")
+        if (rememberPassword) {
+          try {
+            await _tokenService.saveLoginCredentials(
+              username: username,
+              password: password,
+            );
+            // Nếu hệ thống dùng userCode nội bộ (khác username nhập), lưu thêm theo userCode
+            final userCode = isAuthenticated.userCode;
+            if (userCode != null &&
+                userCode.trim().isNotEmpty &&
+                userCode.trim() != username.trim()) {
+              await _tokenService.saveLoginCredentials(
+                username: userCode,
+                password: password,
+              );
+            }
+          } catch (e) {
+            log("[LoginController] saveLoginCredentials error: $e");
+          }
+        }
+
         // Lưu tokens vào secure storage để dùng cho biometric login (tách biệt, không ảnh hưởng flow hiện tại)
         try {
           log("[LoginController] Saving tokens to secure storage for biometric login...");

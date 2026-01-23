@@ -90,6 +90,7 @@ mixin class AppLocale {
   static const String signUp = 'sign_up';
   static const String username = 'username';
   static const String password = 'password';
+  static const String rememberPassword = 'remember_password';
   static const String oldPassword = 'oldPassword';
   static const String confirmPassword = 'confirm_password';
   static const String loginWithGoogle = 'login_with_google';
@@ -586,6 +587,7 @@ mixin class AppLocale {
     signUp: 'Sign Up',
     username: 'Username or Number Phone',
     password: 'Password',
+    rememberPassword: 'Remember password',
     oldPassword: 'Old password',
     confirmPassword: 'Confirm password',
     loginWithGoogle: 'Login with Google',
@@ -1075,6 +1077,7 @@ mixin class AppLocale {
     signUp: 'Đăng ký',
     username: 'Tên đăng nhập/CCCD/Căn cước',
     password: 'Mật khẩu',
+    rememberPassword: 'Ghi nhớ mật khẩu',
     oldPassword: 'Mật khẩu cũ',
     confirmPassword: 'Nhập lại mật khẩu',
     loginWithGoogle: 'Đăng nhập với Google',

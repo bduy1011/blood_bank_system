@@ -32,6 +32,7 @@ class _LoginPageState extends BaseViewStateful<LoginPage, LoginController> {
   }
 
   bool _showPassword = false;
+  bool _rememberPassword = true;
   bool _biometricAvailable = false;
   bool _hasStoredTokens = false;
   String _biometricTypeName = 'Biometric';
@@ -42,6 +43,16 @@ class _LoginPageState extends BaseViewStateful<LoginPage, LoginController> {
     super.initState();
     _checkBiometricAvailability();
     _checkStoredTokens();
+    _initRememberPassword();
+  }
+
+  Future<void> _initRememberPassword() async {
+    // Controller onInit là async, nên đợi 1 nhịp rồi lấy state hiện tại
+    await Future.delayed(const Duration(milliseconds: 10));
+    if (!mounted) return;
+    setState(() {
+      _rememberPassword = controller.rememberPassword;
+    });
   }
 
   Future<void> _checkBiometricAvailability() async {
@@ -99,14 +110,12 @@ class _LoginPageState extends BaseViewStateful<LoginPage, LoginController> {
                             height: 20,
                           ),
                           buildPassword(context),
+                          const SizedBox(height: 6),
+                          buildRememberPassword(context),
                           const VSpacing(
-                            spacing: 40,
+                            spacing: 20,
                           ),
                           buildButtonLogin(context),
-                          if (_biometricAvailable && _hasStoredTokens) ...[
-                            const SizedBox(height: 20),
-                            buildBiometricLoginButton(context),
-                          ],
                         ],
                       ),
                       const SizedBox(
@@ -183,7 +192,10 @@ class _LoginPageState extends BaseViewStateful<LoginPage, LoginController> {
       onPressed: () async {
         var rs = await Get.to(() => const RegisterPage());
         if (rs == true) {
-          controller.initUserName();
+          await controller.initUserName();
+          // Sau khi register xong: username có thể thay đổi → thử nạp password đã lưu (nếu bật ghi nhớ)
+          await controller
+              .onUsernameChanged(controller.usernameController.text);
         }
       },
       style: TextButton.styleFrom(
@@ -241,30 +253,37 @@ class _LoginPageState extends BaseViewStateful<LoginPage, LoginController> {
       mainAxisAlignment: MainAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        ConstrainedBox(
-          constraints: const BoxConstraints(minWidth: double.infinity),
-          child: ElevatedButton(
-              onPressed: () {
-                controller.login(
-                    username: controller.usernameController.text,
-                    password: controller.passwordController.text,
-                    context: context);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 229, 59, 59),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(50),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  vertical: 15,
-                  horizontal: 40,
-                ),
-              ),
-              child: Text(
-                AppLocale.login.translate(context),
-                style: context.myTheme.textThemeT1.title
-                    .copyWith(color: Colors.white),
-              )),
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton(
+                  onPressed: () {
+                    controller.login(
+                        username: controller.usernameController.text,
+                        password: controller.passwordController.text,
+                        context: context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 229, 59, 59),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 15,
+                      horizontal: 40,
+                    ),
+                  ),
+                  child: Text(
+                    AppLocale.login.translate(context),
+                    style: context.myTheme.textThemeT1.title
+                        .copyWith(color: Colors.white),
+                  )),
+            ),
+            if (_biometricAvailable && _hasStoredTokens) ...[
+              const SizedBox(width: 12),
+              buildBiometricLoginButton(context),
+            ],
+          ],
         ),
         buildAction(context),
       ],
@@ -282,42 +301,32 @@ class _LoginPageState extends BaseViewStateful<LoginPage, LoginController> {
       biometricIcon = Icons.fingerprint;
     }
 
-    return Center(
-      child: InkWell(
-        onTap: () {
-          log("[LoginPage] Biometric login button tapped");
-          controller.loginWithBiometric(context);
-        },
-        borderRadius: BorderRadius.circular(50),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(50),
-            border: Border.all(
-              color: const Color.fromARGB(255, 229, 59, 59).withOpacity(0.5),
-              width: 1.5,
+    return InkWell(
+      onTap: () {
+        log("[LoginPage] Biometric login button tapped");
+        controller.loginWithBiometric(context);
+      },
+      borderRadius: BorderRadius.circular(26),
+      child: Container(
+        width: 52,
+        height: 52,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.white,
+          border: Border.all(color: Colors.black.withOpacity(0.06)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-            color: const Color.fromARGB(255, 229, 59, 59).withOpacity(0.05),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                biometricIcon,
-                size: 20,
-                color: const Color.fromARGB(255, 229, 59, 59),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                AppLocale.loginWithBiometric.translate(context),
-                style: context.myTheme.textThemeT1.title.copyWith(
-                  color: const Color.fromARGB(255, 229, 59, 59),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
+          ],
+        ),
+        child: Icon(
+          biometricIcon,
+          size: 34,
+          color: const Color.fromARGB(255, 229, 59, 59),
         ),
       ),
     );
@@ -365,6 +374,45 @@ class _LoginPageState extends BaseViewStateful<LoginPage, LoginController> {
     );
   }
 
+  Widget buildRememberPassword(BuildContext context) {
+    return Row(
+      children: [
+        Checkbox(
+          value: _rememberPassword,
+          activeColor: const Color.fromARGB(255, 229, 59, 59),
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+          onChanged: (v) async {
+            final next = v ?? false;
+            setState(() {
+              _rememberPassword = next;
+            });
+            await controller.setRememberPassword(next);
+          },
+        ),
+        const SizedBox(width: 6),
+        Expanded(
+          child: GestureDetector(
+            onTap: () async {
+              final next = !_rememberPassword;
+              setState(() {
+                _rememberPassword = next;
+              });
+              await controller.setRememberPassword(next);
+            },
+            child: Text(
+              AppLocale.rememberPassword.translate(context),
+              style: context.myTheme.textThemeT1.body.copyWith(
+                fontSize: 14,
+                color: AppColor.grey,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   TextFormField buildUserName(BuildContext context) {
     return TextFormField(
       controller: controller.usernameController,
@@ -380,6 +428,9 @@ class _LoginPageState extends BaseViewStateful<LoginPage, LoginController> {
       style: context.myTheme.textThemeT1.body.copyWith(fontSize: 16),
       autovalidateMode: AutovalidateMode.onUserInteraction,
       textInputAction: TextInputAction.next,
+      onChanged: (v) {
+        controller.onUsernameChanged(v);
+      },
       validator: FormBuilderValidators.compose(
         [
           FormBuilderValidators.required(
