@@ -7,6 +7,7 @@ using BB.CR.Repositories.Resources;
 using BB.CR.Views.Otp;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using System.IO;
 using System.Net;
 
 namespace BB.CR.Repositories.UseCases
@@ -509,6 +510,12 @@ namespace BB.CR.Repositories.UseCases
                 response.Error(HttpStatusCode.NotFound, CommonResources.NotFound);
             else
             {
+                // Xóa chữ ký của user trước khi xóa user
+                if (!string.IsNullOrWhiteSpace(model.IdCardNr))
+                {
+                    DeleteUserSignatureFiles(model.IdCardNr);
+                }
+
                 context.SystemUser.Remove(model);
                 var count = await context.SaveChangesAsync().ConfigureAwait(false);
                 if (count == 0)
@@ -531,6 +538,12 @@ namespace BB.CR.Repositories.UseCases
                 response.Error(HttpStatusCode.NoContent, CommonResources.NotFound);
             else
             {
+                // Xóa chữ ký của user trước khi xóa IdCardNr
+                if (!string.IsNullOrWhiteSpace(model.IdCardNr))
+                {
+                    DeleteUserSignatureFiles(model.IdCardNr);
+                }
+
                 model.PhoneNumber = null;
                 model.IdCardNr = null;
                 context.SystemUser.Update(model);
@@ -561,6 +574,12 @@ namespace BB.CR.Repositories.UseCases
                 response.Error(HttpStatusCode.NoContent, CommonResources.NotFound);
             else
             {
+                // Xóa chữ ký của user trước khi xóa IdCardNr
+                if (!string.IsNullOrWhiteSpace(idCard))
+                {
+                    DeleteUserSignatureFiles(idCard);
+                }
+
                 models.ForEach(i =>
                 {
                     i.PhoneNumber = null;
@@ -578,6 +597,58 @@ namespace BB.CR.Repositories.UseCases
             }
 
             return response;
+        }
+
+        /// <summary>
+        /// Lấy đường dẫn root cho signature files
+        /// </summary>
+        private static string GetSignatureRootPath()
+        {
+            // NOTE:
+            // Settings.PathActual in this project is configured as a URL (e.g. http://localhost:8090/images/)
+            // for serving static files, NOT a filesystem folder path.
+            // If we try to use it as a directory path, it will throw "Illegal characters in path".
+            if (!string.IsNullOrWhiteSpace(Settings.PathActual))
+            {
+                if (Uri.TryCreate(Settings.PathActual, UriKind.Absolute, out var uri)
+                    && (uri.Scheme.Equals("http", StringComparison.OrdinalIgnoreCase)
+                        || uri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase)))
+                {
+                    // fall back to local folder
+                }
+                else
+                {
+                    return Settings.PathActual!;
+                }
+            }
+
+            // Fallback when PathActual is not configured
+            return Path.Combine(AppContext.BaseDirectory, "App_Data");
+        }
+
+        /// <summary>
+        /// Xóa thư mục chữ ký của user dựa vào identityCard (CCCD/CMND)
+        /// </summary>
+        private static void DeleteUserSignatureFiles(string identityCard)
+        {
+            if (string.IsNullOrWhiteSpace(identityCard))
+                return;
+
+            try
+            {
+                // Sanitize identityCard để tránh lỗi path
+                var safeIdentityCard = string.Join("_", identityCard.Split(Path.GetInvalidFileNameChars()));
+                var signatureDir = Path.Combine(GetSignatureRootPath(), "signatures", "users", safeIdentityCard);
+
+                if (Directory.Exists(signatureDir))
+                {
+                    Directory.Delete(signatureDir, recursive: true);
+                }
+            }
+            catch
+            {
+                // Ignore errors khi xóa file (có thể file đã bị xóa hoặc không có quyền)
+            }
         }
 
         /// <summary>

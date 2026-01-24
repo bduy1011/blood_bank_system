@@ -91,7 +91,8 @@ class RegisterController extends BaseModelStateful {
           context: Get.context,
         );
         await setUserName(userName);
-        Get.back(result: true);
+        // Trả về password mới để fill vào login page
+        Get.back(result: password);
       } else {
         // emit(state.copyWith(isAuthenticated: false));
         AppUtils.instance.showToast(

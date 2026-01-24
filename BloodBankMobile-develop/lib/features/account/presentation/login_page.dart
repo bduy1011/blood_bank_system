@@ -191,13 +191,12 @@ class _LoginPageState extends BaseViewStateful<LoginPage, LoginController> {
     return TextButton(
       onPressed: () async {
         var rs = await Get.to(() => const RegisterPage());
-        if (rs == true) {
+        if (rs != null && rs is String && rs.isNotEmpty) {
           await controller.initUserName();
-          // Sau khi đăng ký thành công: clear password field để tránh hiển thị mật khẩu cũ
+          controller.passwordController.text = rs;
+        } else if (rs == true) {
+          await controller.initUserName();
           controller.passwordController.clear();
-          // Sau khi register xong: username có thể thay đổi → thử nạp password đã lưu (nếu bật ghi nhớ)
-          await controller
-              .onUsernameChanged(controller.usernameController.text);
         }
       },
       style: TextButton.styleFrom(
