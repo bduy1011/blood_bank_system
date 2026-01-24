@@ -28,5 +28,18 @@ namespace BB.CR.Repositories
             IMapper mapper,
             string? identityCard,
             string? deviceId);
+
+        Task<ReturnResponse<DonorSignatureInfoView>> GetUserSignatureAsync(
+            bool includeImage,
+            ILogger logger,
+            IMapper mapper,
+            string? identityCard);
+
+        Task<ReturnResponse<DonorSignatureInfoView>> SaveUserSignatureAsync(
+            DonorSignatureSaveRequest request,
+            ILogger logger,
+            IMapper mapper,
+            string? identityCard,
+            string? deviceId);
     }
 }

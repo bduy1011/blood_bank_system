@@ -297,7 +297,17 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
           _signatureResult = result;
         });
         
-        // Lưu chữ ký vào local storage theo userCode để tái sử dụng
+        // Lưu chữ ký vào server theo identityCard/userCode để tái sử dụng
+        try {
+          await appCenter.backendProvider.saveUserSignature(
+            signatureBase64Png: result.base64Png,
+          );
+        } catch (e) {
+          // Không block UI nếu không lưu được vào server
+          // Chữ ký đã được lưu cho lần đăng ký này rồi
+        }
+        
+        // Đồng thời lưu vào local storage để offline access
         final userCode = appCenter.authentication?.userCode;
         if (userCode != null && userCode.isNotEmpty) {
           try {
@@ -306,8 +316,7 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
               signatureBase64Png: result.base64Png,
             );
           } catch (e) {
-            // Không block UI nếu không lưu được vào local storage
-            // Chữ ký đã được lưu trên server rồi
+            // Ignore local storage errors
           }
         }
         

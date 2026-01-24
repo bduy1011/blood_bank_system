@@ -48,18 +48,47 @@ class _DonorSignaturePageState extends State<DonorSignaturePage> {
 
   Future<void> _loadSavedSignature() async {
     final userCode = appCenter.authentication?.userCode;
-    if (userCode != null && userCode.isNotEmpty) {
-      final savedSignature = await _tokenService.getUserSignature(userCode: userCode);
-      if (savedSignature != null && savedSignature.isNotEmpty) {
-        try {
-          final bytes = base64Decode(savedSignature);
-          setState(() {
-            _hasSavedSignature = true;
-            _savedSignatureBytes = bytes;
-          });
-        } catch (e) {
-          // Ignore decode errors
+    if (userCode == null || userCode.isEmpty) return;
+
+    // 1. Kiểm tra local storage trước (nhanh)
+    var savedSignature = await _tokenService.getUserSignature(userCode: userCode);
+    
+    // 2. Nếu không có trong local, lấy từ server theo identityCard/userCode
+    if (savedSignature == null || savedSignature.isEmpty) {
+      try {
+        final response = await appCenter.backendProvider.getUserSignature(includeImage: true);
+        if (response?.status == 200 &&
+            response?.data != null &&
+            response!.data!.isSigned == true &&
+            response.data!.signatureBase64 != null &&
+            response.data!.signatureBase64!.isNotEmpty) {
+          savedSignature = response.data!.signatureBase64!;
+          
+          // Lưu vào local storage để lần sau không cần lấy lại
+          try {
+            await _tokenService.saveUserSignature(
+              userCode: userCode,
+              signatureBase64Png: savedSignature,
+            );
+          } catch (e) {
+            // Ignore save errors
+          }
         }
+      } catch (e) {
+        // Ignore errors, tiếp tục với local storage
+      }
+    }
+
+    // 3. Hiển thị chữ ký nếu có
+    if (savedSignature != null && savedSignature.isNotEmpty) {
+      try {
+        final bytes = base64Decode(savedSignature);
+        setState(() {
+          _hasSavedSignature = true;
+          _savedSignatureBytes = bytes;
+        });
+      } catch (e) {
+        // Ignore decode errors
       }
     }
   }

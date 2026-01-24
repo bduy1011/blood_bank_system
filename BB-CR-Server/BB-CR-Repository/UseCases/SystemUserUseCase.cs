@@ -40,6 +40,9 @@ namespace BB.CR.Repositories.UseCases
                 response.Error(HttpStatusCode.NotFound, CommonResources.NotFound);
             else
             {
+                // Lưu CCCD cũ TRƯỚC KHI update để có thể update các bảng liên quan
+                var oldIdCardNr = systemUser.IdCardNr;
+                
                 if (model.IdCardNr != systemUser.IdCardNr)
                 {
                     model.IdCardNr = (model.IdCardNr ?? string.Empty).Trim();
@@ -80,9 +83,16 @@ namespace BB.CR.Repositories.UseCases
                 systemUser.FireBaseToken = model.FireBaseToken;
                 systemUser.IdCardNr = model.IdCardNr;
 
+                // Kiểm tra xem CCCD có thay đổi không
+                var newIdCardNr = (systemUser.IdCardNr ?? string.Empty).Trim();
+                var idCardChanged = !string.IsNullOrWhiteSpace(oldIdCardNr) && 
+                                   !string.IsNullOrWhiteSpace(newIdCardNr) && 
+                                   !string.Equals(oldIdCardNr, newIdCardNr, StringComparison.OrdinalIgnoreCase);
+
                 // If IdCardNr changed and your business rule is UserCode = CCCD/CMND,
                 // then migrate (rename) UserCode to new CCCD.
-                var newUserCode = (systemUser.IdCardNr ?? string.Empty).Trim();
+                var newUserCode = newIdCardNr;
+                
                 if (!string.IsNullOrWhiteSpace(newUserCode) && !string.Equals(newUserCode, code, StringComparison.OrdinalIgnoreCase))
                 {
                     // Prevent duplicate key
@@ -115,6 +125,41 @@ namespace BB.CR.Repositories.UseCases
 
                     await context.SystemUser.AddAsync(newSystemUser).ConfigureAwait(false);
                     context.SystemUser.Remove(systemUser);
+                    
+                    // Update tất cả các bảng liên quan khi đổi CCCD
+                    if (idCardChanged)
+                    {
+                        // Update DangKyHienMau
+                        var dangKyHienMauList = await context.DangKyHienMau
+                            .Where(i => i.CMND == oldIdCardNr)
+                            .ToListAsync()
+                            .ConfigureAwait(false);
+                        foreach (var dkhm in dangKyHienMauList)
+                        {
+                            dkhm.CMND = newUserCode;
+                        }
+
+                        // Update DMNguoiHienMau (CMND được encrypt, EF Core sẽ tự động xử lý)
+                        var dmNguoiHienMauList = await context.DMNguoiHienMau
+                            .Where(i => i.CMND == oldIdCardNr)
+                            .ToListAsync()
+                            .ConfigureAwait(false);
+                        foreach (var dm in dmNguoiHienMauList)
+                        {
+                            dm.CMND = newUserCode;
+                        }
+
+                        // Update CapMatKhau
+                        var capMatKhauList = await context.CapMatKhaus
+                            .Where(i => i.CMND == oldIdCardNr)
+                            .ToListAsync()
+                            .ConfigureAwait(false);
+                        foreach (var cmk in capMatKhauList)
+                        {
+                            cmk.CMND = newUserCode;
+                        }
+                    }
+                    
                     int count = await context.SaveChangesAsync().ConfigureAwait(false);
                     if (count == 0)
                         response.Error(HttpStatusCode.NoContent, CommonResources.NoContent);
@@ -123,6 +168,40 @@ namespace BB.CR.Repositories.UseCases
                 }
                 else
                 {
+                    // Nếu chỉ đổi CCCD mà không đổi UserCode, vẫn cần update các bảng liên quan
+                    if (idCardChanged)
+                    {
+                        // Update DangKyHienMau
+                        var dangKyHienMauList = await context.DangKyHienMau
+                            .Where(i => i.CMND == oldIdCardNr)
+                            .ToListAsync()
+                            .ConfigureAwait(false);
+                        foreach (var dkhm in dangKyHienMauList)
+                        {
+                            dkhm.CMND = newIdCardNr;
+                        }
+
+                        // Update DMNguoiHienMau (CMND được encrypt, EF Core sẽ tự động xử lý)
+                        var dmNguoiHienMauList = await context.DMNguoiHienMau
+                            .Where(i => i.CMND == oldIdCardNr)
+                            .ToListAsync()
+                            .ConfigureAwait(false);
+                        foreach (var dm in dmNguoiHienMauList)
+                        {
+                            dm.CMND = newIdCardNr;
+                        }
+
+                        // Update CapMatKhau
+                        var capMatKhauList = await context.CapMatKhaus
+                            .Where(i => i.CMND == oldIdCardNr)
+                            .ToListAsync()
+                            .ConfigureAwait(false);
+                        foreach (var cmk in capMatKhauList)
+                        {
+                            cmk.CMND = newIdCardNr;
+                        }
+                    }
+                    
                     context.SystemUser.Update(systemUser);
                     int count = await context.SaveChangesAsync().ConfigureAwait(false);
                     if (count == 0)

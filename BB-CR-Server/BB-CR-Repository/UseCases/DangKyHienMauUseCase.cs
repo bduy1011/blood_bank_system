@@ -56,6 +56,24 @@ namespace BB.CR.Repositories.UseCases
             return Path.Combine(GetDonorSignatureDir(id), "donor-signature.json");
         }
 
+        // Chữ ký theo identityCard/userCode
+        private static string GetUserSignatureDir(string identityCard)
+        {
+            // Sanitize identityCard để tránh lỗi path
+            var safeIdentityCard = string.Join("_", identityCard.Split(Path.GetInvalidFileNameChars()));
+            return Path.Combine(GetSignatureRootPath(), "signatures", "users", safeIdentityCard);
+        }
+
+        private static string GetUserSignatureFilePath(string identityCard)
+        {
+            return Path.Combine(GetUserSignatureDir(identityCard), "user-signature.png");
+        }
+
+        private static string GetUserSignatureMetaPath(string identityCard)
+        {
+            return Path.Combine(GetUserSignatureDir(identityCard), "user-signature.json");
+        }
+
         private sealed class DonorSignatureMeta
         {
             public DateTime SignedAt { get; set; }
@@ -280,6 +298,159 @@ namespace BB.CR.Repositories.UseCases
                 reg.TinhTrang = TinhTrangDangKyHienMau.DaTiepNhan;
                 context.DangKyHienMau.Update(reg);
                 await context.SaveChangesAsync().ConfigureAwait(false);
+            }
+
+            response.Success(new DonorSignatureInfoView
+            {
+                IsSigned = true,
+                SignedAt = now,
+                MimeType = meta.MimeType,
+                SignatureBase64 = null
+            }, CommonResources.Ok);
+
+            return response;
+        }
+
+        public static async Task<ReturnResponse<DonorSignatureInfoView>> GetUserSignatureAsync(
+            bool includeImage,
+            string? identityCard)
+        {
+            var response = new ReturnResponse<DonorSignatureInfoView>();
+
+            if (string.IsNullOrWhiteSpace(identityCard))
+            {
+                response.Error(HttpStatusCode.Unauthorized, "Unauthorized");
+                return response;
+            }
+
+            var filePath = GetUserSignatureFilePath(identityCard);
+            var metaPath = GetUserSignatureMetaPath(identityCard);
+
+            if (!File.Exists(filePath))
+            {
+                response.Success(new DonorSignatureInfoView
+                {
+                    IsSigned = false,
+                    SignedAt = null,
+                    MimeType = null,
+                    SignatureBase64 = null
+                }, CommonResources.Ok);
+                return response;
+            }
+
+            DonorSignatureMeta? meta = null;
+            try
+            {
+                if (File.Exists(metaPath))
+                {
+                    var metaJson = await File.ReadAllTextAsync(metaPath).ConfigureAwait(false);
+                    meta = JsonSerializer.Deserialize<DonorSignatureMeta>(metaJson);
+                }
+            }
+            catch
+            {
+                // ignore meta errors
+            }
+
+            var signedAt = meta?.SignedAt;
+            if (!signedAt.HasValue)
+            {
+                try
+                {
+                    signedAt = File.GetLastWriteTime(filePath);
+                }
+                catch
+                {
+                    signedAt = null;
+                }
+            }
+
+            string? base64 = null;
+            if (includeImage)
+            {
+                var bytes = await File.ReadAllBytesAsync(filePath).ConfigureAwait(false);
+                base64 = Convert.ToBase64String(bytes);
+            }
+
+            response.Success(new DonorSignatureInfoView
+            {
+                IsSigned = true,
+                SignedAt = signedAt,
+                MimeType = meta?.MimeType ?? "image/png",
+                SignatureBase64 = base64
+            }, CommonResources.Ok);
+
+            return response;
+        }
+
+        public static async Task<ReturnResponse<DonorSignatureInfoView>> SaveUserSignatureAsync(
+            DonorSignatureSaveRequest request,
+            string? identityCard,
+            string? deviceId)
+        {
+            var response = new ReturnResponse<DonorSignatureInfoView>();
+
+            if (string.IsNullOrWhiteSpace(identityCard))
+            {
+                response.Error(HttpStatusCode.Unauthorized, "Unauthorized");
+                return response;
+            }
+
+            if (request is null || string.IsNullOrWhiteSpace(request.SignatureBase64))
+            {
+                response.Error(HttpStatusCode.Conflict, "Vui lòng cung cấp chữ ký (Base64).");
+                return response;
+            }
+
+            // Decode base64 (support optional data URI prefix)
+            var b64 = request.SignatureBase64.Trim();
+            var commaIdx = b64.IndexOf(',');
+            if (commaIdx >= 0 && b64[..commaIdx].Contains("base64", StringComparison.OrdinalIgnoreCase))
+                b64 = b64[(commaIdx + 1)..];
+
+            byte[] bytes;
+            try
+            {
+                bytes = Convert.FromBase64String(b64);
+            }
+            catch
+            {
+                response.Error(HttpStatusCode.Conflict, "Chữ ký Base64 không hợp lệ.");
+                return response;
+            }
+
+            // Guard size (2MB)
+            if (bytes.Length == 0 || bytes.Length > (2 * 1024 * 1024))
+            {
+                response.Error(HttpStatusCode.Conflict, "Kích thước chữ ký không hợp lệ.");
+                return response;
+            }
+
+            var dir = GetUserSignatureDir(identityCard);
+            Directory.CreateDirectory(dir);
+
+            var filePath = GetUserSignatureFilePath(identityCard);
+            var metaPath = GetUserSignatureMetaPath(identityCard);
+
+            await File.WriteAllBytesAsync(filePath, bytes).ConfigureAwait(false);
+
+            var now = DateTime.Now;
+            var meta = new DonorSignatureMeta
+            {
+                SignedAt = now,
+                IdentityCard = identityCard,
+                DeviceId = deviceId,
+                MimeType = string.IsNullOrWhiteSpace(request.MimeType) ? "image/png" : request.MimeType
+            };
+
+            try
+            {
+                var metaJson = JsonSerializer.Serialize(meta, new JsonSerializerOptions { WriteIndented = true });
+                await File.WriteAllTextAsync(metaPath, metaJson).ConfigureAwait(false);
+            }
+            catch
+            {
+                // ignore meta write errors
             }
 
             response.Success(new DonorSignatureInfoView

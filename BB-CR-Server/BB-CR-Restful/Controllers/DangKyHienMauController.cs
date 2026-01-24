@@ -124,6 +124,30 @@ namespace BB.CR.Rest.Controllers
             return Ok(response);
         }
 
+        [HttpGet("user-signature"), SwaggerOperation(Summary = "Lấy chữ ký tay của user theo identityCard (nếu có)")]
+        public async Task<IActionResult> GetUserSignatureAsync([FromQuery] bool includeImage = false)
+        {
+            var response = await BaseHandler.ExecuteAsync(
+                async () => await dangKyHienMauRepository
+                    .GetUserSignatureAsync(includeImage, logger, mapper, this.GetIdentityCard())
+                    .ConfigureAwait(false),
+                logger).ConfigureAwait(false);
+
+            return Ok(response);
+        }
+
+        [HttpPost("user-signature"), SwaggerOperation(Summary = "Lưu chữ ký tay của user theo identityCard (Base64 PNG)")]
+        public async Task<IActionResult> SaveUserSignatureAsync([FromBody] DonorSignatureSaveRequest request)
+        {
+            var response = await BaseHandler.ExecuteAsync(
+                async () => await dangKyHienMauRepository
+                    .SaveUserSignatureAsync(request, logger, mapper, this.GetIdentityCard(), this.GetDevice())
+                    .ConfigureAwait(false),
+                logger).ConfigureAwait(false);
+
+            return Ok(response);
+        }
+
         /// <summary>
         ///  Code từ chat GPT =))))
         /// </summary>

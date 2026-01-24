@@ -103,5 +103,38 @@ namespace BB.CR.Repositories.Implements
 
             return response;
         }
+
+        public async Task<ReturnResponse<DonorSignatureInfoView>> GetUserSignatureAsync(
+            bool includeImage,
+            ILogger logger,
+            IMapper mapper,
+            string? identityCard)
+        {
+            using var context = new BloodBankContext();
+
+            var response = await BaseUseCase.ExecuteAsync(
+                async () => await DangKyHienMauUseCase.GetUserSignatureAsync(includeImage, identityCard).ConfigureAwait(false),
+                logger,
+                context).ConfigureAwait(false);
+
+            return response;
+        }
+
+        public async Task<ReturnResponse<DonorSignatureInfoView>> SaveUserSignatureAsync(
+            DonorSignatureSaveRequest request,
+            ILogger logger,
+            IMapper mapper,
+            string? identityCard,
+            string? deviceId)
+        {
+            using var context = new BloodBankContext();
+
+            var response = await BaseUseCase.ExecuteAsync(
+                async () => await DangKyHienMauUseCase.SaveUserSignatureAsync(request, identityCard, deviceId).ConfigureAwait(false),
+                logger,
+                context).ConfigureAwait(false);
+
+            return response;
+        }
     }
 }

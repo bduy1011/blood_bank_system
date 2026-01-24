@@ -204,6 +204,18 @@ abstract class BackendClient {
     @Body() Map<String, dynamic> body, {
     @DioOptions() Options? options,
   });
+
+  @GET('api/dang-ky-hien-mau/user-signature')
+  Future<GeneralResponseMap<DonorSignatureInfo>> getUserSignature(
+    @Query("includeImage") bool includeImage, {
+    @DioOptions() Options? options,
+  });
+
+  @POST('api/dang-ky-hien-mau/user-signature')
+  Future<GeneralResponseMap<DonorSignatureInfo>> saveUserSignature(
+    @Body() Map<String, dynamic> body, {
+    @DioOptions() Options? options,
+  });
   @GET('api/dm-nguoi-hien-mau/get/{identityCard}?phoneNumber={phoneNumber}')
   Future<GeneralResponseMap<BloodDonor>> getDMNguoiHienMauByIdCard(
       @Path("identityCard") String identityCard,

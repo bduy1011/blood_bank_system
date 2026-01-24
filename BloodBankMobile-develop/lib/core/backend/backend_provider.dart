@@ -554,6 +554,32 @@ class BackendProvider {
     return null;
   }
 
+  Future<GeneralResponseMap<DonorSignatureInfo>?> getUserSignature({
+    bool includeImage = false,
+  }) async {
+    try {
+      return await _client.getUserSignature(includeImage);
+    } catch (e, s) {
+      log("getUserSignature()", error: e, stackTrace: s);
+    }
+    return null;
+  }
+
+  Future<GeneralResponseMap<DonorSignatureInfo>?> saveUserSignature({
+    required String signatureBase64Png,
+    String? mimeType,
+  }) async {
+    try {
+      return await _client.saveUserSignature({
+        "signatureBase64": signatureBase64Png,
+        "mimeType": mimeType ?? "image/png",
+      });
+    } catch (e, s) {
+      log("saveUserSignature()", error: e, stackTrace: s);
+    }
+    return null;
+  }
+
   Future<GeneralResponseMap<DonorSignatureInfo>?> saveDonorSignature({
     required String registerId,
     required String signatureBase64Png,
