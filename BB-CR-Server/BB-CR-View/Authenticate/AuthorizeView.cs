@@ -1,4 +1,4 @@
-﻿using BB.CR.Providers.Bases;
+using BB.CR.Providers.Bases;
 
 namespace BB.CR.Views.Authenticate
 {
@@ -11,6 +11,9 @@ namespace BB.CR.Views.Authenticate
         public bool Active { get; set; }
         public string? PhoneNumber { get; set; }
         public string? IdCardNr { get; set; }
+
+        /// <summary>URL đầy đủ để tải ảnh avatar (vd: https://host/api/system-user/avatar)</summary>
+        public string? AvatarUrl { get; set; }
 
         public DMNguoiHienMauView? DMNguoiHienMau { get; set; }
 

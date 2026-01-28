@@ -7,6 +7,7 @@ import 'package:blood_donation/models/register_donation_blood_response.dart';
 import 'package:blood_donation/models/slide_model.dart';
 import 'package:blood_donation/models/system_config.dart';
 import 'package:blood_donation/models/ward.dart';
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:retrofit/retrofit.dart';
 
@@ -72,6 +73,12 @@ abstract class BackendClient {
 
   @DELETE('api/system-user/delete-account/{code}')
   Future<GeneralResponseMap> deleteAccount(@Path("code") String code,
+      {@DioOptions() Options? options});
+
+  @MultiPart()
+  @POST('api/system-user/upload-avatar')
+  Future<GeneralResponseMap<dynamic>> uploadAvatar(
+      @Part(name: 'file') File file,
       {@DioOptions() Options? options});
 
   @GET('api/system-user/logout')

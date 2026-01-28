@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:blood_donation/core/backend/header_interceptor.dart';
 import 'package:blood_donation/core/backend/remote/backend_client.dart';
@@ -17,6 +18,7 @@ import 'package:blood_donation/models/register_donation_blood_response.dart';
 import 'package:blood_donation/models/slide_model.dart';
 import 'package:blood_donation/models/system_config.dart';
 import 'package:blood_donation/models/ward.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -183,6 +185,14 @@ class BackendProvider {
     return token;
   }
 
+  /// Xóa cache ảnh avatar để lần hiển thị sau tải ảnh mới từ server (tránh ảnh cũ sau khi reload/đổi ảnh).
+  Future<void> evictAvatarCache() async {
+    try {
+      final base = url.toString().replaceAll(RegExp(r'/$'), '');
+      await CachedNetworkImage.evictFromCache('$base/api/system-user/avatar');
+    } catch (_) {}
+  }
+
   Future<Authentication?> reLoadInformation() async {
     AuthenticationResponse? authenticationResponse;
     try {
@@ -202,6 +212,7 @@ class BackendProvider {
             authentication: authenticationResponse!.data!);
         GetIt.instance<AppCenter>()
             .setAuthentication(authenticationResponse.data);
+        evictAvatarCache(); // Load lại luôn lấy ảnh mới từ server, không dùng cache cũ
         return authenticationResponse.data;
       }
     } else {
@@ -230,6 +241,7 @@ class BackendProvider {
       if (authenticationResponse?.data!.accessToken?.isNotEmpty == true) {
         await _localStorage.saveAuthentication(
             authentication: authenticationResponse!.data!);
+        evictAvatarCache();
         return authenticationResponse.data;
       }
     } else {
@@ -342,6 +354,10 @@ class BackendProvider {
       code,
       isModIdCard,
     );
+  }
+
+  Future<GeneralResponseMap<dynamic>> uploadAvatar(File file) async {
+    return _client.uploadAvatar(file);
   }
 
   Future<GeneralResponseMap<BloodDonor>> getDMNguoiHienMauByIdCard({

@@ -472,6 +472,7 @@ mixin class AppLocale {
   static const String processedAt = 'processedAt';
   static const String timeWithIndex = 'timeWithIndex';
   static const String selectImageFromGallery = 'selectImageFromGallery';
+  static const String takePhoto = 'take_photo';
   static const String noQRCodeFoundInImage = 'noQRCodeFoundInImage';
   static const String failedToReadQRFromImage = 'failedToReadQRFromImage';
   // Digital signature flow
@@ -964,6 +965,7 @@ mixin class AppLocale {
     processedAt: 'Processed at:',
     timeWithIndex: 'Time {index}',
     selectImageFromGallery: 'Select image from gallery',
+    takePhoto: 'Take photo',
     noQRCodeFoundInImage: 'No QR code found in the selected image',
     failedToReadQRFromImage: 'Failed to read QR code from image',
     // Digital signature flow
@@ -1449,6 +1451,7 @@ mixin class AppLocale {
     processedAt: 'Điều chế lúc:',
     timeWithIndex: 'Lần {index}',
     selectImageFromGallery: 'Chọn ảnh từ thư viện',
+    takePhoto: 'Chụp ảnh',
     noQRCodeFoundInImage: 'Không tìm thấy QR code trong ảnh đã chọn',
     failedToReadQRFromImage: 'Không thể đọc QR code từ ảnh',
     // Digital signature flow

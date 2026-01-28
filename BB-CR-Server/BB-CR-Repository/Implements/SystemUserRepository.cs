@@ -297,5 +297,26 @@ namespace BB.CR.Repositories.Implements
                 .ConfigureAwait(false);
             return response;
         }
+
+        public async Task<ReturnResponse<SystemUser>> GetByUserCodeAsync(string userCode, ILogger logger)
+        {
+            using var context = new BloodBankContext();
+            var response = await BaseUseCase
+                .ExecuteAsync(async () => await SystemUserUseCase
+                    .GetByUserCodeAsync(userCode, context)
+                    .ConfigureAwait(false), logger, context)
+                .ConfigureAwait(false);
+            return response;
+        }
+
+        public async Task<ReturnResponse<SystemUser>> UpdateAvatarUrlAsync(string userCode, string relativePath, ILogger logger)
+        {
+            using var context = new BloodBankContext();
+            using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
+            var response = await BaseUseCase.ExecuteAsync(
+                async () => await SystemUserUseCase.UpdateAvatarUrlAsync(userCode, relativePath, context).ConfigureAwait(false),
+                logger, context, transaction).ConfigureAwait(false);
+            return response;
+        }
     }
 }

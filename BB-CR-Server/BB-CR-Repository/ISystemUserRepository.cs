@@ -1,4 +1,4 @@
-﻿using BB.CR.Models;
+using BB.CR.Models;
 using BB.CR.Providers.Bases;
 using BB.CR.Views.Otp;
 using MapsterMapper;
@@ -27,5 +27,7 @@ namespace BB.CR.Repositories
         Task<ReturnResponse<bool>> RemoveIdCardAsync(string idCard, ILogger logger);
 
         Task<ReturnResponse<SystemUser>> GetByIdCardNrAsync(string idCardNr, ILogger logger);
+        Task<ReturnResponse<SystemUser>> GetByUserCodeAsync(string userCode, ILogger logger);
+        Task<ReturnResponse<SystemUser>> UpdateAvatarUrlAsync(string userCode, string relativePath, ILogger logger);
     }
 }

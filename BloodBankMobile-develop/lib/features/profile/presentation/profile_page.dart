@@ -3,10 +3,14 @@ import 'package:blood_donation/base/base_view/base_view_stateful.dart';
 import 'package:blood_donation/core/localization/app_locale.dart';
 import 'package:blood_donation/utils/extension/context_ext.dart';
 import 'package:blood_donation/utils/widget/spacer_widget.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:get/route_manager.dart';
 
+import '../../../app/app_util/app_center.dart';
 import '../../../utils/phone_number_formater.dart';
 import '../controller/profile_controller.dart';
 
@@ -89,9 +93,11 @@ class _ProfilePageState
                             spacing: 40,
                           ),
 
-                          Image.asset(
-                            "assets/icons/app_icon_oval.png",
-                            width: 150,
+                          GestureDetector(
+                            onTap: controller.note == null
+                                ? () => controller.pickAvatar(context)
+                                : null,
+                            child: _buildAvatar(context),
                           ),
                           if (controller.note != null) ...[
                             const VSpacing(
@@ -304,6 +310,50 @@ class _ProfilePageState
           return null;
         },
       ),
+    );
+  }
+
+  Widget _buildAvatar(BuildContext context) {
+    const size = 120.0;
+    if (controller.hasPendingAvatar && controller.pendingAvatarFile != null) {
+      return ClipOval(
+        child: Image.file(
+          controller.pendingAvatarFile!,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+        ),
+      );
+    }
+    final url = controller.avatarDisplayUrl ?? controller.avatarUrl;
+    final token = GetIt.instance<AppCenter>().authentication?.accessToken;
+    if (url != null && url.isNotEmpty) {
+      return ClipOval(
+        child: CachedNetworkImage(
+          imageUrl: url,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          httpHeaders: token != null && token.isNotEmpty
+              ? {'Authorization': 'Bearer $token'}
+              : null,
+          placeholder: (_, __) => const SizedBox(
+            width: size,
+            height: size,
+            child: Center(child: CircularProgressIndicator()),
+          ),
+          errorWidget: (_, __, ___) => Image.asset(
+            "assets/icons/app_icon_oval.png",
+            width: size,
+            height: size,
+            fit: BoxFit.contain,
+          ),
+        ),
+      );
+    }
+    return Image.asset(
+      "assets/icons/app_icon_oval.png",
+      width: size,
     );
   }
 

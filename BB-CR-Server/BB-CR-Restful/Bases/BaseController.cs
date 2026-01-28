@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BB.CR.Rest.Bases
 {
@@ -10,26 +11,22 @@ namespace BB.CR.Rest.Bases
 
         protected string? GetIdentityCard()
         {
-            if (_contextAccessor is null)
+            if (_contextAccessor?.HttpContext?.User?.Claims is not { } claims)
                 return null;
 
-            var identityCard = _contextAccessor?.HttpContext?.User?.Claims?.FirstOrDefault(i => i.Type.Equals(nameof(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sid), StringComparison.OrdinalIgnoreCase));
-            if (identityCard is null)
-                return null;
-
-            return identityCard.Value;
+            var c = claims.FirstOrDefault(i => string.Equals(i.Type, System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sid, StringComparison.OrdinalIgnoreCase));
+            return c?.Value;
         }
 
         protected string? GetUserCode()
         {
-            if (_contextAccessor is null)
+            if (_contextAccessor?.HttpContext?.User?.Claims is not { } claims)
                 return null;
 
-            var userCode = _contextAccessor?.HttpContext?.User?.Claims?.FirstOrDefault(i => i.Type.Equals(nameof(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub), StringComparison.OrdinalIgnoreCase));
-            if (userCode is null)
-                return null;
-
-            return userCode.Value;
+            // ASP.NET Core JWT mặc định map claim "sub" sang ClaimTypes.NameIdentifier
+            var c = claims.FirstOrDefault(i => i.Type == ClaimTypes.NameIdentifier)
+                 ?? claims.FirstOrDefault(i => string.Equals(i.Type, System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub, StringComparison.OrdinalIgnoreCase));
+            return c?.Value;
         }
 
         protected string? GetFirebaseToken() 

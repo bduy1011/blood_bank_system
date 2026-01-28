@@ -1,4 +1,4 @@
-﻿using BB.CR.Providers.Bases;
+using BB.CR.Providers.Bases;
 
 namespace BB.CR.Models
 {
@@ -23,5 +23,8 @@ namespace BB.CR.Models
         public DateTime? CreatedOn { get; set; }
 
         public string? FireBaseToken { get; set; }
+
+        /// <summary>Đường dẫn tương đối avatar (vd: avatars/{userCode}/avatar.jpg)</summary>
+        public string? AvatarUrl { get; set; }
     }
 }

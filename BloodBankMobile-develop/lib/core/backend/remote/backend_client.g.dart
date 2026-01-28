@@ -400,6 +400,45 @@ class _BackendClient implements BackendClient {
   }
 
   @override
+  Future<GeneralResponseMap<dynamic>> uploadAvatar(
+    File file, {
+    Options? options,
+  }) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    final _data = FormData.fromMap({
+      'file': await MultipartFile.fromFile(
+        file.path,
+        filename: file.path.split(RegExp(r'[/\\]')).last,
+      ),
+    });
+    final newOptions = newRequestOptions(options);
+    newOptions.extra.addAll(_extra);
+    newOptions.headers.addAll(_dio.options.headers);
+    newOptions.headers.addAll(_headers);
+    final _options = newOptions.copyWith(
+      method: 'POST',
+      baseUrl: baseUrl ?? _dio.options.baseUrl,
+      queryParameters: queryParameters,
+      path: 'api/system-user/upload-avatar',
+    )..data = _data;
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late GeneralResponseMap<dynamic> _value;
+    try {
+      _value = GeneralResponseMap<dynamic>.fromJson(
+        _result.data!,
+        (json) => json as dynamic,
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
   Future<GeneralResponseMap<dynamic>> logout({Options? options}) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};

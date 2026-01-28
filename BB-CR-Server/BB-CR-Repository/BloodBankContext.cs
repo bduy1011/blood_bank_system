@@ -1,4 +1,4 @@
-﻿using BB.CR.Providers;
+using BB.CR.Providers;
 using BB.CR.Repositories.Bases;
 using Microsoft.EntityFrameworkCore;
 
@@ -241,6 +241,7 @@ namespace BB.CR.Repositories
                 o.Property(i => i.CreatedOn).HasColumnType(_smallDateTime);
                 o.Property(i => i.FireBaseToken).HasMaxLength(4000).IsUnicode(false);
                 o.Property(i => i.DeviceId).HasMaxLength(255).IsUnicode(false);
+                o.Property(i => i.AvatarUrl).HasMaxLength(500).IsUnicode(false);
 
                 o.HasIndex(i => new { i.DeviceId, i.CreatedOn });
             });

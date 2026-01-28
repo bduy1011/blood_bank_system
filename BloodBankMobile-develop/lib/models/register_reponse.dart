@@ -14,6 +14,7 @@ class RegisterResponse {
   bool? isDataQLMau;
   String? accessToken;
   String? idCardNr;
+  String? avatarUrl;
   BloodDonor? dmNguoiHienMau;
   int? soLanHienMau;
   DateTime? ngayHienMauGanNhat;
@@ -33,6 +34,7 @@ class RegisterResponse {
     this.isDataQLMau,
     this.accessToken,
     this.idCardNr,
+    this.avatarUrl,
     this.dmNguoiHienMau,
     this.soLanHienMau,
     this.ngayHienMauGanNhat,
@@ -53,6 +55,7 @@ class RegisterResponse {
     isDataQLMau = json['isDataQLMau'];
     accessToken = json['accessToken'];
     idCardNr = json['idCardNr'];
+    avatarUrl = (json['avatarUrl'] ?? json['AvatarUrl'])?.toString();
     dmNguoiHienMau = json['dmNguoiHienMau'] != null
         ? BloodDonor.fromJson(json['dmNguoiHienMau'])
         : null;
@@ -77,6 +80,7 @@ class RegisterResponse {
     data['acceptedOtp'] = acceptedOtp;
     data['isDataQLMau'] = isDataQLMau;
     data['idCardNr'] = idCardNr;
+    data['avatarUrl'] = avatarUrl;
     data['accessToken'] = accessToken;
     data['dmNguoiHienMau'] = dmNguoiHienMau?.toJson();
     data['soLanHienMau'] = soLanHienMau;

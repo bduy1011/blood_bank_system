@@ -67,7 +67,9 @@ namespace BB.CR.Rest.Controllers
                     DMNguoiHienMau = null,
                     PhoneNumber = repository?.Data?.PhoneNumber,
                     IdCardNr = repository?.Data?.IdCardNr,
-
+                    AvatarUrl = repository?.Data?.AvatarUrl != null && contextAccessor?.HttpContext?.Request != null
+                        ? $"{contextAccessor.HttpContext!.Request.Scheme}://{contextAccessor.HttpContext.Request.Host}/api/system-user/avatar"
+                        : null,
                     IsDataQLMau = repository?.Data?.IsDataQLMau
                 };
 
@@ -177,6 +179,9 @@ namespace BB.CR.Rest.Controllers
                     PhoneNumber = repository.Data.PhoneNumber,
                     DMNguoiHienMau = null,
                     IdCardNr = repository.Data.IdCardNr,
+                    AvatarUrl = repository.Data.AvatarUrl != null && contextAccessor?.HttpContext?.Request != null
+                        ? $"{contextAccessor.HttpContext!.Request.Scheme}://{contextAccessor.HttpContext.Request.Host}/api/system-user/avatar"
+                        : null,
                 };
 
                 var nguoiHienMau = await BaseHandler.ExecuteAsync(

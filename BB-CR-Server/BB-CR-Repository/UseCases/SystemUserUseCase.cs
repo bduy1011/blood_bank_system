@@ -122,6 +122,7 @@ namespace BB.CR.Repositories.UseCases
                         IdCardNr = systemUser.IdCardNr,
                         CreatedOn = systemUser.CreatedOn,
                         FireBaseToken = systemUser.FireBaseToken,
+                        AvatarUrl = systemUser.AvatarUrl,
                     };
 
                     await context.SystemUser.AddAsync(newSystemUser).ConfigureAwait(false);
@@ -654,24 +655,62 @@ namespace BB.CR.Repositories.UseCases
         /// <summary>
         /// Reload information end-user
         /// </summary>
-        /// <param name="idCard"></param>
-        /// <param name="context"></param>
-        /// <returns></returns>
         internal static async Task<ReturnResponse<SystemUser>> GetByIdCardNrAsync(string idCard, BloodBankContext context)
         {
             var response = new ReturnResponse<SystemUser>();
-
             var model = await context.SystemUser
                 .AsNoTracking()
                 .FirstOrDefaultAsync(i => i.IdCardNr == idCard)
                 .ConfigureAwait(false);
-
             if (model is null)
                 response.Error(HttpStatusCode.NotFound, CommonResources.NotFound);
             else
                 response.Success(model, CommonResources.Ok);
-
             return response;
+        }
+
+        /// <summary>
+        /// Lấy user theo UserCode (dùng cho avatar, v.v.)
+        /// </summary>
+        internal static async Task<ReturnResponse<SystemUser>> GetByUserCodeAsync(string userCode, BloodBankContext context)
+        {
+            var response = new ReturnResponse<SystemUser>();
+            var model = await context.SystemUser
+                .AsNoTracking()
+                .FirstOrDefaultAsync(i => i.UserCode == userCode)
+                .ConfigureAwait(false);
+            if (model is null)
+                response.Error(HttpStatusCode.NotFound, CommonResources.NotFound);
+            else
+                response.Success(model, CommonResources.Ok);
+            return response;
+        }
+
+        /// <summary>
+        /// Cập nhật đường dẫn avatar cho user
+        /// </summary>
+        internal static async Task<ReturnResponse<SystemUser>> UpdateAvatarUrlAsync(string userCode, string relativePath, BloodBankContext context)
+        {
+            var response = new ReturnResponse<SystemUser>();
+            var user = await context.SystemUser.FirstOrDefaultAsync(i => i.UserCode == userCode).ConfigureAwait(false);
+            if (user is null)
+            {
+                response.Error(HttpStatusCode.NotFound, CommonResources.NotFound);
+                return response;
+            }
+            user.AvatarUrl = relativePath;
+            context.SystemUser.Update(user);
+            await context.SaveChangesAsync().ConfigureAwait(false);
+            response.Success(user, CommonResources.Ok);
+            return response;
+        }
+
+        /// <summary>
+        /// Thư mục gốc lưu avatar (App_Data/avatars)
+        /// </summary>
+        internal static string GetAvatarRootPath()
+        {
+            return Path.Combine(GetSignatureRootPath(), "avatars");
         }
     }
 }

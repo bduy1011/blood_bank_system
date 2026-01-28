@@ -1,4 +1,5 @@
-﻿using BB.CR.Models;
+using System.IO;
+using BB.CR.Models;
 using BB.CR.Providers;
 using BB.CR.Providers.Bases;
 using BB.CR.Providers.Extensions;
@@ -73,6 +74,9 @@ namespace BB.CR.Rest.Controllers
                         DMNguoiHienMau = null,
                         PhoneNumber = _response?.Data?.PhoneNumber,
                         IdCardNr = _response?.Data?.IdCardNr,
+                        AvatarUrl = _response?.Data?.AvatarUrl != null && _contextAccessor?.HttpContext?.Request != null
+                            ? $"{_contextAccessor.HttpContext!.Request.Scheme}://{_contextAccessor.HttpContext.Request.Host}/api/system-user/avatar"
+                            : null,
                     };
 
                     var token = Helper.GenerateToken(_response?.Data, configuration);
@@ -146,6 +150,9 @@ namespace BB.CR.Rest.Controllers
                     DMNguoiHienMau = null,
                     PhoneNumber = repository?.Data?.PhoneNumber,
                     IdCardNr = repository?.Data?.IdCardNr,
+                    AvatarUrl = repository?.Data?.AvatarUrl != null && _contextAccessor?.HttpContext?.Request != null
+                        ? $"{_contextAccessor.HttpContext!.Request.Scheme}://{_contextAccessor.HttpContext.Request.Host}/api/system-user/avatar"
+                        : null,
                 };
 
                 if (repository is null)
@@ -178,6 +185,103 @@ namespace BB.CR.Rest.Controllers
             }
 
             return Ok(response);
+        }
+
+        private static readonly HashSet<string> AllowedAvatarExtensions = new(StringComparer.OrdinalIgnoreCase) { ".jpg", ".jpeg", ".png", ".gif", ".webp", ".heic", ".heif" };
+        private const long MaxAvatarSizeBytes = 5 * 1024 * 1024; // 5MB
+
+        [HttpPost("upload-avatar"), SwaggerOperation(Summary = "Upload hoặc cập nhật avatar cho user đăng nhập")]
+        public async Task<IActionResult> UploadAvatar(IFormFile? file)
+        {
+            var userCode = GetUserCode();
+            if (string.IsNullOrEmpty(userCode))
+            {
+                var err = new ReturnResponse<object>();
+                err.Error(System.Net.HttpStatusCode.Unauthorized, CommonResources.SessionTimeOut);
+                return Ok(err);
+            }
+
+            if (file == null || file.Length == 0)
+            {
+                var err = new ReturnResponse<object>();
+                err.Error(System.Net.HttpStatusCode.BadRequest, "Chưa chọn ảnh.");
+                return Ok(err);
+            }
+
+            var ext = Path.GetExtension(file.FileName);
+            if (string.IsNullOrEmpty(ext) || !AllowedAvatarExtensions.Contains(ext))
+            {
+                var err = new ReturnResponse<object>();
+                err.Error(System.Net.HttpStatusCode.BadRequest, "Định dạng ảnh không hợp lệ. Chỉ chấp nhận: jpg, jpeg, png, gif, webp, heic, heif.");
+                return Ok(err);
+            }
+
+            if (file.Length > MaxAvatarSizeBytes)
+            {
+                var err = new ReturnResponse<object>();
+                err.Error(System.Net.HttpStatusCode.BadRequest, "Kích thước ảnh tối đa 5MB.");
+                return Ok(err);
+            }
+
+            var safeUserCode = string.Join("_", userCode.Split(Path.GetInvalidFileNameChars()));
+            var root = Path.Combine(AppContext.BaseDirectory, "App_Data", "avatars");
+            var dir = Path.Combine(root, safeUserCode);
+            Directory.CreateDirectory(dir);
+            var fileName = "avatar" + ext;
+            var fullPath = Path.Combine(dir, fileName);
+
+            try
+            {
+                await using (var stream = new FileStream(fullPath, FileMode.Create, FileAccess.Write, FileShare.None))
+                    await file.CopyToAsync(stream).ConfigureAwait(false);
+
+                var relativePath = $"avatars/{safeUserCode}/{fileName}";
+                var updateRes = await BaseHandler.ExecuteAsync(
+                    async () => await systemUserRepository.UpdateAvatarUrlAsync(userCode, relativePath, logger).ConfigureAwait(false),
+                    logger).ConfigureAwait(false);
+
+                if (updateRes?.Status != System.Net.HttpStatusCode.OK)
+                    return Ok(updateRes ?? new ReturnResponse<SystemUser>());
+
+                var avatarUrl = _contextAccessor?.HttpContext?.Request != null
+                    ? $"{_contextAccessor.HttpContext!.Request.Scheme}://{_contextAccessor.HttpContext.Request.Host}/api/system-user/avatar"
+                    : null;
+                var ok = new ReturnResponse<object>();
+                ok.Success(new { avatarUrl }, CommonResources.Ok);
+                return Ok(ok);
+            }
+            catch (Exception ex)
+            {
+                logger.Log(LogLevel.Error, "{error}", ex.InnerMessage());
+                var err = new ReturnResponse<object>();
+                err.Error(System.Net.HttpStatusCode.InternalServerError, CommonResources.InternalServerError);
+                return Ok(err);
+            }
+        }
+
+        [HttpGet("avatar"), SwaggerOperation(Summary = "Lấy ảnh avatar của user đăng nhập")]
+        public async Task<IActionResult> GetAvatar()
+        {
+            var userCode = GetUserCode();
+            if (string.IsNullOrEmpty(userCode))
+                return Unauthorized();
+
+            var userRes = await systemUserRepository.GetByUserCodeAsync(userCode, logger).ConfigureAwait(false);
+            if (userRes?.Data?.AvatarUrl == null || userRes.Status != System.Net.HttpStatusCode.OK)
+                return NotFound();
+
+            var fullPath = Path.Combine(AppContext.BaseDirectory, "App_Data", userRes.Data.AvatarUrl);
+            if (!System.IO.File.Exists(fullPath))
+                return NotFound();
+
+            var contentType = "image/jpeg";
+            var ext = Path.GetExtension(fullPath);
+            if (string.Equals(ext, ".png", StringComparison.OrdinalIgnoreCase)) contentType = "image/png";
+            else if (string.Equals(ext, ".gif", StringComparison.OrdinalIgnoreCase)) contentType = "image/gif";
+            else if (string.Equals(ext, ".webp", StringComparison.OrdinalIgnoreCase)) contentType = "image/webp";
+            else if (string.Equals(ext, ".heic", StringComparison.OrdinalIgnoreCase) || string.Equals(ext, ".heif", StringComparison.OrdinalIgnoreCase)) contentType = "image/heic";
+
+            return PhysicalFile(fullPath, contentType);
         }
     }
 }

@@ -3,6 +3,7 @@ import 'package:blood_donation/app/theme/colors.dart';
 import 'package:blood_donation/base/base_view/base_view_stateful.dart';
 import 'package:blood_donation/core/localization/app_locale.dart';
 import 'package:blood_donation/utils/extension/context_ext.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/route_manager.dart';
@@ -198,28 +199,19 @@ class _SettingsPageState
                                   border: Border.all(
                                     color: Colors.white,
                                   )),
-                              padding: const EdgeInsets.all(20),
-                              child: SvgPicture.asset(
-                                "assets/icons/ic_home_profile.svg",
-                                colorFilter: const ColorFilter.mode(
-                                    Colors.red, BlendMode.srcIn),
-                                width: 50,
-                                height: 50,
-                                fit: BoxFit.scaleDown,
-                              ),
+                              padding: EdgeInsets.all(
+                                  (controller.avatarDisplayUrl != null &&
+                                          controller
+                                              .avatarDisplayUrl!.isNotEmpty)
+                                      ? 4
+                                      : 20),
+                              child: _buildSettingsAvatar(),
                             ),
                             Text(
                               controller.appCenter.authentication?.name ?? "",
                               style: context.myTheme.textThemeT1.bigTitle
                                   .copyWith(color: Colors.black),
                             ),
-
-                            //
-                            // Text(
-                            //   "Mức 2",
-                            //   style: context.myTheme.textThemeT1.title
-                            //       .copyWith(color: Colors.grey),
-                            // ),
                           ],
                         ),
                       ),
@@ -426,6 +418,44 @@ class _SettingsPageState
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildSettingsAvatar() {
+    const size = 92.0;
+    final url = controller.avatarDisplayUrl;
+    final token = controller.appCenter.authentication?.accessToken;
+    if (url != null && url.isNotEmpty) {
+      return ClipOval(
+        child: CachedNetworkImage(
+          imageUrl: url,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          httpHeaders: token != null && token.isNotEmpty
+              ? {'Authorization': 'Bearer $token'}
+              : null,
+          placeholder: (_, __) => const SizedBox(
+            width: size,
+            height: size,
+            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+          ),
+          errorWidget: (_, __, ___) => SvgPicture.asset(
+            "assets/icons/ic_home_profile.svg",
+            colorFilter: const ColorFilter.mode(Colors.red, BlendMode.srcIn),
+            width: 50,
+            height: 50,
+            fit: BoxFit.scaleDown,
+          ),
+        ),
+      );
+    }
+    return SvgPicture.asset(
+      "assets/icons/ic_home_profile.svg",
+      colorFilter: const ColorFilter.mode(Colors.red, BlendMode.srcIn),
+      width: 50,
+      height: 50,
+      fit: BoxFit.scaleDown,
     );
   }
 

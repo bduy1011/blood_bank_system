@@ -1,9 +1,13 @@
+import 'dart:io';
+
 import 'package:blood_donation/app/app_util/enum.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:blood_donation/base/base_view/base_view.dart';
 import 'package:blood_donation/utils/extension/getx_extension.dart';
 import 'package:blood_donation/utils/secure_token_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../app/app_page/controller/app_page_controller.dart';
@@ -25,6 +29,21 @@ class ProfileController extends BaseModelStateful {
   final SecureTokenService _tokenService = SecureTokenService();
 
   String? get note => getNote();
+  String? get avatarUrl => appCenter.authentication?.avatarUrl;
+
+  /// URL đầy đủ để tải ảnh avatar (server có thể trả relative path "avatars/xxx/avatar.heif").
+  String? get avatarDisplayUrl {
+    final u = avatarUrl;
+    if (u == null || u.isEmpty) return null;
+    if (u.startsWith('http://') || u.startsWith('https://')) return u;
+    final base = backendProvider.url.toString().replaceAll(RegExp(r'/$'), '');
+    return '$base/api/system-user/avatar';
+  }
+
+  /// Ảnh đã chọn nhưng chưa bấm "Cập nhật thông tin" — chỉ upload khi update profile.
+  File? _pendingAvatarFile;
+  File? get pendingAvatarFile => _pendingAvatarFile;
+  bool get hasPendingAvatar => _pendingAvatarFile != null;
 
   @override
   void onBack() {
@@ -81,6 +100,14 @@ class ProfileController extends BaseModelStateful {
 
     ///
     try {
+      showLoading();
+      if (hasPendingAvatar) {
+        final ok = await _uploadPendingAvatar(context);
+        if (!ok) {
+          hideLoading();
+          return;
+        }
+      }
       final oldUserCode = appCenter.authentication?.userCode?.trim();
       var body = {
         "userCode": appCenter.authentication?.userCode,
@@ -91,7 +118,6 @@ class ProfileController extends BaseModelStateful {
         "appRole": appCenter.authentication?.appRole,
         "active": true,
       };
-      showLoading();
       var isModIdCard = idCardController.text != appCenter.authentication?.cmnd;
       var response = await backendProvider.updateAccount(
         body: body,
@@ -126,8 +152,23 @@ class ProfileController extends BaseModelStateful {
         appCenter.authentication?.soLanHienMau = response.data?.soLanHienMau;
         appCenter.authentication?.duongTinhGanNhat =
             response.data?.duongTinhGanNhat;
+        // Nhận avatarUrl từ server. Server có thể trả relative path — lưu thành URL đầy đủ. Thêm ?v=timestamp để tránh cache ảnh cũ.
+        final raw = (response.data?.avatarUrl)?.toString().trim();
+        if (raw != null && raw.isNotEmpty) {
+          final base = raw.startsWith('http://') || raw.startsWith('https://')
+              ? raw
+              : '${backendProvider.url.toString().replaceAll(RegExp(r'/$'), '')}/api/system-user/avatar';
+          final sep = base.contains('?') ? '&' : '?';
+          appCenter.authentication?.avatarUrl = '$base${sep}v=${DateTime.now().millisecondsSinceEpoch}';
+          await backendProvider.evictAvatarCache();
+        }
 
         await backendProvider.saveAuthentication(appCenter.authentication!);
+
+        // Cập nhật secure storage để mọi nơi (home, drawer, v.v.) đọc được avatar mới
+        try {
+          await _tokenService.saveAuthentication(appCenter.authentication!);
+        } catch (_) {}
 
         // Đảm bảo: logout ra login page sẽ show CCCD/userCode mới (vì login lấy prefs["userName"])
         // và biometric/token cũng "đi theo CCCD mới" (update secure storage Authentication).
@@ -227,6 +268,71 @@ class ProfileController extends BaseModelStateful {
   }
 
 // 074202000733|281290246|Lê Nguyễn Anh Vũ|16112002|Nam|Tổ 6, Khu Phố 1,, Uyên Hưng, Tân Uyên, Bình Dương|13042021
+  /// Chọn ảnh từ thư viện/máy ảnh — chỉ lưu tạm, chưa upload. Upload khi bấm "Cập nhật thông tin".
+  Future<void> pickAvatar(BuildContext context) async {
+    if (note != null) return;
+    try {
+      final picker = ImagePicker();
+      final source = await showModalBottomSheet<ImageSource>(
+        context: context,
+        builder: (ctx) => SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: Text(AppLocale.selectImageFromGallery.translate(ctx)),
+                onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: Text(AppLocale.takePhoto.translate(ctx)),
+                onTap: () => Navigator.pop(ctx, ImageSource.camera),
+              ),
+            ],
+          ),
+        ),
+      );
+      if (source == null) return;
+      final xFile = await picker.pickImage(source: source, maxWidth: 1024, imageQuality: 85);
+      if (xFile == null) return;
+      File file = File(xFile.path);
+      const allowedExt = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic', '.heif'];
+      final fname = xFile.path.split(RegExp(r'[/\\]')).last;
+      final ext = fname.contains('.') ? '.${fname.split('.').last.toLowerCase()}' : '';
+      if (!allowedExt.contains(ext)) {
+        final dir = await getTemporaryDirectory();
+        final newPath = '${dir.path}/avatar_upload_${DateTime.now().millisecondsSinceEpoch}.jpg';
+        file = await file.copy(newPath);
+      }
+      _pendingAvatarFile = file;
+      refresh();
+    } catch (e, t) {
+      print(e);
+      print(t);
+      AppUtils.instance.showToast(AppLocale.updateAccountFailed.translate(context));
+    }
+  }
+
+  /// Gửi ảnh pending lên server (gọi trong updateProfile khi hasPendingAvatar).
+  Future<bool> _uploadPendingAvatar(BuildContext context) async {
+    if (_pendingAvatarFile == null) return true;
+    final file = _pendingAvatarFile!;
+    final response = await backendProvider.uploadAvatar(file);
+    if (response.status != 200 || response.data == null) {
+      AppUtils.instance.showToast(response.message ?? AppLocale.updateAccountFailed.translate(context));
+      return false;
+    }
+    final url = (response.data is Map ? (response.data as Map)['avatarUrl'] : null)?.toString();
+    if (url != null && url.isNotEmpty) {
+      final sep = url.contains('?') ? '&' : '?';
+      appCenter.authentication?.avatarUrl = '$url${sep}v=${DateTime.now().millisecondsSinceEpoch}';
+      _pendingAvatarFile = null;
+      await backendProvider.evictAvatarCache();
+    }
+    return true;
+  }
+
   Future<bool> scanQRCode() async {
     var rs = await Get.to(
       () => ScanQrCodeScreen(

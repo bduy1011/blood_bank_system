@@ -7,6 +7,17 @@ import 'package:get/get.dart';
 import 'package:in_app_review/in_app_review.dart';
 
 class SettingController extends BaseModelStateful {
+  String? get avatarUrl => appCenter.authentication?.avatarUrl;
+
+  /// URL đầy đủ để hiển thị avatar (giống ProfileController).
+  String? get avatarDisplayUrl {
+    final u = avatarUrl;
+    if (u == null || u.isEmpty) return null;
+    if (u.startsWith('http://') || u.startsWith('https://')) return u;
+    final base = backendProvider.url.toString().replaceAll(RegExp(r'/$'), '');
+    return '$base/api/system-user/avatar';
+  }
+
   @override
   void onBack() {
     // TODO: implement onBack
