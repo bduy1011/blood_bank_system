@@ -511,6 +511,7 @@ mixin class AppLocale {
   static const String nurseSignature = 'nurse_signature';
   static const String completeBloodDonation = 'complete_blood_donation';
   static const String thankYouLetterSent = 'thank_you_letter_sent';
+  static const String thankYouLetterTitle = 'thank_you_letter_title';
   static const String pleaseEnterVitalSigns = 'please_enter_vital_signs';
   static const String pleaseSignToContinue = 'please_sign_to_continue';
   static const String stepCompleted = 'step_completed';
@@ -531,6 +532,7 @@ mixin class AppLocale {
   static const String feedbackEmailInvalid = 'feedback_email_invalid';
   static const String feedbackContentPlaceholder =
       'feedback_content_placeholder';
+  static const String surveyFeedback = 'survey_feedback';
 
   static const Map<String, dynamic> EN = {
     homeBook: 'Book appointment',
@@ -1003,6 +1005,7 @@ mixin class AppLocale {
     nurseSignature: 'Nurse Signature',
     completeBloodDonation: 'Complete Blood Donation',
     thankYouLetterSent: 'Thank you letter has been sent',
+    thankYouLetterTitle: 'Thank you letter',
     pleaseEnterVitalSigns: 'Please enter all vital signs',
     pleaseSignToContinue: 'Please sign to continue',
     stepCompleted: 'Step completed successfully',
@@ -1022,6 +1025,7 @@ mixin class AppLocale {
         'We appreciate your feedback. Please fill in the form below.',
     feedbackEmailInvalid: 'Please enter a valid email address',
     feedbackContentPlaceholder: 'Feedback content',
+    surveyFeedback: 'Survey feedback',
   };
 
   static const Map<String, dynamic> VI = {
@@ -1489,6 +1493,7 @@ mixin class AppLocale {
     nurseSignature: 'Chữ ký điều dưỡng',
     completeBloodDonation: 'Hoàn thành hiến máu',
     thankYouLetterSent: 'Đã gửi thư cảm ơn',
+    thankYouLetterTitle: 'Thư cảm ơn',
     pleaseEnterVitalSigns: 'Vui lòng nhập đầy đủ chỉ số sinh tồn',
     pleaseSignToContinue: 'Vui lòng ký để tiếp tục',
     stepCompleted: 'Hoàn thành bước thành công',
@@ -1508,6 +1513,7 @@ mixin class AppLocale {
         'Chúng tôi đánh giá cao phản hồi của bạn. Vui lòng điền vào mẫu dưới đây.',
     feedbackEmailInvalid: 'Vui lòng nhập địa chỉ email hợp lệ',
     feedbackContentPlaceholder: 'Nội dung góp ý/ phản hồi',
+    surveyFeedback: 'Khảo sát ý kiến',
   };
 
   void init(
