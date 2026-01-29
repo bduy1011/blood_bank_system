@@ -14,6 +14,7 @@ import 'package:intl/intl.dart';
 import '../../../app/config/routes.dart';
 import '../../home/models/home_category.dart';
 import '../controller/blood_locations_history_controller.dart';
+import 'thank_you_letter_dialog.dart';
 
 class BloodLocationsHistoryPage extends StatefulWidget {
   const BloodLocationsHistoryPage({super.key});
@@ -116,7 +117,7 @@ class _BloodLocationsHistoryPageState extends BaseViewStateful<
               ),
               Expanded(
                 child: controller.dataHistorySearch.isEmpty
-                    ? buildEmpty(context)
+                    ? _buildEmptyWithSampleLetterButton(context)
                     : ListView.separated(
                         itemCount: controller.dataHistorySearch.length,
                         padding: const EdgeInsets.symmetric(
@@ -142,7 +143,11 @@ class _BloodLocationsHistoryPageState extends BaseViewStateful<
       BuildContext context, DonationBloodHistoryResponse item, int index) {
     return GestureDetector(
       onTap: () {
-        controller.onClickItem(item);
+        if (item.isHyperlink != null) {
+          ThankYouLetterDialog.show(context, item);
+        } else {
+          controller.onClickItem(item);
+        }
       },
       child: Container(
         decoration: BoxDecoration(
@@ -279,6 +284,28 @@ class _BloodLocationsHistoryPageState extends BaseViewStateful<
                           ? Colors.blue.shade900
                           : Colors.red.shade900),
                 ),
+                if (item.isHyperlink != null) ...[
+                  const SizedBox(height: 6),
+                  GestureDetector(
+                    onTap: () => ThankYouLetterDialog.show(context, item),
+                    behavior: HitTestBehavior.opaque,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.favorite,
+                            size: 16, color: AppColor.mainColor),
+                        const SizedBox(width: 4),
+                        Text(
+                          AppLocale.thankYouLetterTitle.translate(context),
+                          style: context.myTheme.textThemeT1.body
+                              .copyWith(
+                                  color: AppColor.mainColor,
+                                  fontWeight: FontWeight.w500),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 // RichText(
                 //   text: TextSpan(
                 //     text: "Kết quả xet nghiệm: ",
@@ -378,6 +405,42 @@ class _BloodLocationsHistoryPageState extends BaseViewStateful<
         ),
       ),
     );
+  }
+
+  Widget _buildEmptyWithSampleLetterButton(BuildContext context) {
+    return Column(
+      children: [
+        Expanded(child: buildEmpty(context)),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+          child: SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => _showSampleThankYouLetter(context),
+              icon: const Icon(Icons.card_giftcard_outlined, size: 20),
+              label: Text(
+                AppLocale.thankYouLetterTitle.translate(context),
+                style: const TextStyle(fontSize: 15),
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColor.mainColor,
+                side: const BorderSide(color: AppColor.mainColor),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showSampleThankYouLetter(BuildContext context) {
+    final sampleItem = DonationBloodHistoryResponse.fromJson({
+      'tenSanPham': 'Máu toàn phần 350 ml',
+      'ngayThu': '2025-05-23',
+      'isHyperlink': 1,
+    });
+    ThankYouLetterDialog.show(context, sampleItem);
   }
 
   Widget buildEmpty(BuildContext context) {

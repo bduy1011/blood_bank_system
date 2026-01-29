@@ -17,8 +17,10 @@ import 'package:photo_view/photo_view.dart';
 import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:screen_brightness/screen_brightness.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../app/app_util/app_center.dart';
+import '../../app/config/app_constants.dart';
 
 class ViewQrImageData extends StatefulWidget {
   const ViewQrImageData({
@@ -75,7 +77,8 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
     try {
       EasyLoading.show(status: 'Đang kết nối máy in...');
 
-      final okPerm = await ThermalPrinterService.instance.ensureBluetoothPermissions();
+      final okPerm =
+          await ThermalPrinterService.instance.ensureBluetoothPermissions();
       if (!okPerm) {
         EasyLoading.dismiss();
         AppUtils.instance.showToast('Chưa cấp quyền Bluetooth để in.');
@@ -83,14 +86,15 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
         return;
       }
 
-      final paperMm =
-          (appCenter.kioskPrinterPaperMm == 80 || appCenter.kioskPrinterPaperMm == 58)
-              ? appCenter.kioskPrinterPaperMm
-              : await PrinterSettings.getPaperMm(defaultValue: 58);
+      final paperMm = (appCenter.kioskPrinterPaperMm == 80 ||
+              appCenter.kioskPrinterPaperMm == 58)
+          ? appCenter.kioskPrinterPaperMm
+          : await PrinterSettings.getPaperMm(defaultValue: 58);
 
       final macFromServer = appCenter.kioskPrinterMac.trim();
       final macFromLocal = (await PrinterSettings.getMacAddress()) ?? '';
-      final printerMac = macFromServer.isNotEmpty ? macFromServer : macFromLocal;
+      final printerMac =
+          macFromServer.isNotEmpty ? macFromServer : macFromLocal;
 
       if (printerMac.isEmpty) {
         EasyLoading.dismiss();
@@ -121,7 +125,8 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
     }
   }
 
-  Future<void> _showSelectPrinterBottomSheet({required bool autoPrintAfterSelect}) async {
+  Future<void> _showSelectPrinterBottomSheet(
+      {required bool autoPrintAfterSelect}) async {
     if (!mounted) return;
 
     final enabled = await PrintBluetoothThermal.bluetoothEnabled;
@@ -135,7 +140,8 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
     EasyLoading.dismiss();
 
     if (devices.isEmpty) {
-      AppUtils.instance.showToast('Không tìm thấy máy in Bluetooth đã ghép nối.');
+      AppUtils.instance
+          .showToast('Không tìm thấy máy in Bluetooth đã ghép nối.');
       return;
     }
 
@@ -212,7 +218,8 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
           AppUtils.instance.showToast('Chưa có ảnh chữ ký.');
         }
       } else {
-        AppUtils.instance.showToast(response?.message ?? 'Không tải được chữ ký');
+        AppUtils.instance
+            .showToast(response?.message ?? 'Không tải được chữ ký');
       }
     } catch (e) {
       EasyLoading.dismiss();
@@ -230,7 +237,8 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 child: Row(
                   children: [
                     const Icon(Icons.draw, color: Color(0xff5c0101)),
@@ -258,7 +266,8 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
                   ),
                   child: PhotoView(
                     imageProvider: MemoryImage(bytes),
-                    backgroundDecoration: const BoxDecoration(color: Colors.white),
+                    backgroundDecoration:
+                        const BoxDecoration(color: Colors.white),
                     minScale: PhotoViewComputedScale.contained,
                     maxScale: PhotoViewComputedScale.covered * 3.0,
                   ),
@@ -269,6 +278,22 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
         ),
       ),
     );
+  }
+
+  Future<void> _openSurveyLink() async {
+    const url = AppConstants.surveyUrl; // Đường link khảo sát
+    final uri = Uri.parse(url); // Parse URL thành URI
+
+    // Kiểm tra nếu URL có thể được mở
+    if (await canLaunchUrl(uri)) {
+      print("URL can be launched");
+      // Mở URL bằng trình duyệt mặc định
+      await launchUrl(uri, mode: LaunchMode.platformDefault);
+    } else {
+      print("URL cannot be launched");
+      // Hiển thị thông báo nếu không thể mở URL
+      AppUtils.instance.showToast('Không thể mở liên kết khảo sát');
+    }
   }
 
   Future<void> _signNow() async {
@@ -296,7 +321,7 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
           _signedAt = response!.data!.signedAt ?? DateTime.now();
           _signatureResult = result;
         });
-        
+
         // Lưu chữ ký vào server theo identityCard/userCode để tái sử dụng
         try {
           await appCenter.backendProvider.saveUserSignature(
@@ -306,7 +331,7 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
           // Không block UI nếu không lưu được vào server
           // Chữ ký đã được lưu cho lần đăng ký này rồi
         }
-        
+
         // Đồng thời lưu vào local storage để offline access
         final userCode = appCenter.authentication?.userCode;
         if (userCode != null && userCode.isNotEmpty) {
@@ -319,7 +344,7 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
             // Ignore local storage errors
           }
         }
-        
+
         AppUtils.instance.showToast('Đã lưu chữ ký.');
       } else {
         AppUtils.instance.showToast(response?.message ?? 'Lưu chữ ký thất bại');
@@ -477,6 +502,8 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
                   ],
                   const SizedBox(height: 14),
                   _buildSignatureSection(context),
+                  const SizedBox(height: 14),
+                  _buildSurveyLink(context),
                   SizedBox(height: MediaQuery.of(context).padding.bottom + 8),
                 ],
               ),
@@ -487,9 +514,35 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
     );
   }
 
+  Widget _buildSurveyLink(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: _openSurveyLink, // Gọi phương thức mở đường link khảo sát
+        icon: const Icon(Icons.assignment_turned_in, size: 20),
+        label: Text(
+          AppLocale.surveyFeedback.translate(context),
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: const Color(0xFFB22C2D),
+          side: const BorderSide(color: Color(0xFFB22C2D)),
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildSignatureSection(BuildContext context) {
-    final signedAtText =
-        _signedAt != null ? ' • ${_signedAt!.ddmmyyyy} ${_signedAt!.timeHourString}' : '';
+    final signedAtText = _signedAt != null
+        ? ' • ${_signedAt!.ddmmyyyy} ${_signedAt!.timeHourString}'
+        : '';
 
     return Container(
       width: double.infinity,
@@ -505,7 +558,7 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: _isSigned 
+          color: _isSigned
               ? const Color(0xFFB22C2D).withOpacity(0.3)
               : Colors.grey[300]!,
           width: 1.5,
@@ -527,7 +580,7 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: _isSigned 
+                  color: _isSigned
                       ? const Color(0xFFB22C2D).withOpacity(0.15)
                       : Colors.grey[200],
                   borderRadius: BorderRadius.circular(12),
@@ -535,9 +588,7 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
                 child: Icon(
                   _isSigned ? Icons.check_circle : Icons.edit_note,
                   size: 22,
-                  color: _isSigned 
-                      ? const Color(0xFFB22C2D)
-                      : Colors.grey[600],
+                  color: _isSigned ? const Color(0xFFB22C2D) : Colors.grey[600],
                 ),
               ),
               const SizedBox(width: 12),
@@ -550,7 +601,7 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
                       style: context.myTheme.textThemeT1.body.copyWith(
                         fontWeight: FontWeight.w700,
                         fontSize: 16,
-                        color: _isSigned 
+                        color: _isSigned
                             ? const Color(0xFFB22C2D)
                             : Colors.black87,
                       ),
@@ -572,7 +623,8 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
                   height: 20,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFB22C2D)),
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(Color(0xFFB22C2D)),
                   ),
                 ),
             ],
@@ -599,7 +651,8 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
                 aspectRatio: 3.2,
                 child: _signatureResult?.pngBytes != null
                     ? InkWell(
-                        onTap: () => _openSignatureDialog(_signatureResult!.pngBytes),
+                        onTap: () =>
+                            _openSignatureDialog(_signatureResult!.pngBytes),
                         child: Stack(
                           children: [
                             Image.memory(
@@ -639,7 +692,9 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
-                                _isSigned ? Icons.image_outlined : Icons.edit_note,
+                                _isSigned
+                                    ? Icons.image_outlined
+                                    : Icons.edit_note,
                                 color: Colors.grey[400],
                                 size: 40,
                               ),
@@ -648,7 +703,8 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
                                 _isSigned
                                     ? 'Chưa tải ảnh chữ ký'
                                     : 'Chưa có chữ ký',
-                                style: context.myTheme.textThemeT1.body.copyWith(
+                                style:
+                                    context.myTheme.textThemeT1.body.copyWith(
                                   color: Colors.grey[500],
                                   fontSize: 13,
                                 ),
@@ -709,7 +765,8 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFFB22C2D),
                   side: const BorderSide(color: Color(0xFFB22C2D)),
-                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -836,7 +893,8 @@ class _ViewQrImageDataState extends State<ViewQrImageData> {
                   TextSpan(
                     children: [
                       TextSpan(
-                        text: '${AppLocale.registrationId.translate(context)}: ',
+                        text:
+                            '${AppLocale.registrationId.translate(context)}: ',
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       TextSpan(
