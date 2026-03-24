@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
+import '../../../app/app_util/enum.dart';
 import '../../../models/blood_donation_event.dart';
 import '../../../utils/app_utils.dart';
 import '../../../utils/redirect_to_google_utils.dart';
@@ -117,15 +118,26 @@ class _HistoryDialogPageState
   }
 
   Widget buildItemHistory(BloodDonationEvent item, BuildContext context) {
+    // Determine background color based on loaiMau
+    Color backgroundColor;
+    if (!item.isDuocDangKy!) {
+      // Disabled/inactive items - gray
+      backgroundColor = Colors.grey[200]!;
+    } else if (item.loaiMau == LoaiMau.TieuCau.value) {
+      // Platelet donation - orange/beige color
+      backgroundColor = const Color(0xFFFFF4E6); // Light orange/beige
+    } else {
+      // Blood donation - pink color
+      backgroundColor = const Color(0xFFFCE4EC); // Light pink
+    }
+
     return GestureDetector(
       onTap: () {
         controller.backToDonationBlood(item);
       },
       child: Container(
         decoration: BoxDecoration(
-            color: item.isDuocDangKy == true
-                ? const Color.fromARGB(255, 248, 243, 243)
-                : Colors.grey[200],
+            color: backgroundColor,
             borderRadius: BorderRadius.circular(14),
             boxShadow: [
               BoxShadow(
@@ -156,6 +168,24 @@ class _HistoryDialogPageState
   }
 
   Widget buildTextContent(BloodDonationEvent item, BuildContext context) {
+    // Determine text color based on loaiMau
+    Color titleColor;
+    Color bodyColor;
+
+    if (!item.isDuocDangKy!) {
+      // Disabled/inactive items
+      titleColor = Colors.black38;
+      bodyColor = Colors.black38;
+    } else if (item.loaiMau == LoaiMau.TieuCau.value) {
+      // Platelet donation - orange/brown color
+      titleColor = const Color(0xFFD97706); // Orange/brown
+      bodyColor = Colors.black87;
+    } else {
+      // Blood donation - dark red color
+      titleColor = const Color(0xff5c0101); // Dark red
+      bodyColor = Colors.black87;
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       child: Column(
@@ -164,17 +194,13 @@ class _HistoryDialogPageState
           Text(
             item.ten ?? "",
             style: context.myTheme.textThemeT1.title.copyWith(
-              color: item.isDuocDangKy == true
-                  ? const Color(0xff5c0101)
-                  : Colors.black38,
+              color: titleColor,
             ),
           ),
           Text(
             item.diaDiemToChuc ?? '',
             style: context.myTheme.textThemeT1.title.copyWith(
-              color: item.isDuocDangKy == true
-                  ? const Color(0xff5c0101)
-                  : Colors.black38,
+              color: titleColor,
             ),
           ),
           const VSpacing(
@@ -183,7 +209,7 @@ class _HistoryDialogPageState
           Text(
             "Địa chỉ: ${(item.tenXa?.trim().isNotEmpty == true) ? "${item.tenXa}, " : ""}${item.tenHuyen}, ${item.tenTinh}",
             style: context.myTheme.textThemeT1.body.copyWith(
-              color: item.isDuocDangKy == true ? Colors.black : Colors.black38,
+              color: bodyColor,
             ),
           ),
         ],
@@ -220,8 +246,10 @@ class _HistoryDialogPageState
                     spacing: 4,
                   ),
                   Text(
-                    AppLocale.registeredCount.translate(context)
-                        .replaceAll('{registered}', '${item.soLuongDangKyHienMau ?? 0}')
+                    AppLocale.registeredCount
+                        .translate(context)
+                        .replaceAll(
+                            '{registered}', '${item.soLuongDangKyHienMau ?? 0}')
                         .replaceAll('{total}', '${item.soLuongDuKien}'),
                     style: context.myTheme.textThemeT1.body.copyWith(
                       color: const Color(0xff0020aa),
@@ -239,7 +267,8 @@ class _HistoryDialogPageState
                   ProcessWebviewDialog.instance
                       .openGoogleMapRoadToUrlAddress(item.googleMapLink ?? "");
                 } else {
-                  AppUtils.instance.showToast(AppLocale.routeNotFound.translate(context));
+                  AppUtils.instance
+                      .showToast(AppLocale.routeNotFound.translate(context));
                 }
               },
               child: Container(
@@ -275,12 +304,23 @@ class _HistoryDialogPageState
   }
 
   Widget buildItemTime(BloodDonationEvent item, BuildContext context) {
+    Color timeBgColor;
+    Color iconColor;
+
+    if (item.loaiMau == LoaiMau.TieuCau.value) {
+      timeBgColor = const Color(0xFFFFDAB9); // Saturated orange/beige
+      iconColor = const Color(0xFFD97706); // Orange/brown
+    } else {
+      timeBgColor = const Color.fromARGB(255, 248, 209, 209); // Saturated pink
+      iconColor = const Color(0xff5c0101); // Dark red
+    }
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5)
           .copyWith(top: 3),
-      decoration: const BoxDecoration(
-        color: Color.fromARGB(255, 248, 209, 209),
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        color: timeBgColor,
+        borderRadius: const BorderRadius.only(
             topRight: Radius.circular(6), bottomRight: Radius.circular(6)),
       ),
       child: Row(
@@ -289,9 +329,9 @@ class _HistoryDialogPageState
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 Icons.access_time,
-                color: Color(0xff5c0101),
+                color: iconColor,
                 size: 20,
               ),
               const HSpacing(
@@ -302,9 +342,6 @@ class _HistoryDialogPageState
                 style: context.myTheme.textThemeT1.body
                     .copyWith(color: Colors.black87),
               ),
-              // const HSpacing(
-              //   spacing: 10,
-              // ),
               Text(
                 " ・ ${item.ngayGio?.ddmmyyyy}",
                 style: context.myTheme.textThemeT1.body
@@ -312,30 +349,6 @@ class _HistoryDialogPageState
               ),
             ],
           ),
-          // const HSpacing(
-          //   spacing: 10,
-          // ),
-          // Row(
-          //   mainAxisSize: MainAxisSize.min,
-          //   children: [
-          //     const Icon(
-          //       Icons.calendar_month_outlined,
-          //       color: Colors.grey,
-          //       size: 20,
-          //     ),
-          //     const HSpacing(
-          //       spacing: 4,
-          //     ),
-          //     Text(
-          //       item.ngayGio?.ddmmyyyy ?? "",
-          //       style: context.myTheme.textThemeT1.body
-          //           .copyWith(color: Colors.black87),
-          //     ),
-          //   ],
-          // ),
-          // const HSpacing(
-          //   spacing: 10,
-          // ),
           Text(
             " ・ ${item.ngayGio?.dayInWeek}",
             style: context.myTheme.textThemeT1.body

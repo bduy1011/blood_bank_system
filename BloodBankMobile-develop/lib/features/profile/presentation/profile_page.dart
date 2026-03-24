@@ -61,7 +61,7 @@ class _ProfilePageState
                   color: Colors.white,
                 )),
             title: Text(
-              AppLocale.updateInformation.translate(context),
+              AppLocale.accountInformation.translate(context),
               style: context.myTheme.textThemeT1.title
                   .copyWith(color: Colors.white),
             ),
@@ -94,9 +94,7 @@ class _ProfilePageState
                           ),
 
                           GestureDetector(
-                            onTap: controller.note == null
-                                ? () => controller.pickAvatar(context)
-                                : null,
+                            onTap: () => controller.pickAvatar(context),
                             child: _buildAvatar(context),
                           ),
                           if (controller.note != null) ...[
@@ -116,7 +114,7 @@ class _ProfilePageState
                           _buildTextField(
                               controller: controller.fullnameController,
                               labelText: AppLocale.fullname.translate(context),
-                              enabled: controller.note == null),
+                              enabled: true),
                           const VSpacing(spacing: 16),
 
                           // _buildYearPicker(
@@ -126,7 +124,7 @@ class _ProfilePageState
                           _buildTextField(
                               controller: controller.idCardController,
                               labelText: AppLocale.idCard.translate(context),
-                              enabled: controller.note == null,
+                              enabled: true,
                               keyboardType: TextInputType.number,
                               inputFormatters: [
                                 // IdCardFormatter(),
@@ -137,7 +135,7 @@ class _ProfilePageState
                               controller: controller.phoneNumberController,
                               labelText:
                                   AppLocale.phoneNumber.translate(context),
-                              enabled: controller.note == null,
+                              enabled: true,
                               keyboardType: TextInputType.number,
                               inputFormatters: [
                                 PhoneNumberFormatter(),
@@ -161,9 +159,6 @@ class _ProfilePageState
   }
 
   Widget buildQrScanButton(BuildContext context) {
-    if (controller.note != null) {
-      return const Positioned(bottom: 0, left: 0, right: 0, child: SizedBox());
-    }
     var bottom = MediaQuery.of(context).viewInsets.bottom;
 
     ///
@@ -234,15 +229,10 @@ class _ProfilePageState
   Widget buildButton(BuildContext context) {
     return ElevatedButton(
       onPressed: () {
-        ///
-        if (controller.note == null) {
-          controller.updateProfile(context);
-        }
+        controller.updateProfile(context);
       },
       style: ElevatedButton.styleFrom(
-        backgroundColor: controller.note == null
-            ? const Color.fromARGB(255, 229, 59, 59)
-            : Colors.grey,
+        backgroundColor: const Color.fromARGB(255, 229, 59, 59),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(50),
         ),

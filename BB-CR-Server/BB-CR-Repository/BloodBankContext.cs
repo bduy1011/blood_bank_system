@@ -50,16 +50,47 @@ namespace BB.CR.Repositories
                 o.HasMany<Models.LichSuHienMau>(d => d.LichSuHienMaus).WithOne(s => s.DotLayMau).HasForeignKey(s => s.DotLayMauId).OnDelete(DeleteBehavior.Cascade);
             });
 
+//              modelBuilder.Entity<Models.DMNguoiHienMau>(o =>
+//             {
+//                 o.Property(i => i.NguoiHienMauId).ValueGeneratedNever();
+//                 o.HasKey(i => i.NguoiHienMauId);
+//                 o.Property(i => i.HoVaTen).HasMaxLength(100);
+// #pragma warning disable CS8604 // Possible null reference argument.
+//                 o.Property(i => i.NgaySinh).HasMaxLength(50).HasConversion(val => Algoris.Encrypt(Settings.KeySecurity, val), val => Algoris.Decrypt(Settings.KeySecurity, val));
+//                 o.Property(i => i.NamSinh).HasMaxLength(32).HasConversion(val => Algoris.Encrypt(Settings.KeySecurity, val), val => Algoris.Decrypt(Settings.KeySecurity, val));
+//                 o.Property(i => i.HoVaTenNoDiacritics).HasMaxLength(100);
+//                 o.Property(i => i.CMND).HasMaxLength(50).HasConversion(val => Algoris.Encrypt(Settings.KeySecurity, val), val => Algoris.Decrypt(Settings.KeySecurity, val)).IsUnicode(false);
+//                 o.Property(i => i.HoVaTen).HasMaxLength(100);
+//                 o.Property(i => i.MaXa).HasMaxLength(20).IsUnicode(false);
+//                 o.Property(i => i.TenXa).HasMaxLength(100);
+//                 o.Property(i => i.MaHuyen).HasMaxLength(20).IsUnicode(false);
+//                 o.Property(i => i.TenHuyen).HasMaxLength(100);
+//                 o.Property(i => i.MaTinh).HasMaxLength(20).IsUnicode(false);
+//                 o.Property(i => i.TenTinh).HasMaxLength(100);
+//                 o.Property(i => i.DiaChiLienLac).HasMaxLength(200).HasConversion(val => Algoris.Encrypt(Settings.KeySecurity, val), val => Algoris.Decrypt(Settings.KeySecurity, val));
+//                 o.Property(i => i.DiaChiTamTru).HasMaxLength(200).HasConversion(val => Algoris.Encrypt(Settings.KeySecurity, val), val => Algoris.Decrypt(Settings.KeySecurity, val));
+//                 o.Property(i => i.NgheNghiep).HasMaxLength(100);
+//                 o.Property(i => i.Email).HasMaxLength(100).HasConversion(val => Algoris.Encrypt(Settings.KeySecurity, val), val => Algoris.Decrypt(Settings.KeySecurity, val)).IsUnicode(false);
+//                 o.Property(i => i.SoDT).HasMaxLength(100).HasConversion(val => Algoris.Encrypt(Settings.KeySecurity, val), val => Algoris.Decrypt(Settings.KeySecurity, val)).IsUnicode(false);
+//                 o.Property(i => i.MaNhomMau).HasMaxLength(20).IsUnicode(false);
+//                 o.Property(i => i.TenNhomMau).HasMaxLength(100);
+//                 o.Property(i => i.GhiChu).HasMaxLength(500);
+//                 o.HasIndex(i => i.CMND, "IX_DMNguoiHienMau_CMND");
+//                 o.HasIndex(i => i.SoDT, "IX_DMNguoiHienMau_SoDT");
+//                 o.HasMany<Models.LichSuHienMau>(d => d.LichSuHienMaus).WithOne(s => s.DMNguoiHienMau).HasForeignKey(s => s.NguoiHienMauId).OnDelete(DeleteBehavior.Cascade).HasConstraintName("FK_LichSuHienMau_NguoiHienMauId");
+//                 o.HasMany<Models.GopY>(d => d.GopYs).WithOne(s => s.DMNguoiHienMau).HasForeignKey(s => s.NguoiHienMauId).OnDelete(DeleteBehavior.Cascade).HasConstraintName("FK_GopY_NguoiHienMauId");
+//             });
+
             modelBuilder.Entity<Models.DMNguoiHienMau>(o =>
             {
                 o.Property(i => i.NguoiHienMauId).ValueGeneratedNever();
                 o.HasKey(i => i.NguoiHienMauId);
                 o.Property(i => i.HoVaTen).HasMaxLength(100);
 #pragma warning disable CS8604 // Possible null reference argument.
-                o.Property(i => i.NgaySinh).HasMaxLength(50).HasConversion(val => Algoris.Encrypt(Settings.KeySecurity, val), val => Algoris.Decrypt(Settings.KeySecurity, val));
-                o.Property(i => i.NamSinh).HasMaxLength(32).HasConversion(val => Algoris.Encrypt(Settings.KeySecurity, val), val => Algoris.Decrypt(Settings.KeySecurity, val));
+                o.Property(i => i.NgaySinh).HasMaxLength(50);
+                o.Property(i => i.NamSinh).HasMaxLength(32);
                 o.Property(i => i.HoVaTenNoDiacritics).HasMaxLength(100);
-                o.Property(i => i.CMND).HasMaxLength(50).HasConversion(val => Algoris.Encrypt(Settings.KeySecurity, val), val => Algoris.Decrypt(Settings.KeySecurity, val)).IsUnicode(false);
+                o.Property(i => i.CMND).HasMaxLength(50).IsUnicode(false);
                 o.Property(i => i.HoVaTen).HasMaxLength(100);
                 o.Property(i => i.MaXa).HasMaxLength(20).IsUnicode(false);
                 o.Property(i => i.TenXa).HasMaxLength(100);
@@ -67,11 +98,11 @@ namespace BB.CR.Repositories
                 o.Property(i => i.TenHuyen).HasMaxLength(100);
                 o.Property(i => i.MaTinh).HasMaxLength(20).IsUnicode(false);
                 o.Property(i => i.TenTinh).HasMaxLength(100);
-                o.Property(i => i.DiaChiLienLac).HasMaxLength(200).HasConversion(val => Algoris.Encrypt(Settings.KeySecurity, val), val => Algoris.Decrypt(Settings.KeySecurity, val));
-                o.Property(i => i.DiaChiTamTru).HasMaxLength(200).HasConversion(val => Algoris.Encrypt(Settings.KeySecurity, val), val => Algoris.Decrypt(Settings.KeySecurity, val));
+                o.Property(i => i.DiaChiLienLac).HasMaxLength(200);
+                o.Property(i => i.DiaChiTamTru).HasMaxLength(200);
                 o.Property(i => i.NgheNghiep).HasMaxLength(100);
-                o.Property(i => i.Email).HasMaxLength(100).HasConversion(val => Algoris.Encrypt(Settings.KeySecurity, val), val => Algoris.Decrypt(Settings.KeySecurity, val)).IsUnicode(false);
-                o.Property(i => i.SoDT).HasMaxLength(100).HasConversion(val => Algoris.Encrypt(Settings.KeySecurity, val), val => Algoris.Decrypt(Settings.KeySecurity, val)).IsUnicode(false);
+                o.Property(i => i.Email).HasMaxLength(100).IsUnicode(false);
+                o.Property(i => i.SoDT).HasMaxLength(100).IsUnicode(false);
                 o.Property(i => i.MaNhomMau).HasMaxLength(20).IsUnicode(false);
                 o.Property(i => i.TenNhomMau).HasMaxLength(100);
                 o.Property(i => i.GhiChu).HasMaxLength(500);

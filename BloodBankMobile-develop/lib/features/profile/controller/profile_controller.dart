@@ -72,12 +72,6 @@ class ProfileController extends BaseModelStateful {
   }
 
   String? getNote() {
-    if (appCenter.authentication?.dmNguoiHienMau != null) {
-      return AppLocale.profileDataUpdatedFromIDCard.translate(Get.context!);
-    } else if (appCenter.authentication?.appRole ==
-        AppRole.DangKyMuaMau.value) {
-      return AppLocale.profileBuyBloodAccountNote.translate(Get.context!);
-    }
     return null;
   }
 
@@ -88,13 +82,15 @@ class ProfileController extends BaseModelStateful {
     var cccd = idCardController.text.trim().replaceAll(" ", "");
     var phoneNumber = phoneNumberController.text.trim().replaceAll(" ", "");
 
-    /// 
+    ///
     if (!cccd.isNum || !(cccd.length == 12 || cccd.length == 9)) {
-      AppUtils.instance.showToast(AppLocale.profileIDCardInvalidFormat.translate(context));
+      AppUtils.instance
+          .showToast(AppLocale.profileIDCardInvalidFormat.translate(context));
       return;
     }
     if (!phoneNumber.isNum || phoneNumber.length != 10) {
-      AppUtils.instance.showToast(AppLocale.profilePhoneInvalidFormat.translate(context));
+      AppUtils.instance
+          .showToast(AppLocale.profilePhoneInvalidFormat.translate(context));
       return;
     }
 
@@ -159,7 +155,8 @@ class ProfileController extends BaseModelStateful {
               ? raw
               : '${backendProvider.url.toString().replaceAll(RegExp(r'/$'), '')}/api/system-user/avatar';
           final sep = base.contains('?') ? '&' : '?';
-          appCenter.authentication?.avatarUrl = '$base${sep}v=${DateTime.now().millisecondsSinceEpoch}';
+          appCenter.authentication?.avatarUrl =
+              '$base${sep}v=${DateTime.now().millisecondsSinceEpoch}';
           await backendProvider.evictAvatarCache();
         }
 
@@ -187,19 +184,22 @@ class ProfileController extends BaseModelStateful {
               final existingUserCode = existingAuth!.userCode!.trim();
               final newUserCode = appCenter.authentication!.userCode!.trim();
               final oldUserCodeTrimmed = oldUserCode?.trim();
-              
+
               // Chỉ cập nhật nếu:
               // 1. existingAuth.userCode == newUserCode (cùng user, cập nhật thông tin)
               // 2. existingAuth.userCode == oldUserCode (cùng user, userCode thay đổi)
               // Nếu không phải cả hai trường hợp trên → đây là user khác, không ghi đè
               if (existingUserCode == newUserCode ||
-                  (oldUserCodeTrimmed != null && existingUserCode == oldUserCodeTrimmed)) {
+                  (oldUserCodeTrimmed != null &&
+                      existingUserCode == oldUserCodeTrimmed)) {
                 // Cùng user → cập nhật authentication
-                await _tokenService.saveAuthentication(appCenter.authentication!);
+                await _tokenService
+                    .saveAuthentication(appCenter.authentication!);
               } else {
                 // User khác → không ghi đè, giữ nguyên authentication của user đó
                 // Log để debug
-                print("[ProfileController] Biometric already linked to another account: ${existingAuth.userCode}. Skipping save to preserve biometric login.");
+                print(
+                    "[ProfileController] Biometric already linked to another account: ${existingAuth.userCode}. Skipping save to preserve biometric login.");
               }
             } else {
               // Không có authentication trong secure storage → lưu bình thường
@@ -208,12 +208,13 @@ class ProfileController extends BaseModelStateful {
           } catch (_) {}
         }
 
-        AppUtils.instance.showToast(AppLocale.updateAccountSuccess.translate(context));
+        AppUtils.instance
+            .showToast(AppLocale.updateAccountSuccess.translate(context));
         hideLoading();
         refresh();
         Get.findOrNull<HomeController>()?.onRefresh();
 
-        /// 
+        ///
         if (dmNguoiHienMau != null) {
           backToHome();
         }
@@ -221,13 +222,13 @@ class ProfileController extends BaseModelStateful {
         return;
       }
       AppUtils.instance.showToast(
-        "${AppLocale.updateAccountFailed.translate(context)}\n${response.message ?? ""}"
-      );
+          "${AppLocale.updateAccountFailed.translate(context)}\n${response.message ?? ""}");
     } catch (e, t) {
       print(e);
       print(t);
       // TODO
-      AppUtils.instance.showToast(AppLocale.updateAccountFailed.translate(context));
+      AppUtils.instance
+          .showToast(AppLocale.updateAccountFailed.translate(context));
     }
     hideLoading();
   }
@@ -270,7 +271,6 @@ class ProfileController extends BaseModelStateful {
 // 074202000733|281290246|Lê Nguyễn Anh Vũ|16112002|Nam|Tổ 6, Khu Phố 1,, Uyên Hưng, Tân Uyên, Bình Dương|13042021
   /// Chọn ảnh từ thư viện/máy ảnh — chỉ lưu tạm, chưa upload. Upload khi bấm "Cập nhật thông tin".
   Future<void> pickAvatar(BuildContext context) async {
-    if (note != null) return;
     try {
       final picker = ImagePicker();
       final source = await showModalBottomSheet<ImageSource>(
@@ -294,15 +294,26 @@ class ProfileController extends BaseModelStateful {
         ),
       );
       if (source == null) return;
-      final xFile = await picker.pickImage(source: source, maxWidth: 1024, imageQuality: 85);
+      final xFile = await picker.pickImage(
+          source: source, maxWidth: 1024, imageQuality: 85);
       if (xFile == null) return;
       File file = File(xFile.path);
-      const allowedExt = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic', '.heif'];
+      const allowedExt = [
+        '.jpg',
+        '.jpeg',
+        '.png',
+        '.gif',
+        '.webp',
+        '.heic',
+        '.heif'
+      ];
       final fname = xFile.path.split(RegExp(r'[/\\]')).last;
-      final ext = fname.contains('.') ? '.${fname.split('.').last.toLowerCase()}' : '';
+      final ext =
+          fname.contains('.') ? '.${fname.split('.').last.toLowerCase()}' : '';
       if (!allowedExt.contains(ext)) {
         final dir = await getTemporaryDirectory();
-        final newPath = '${dir.path}/avatar_upload_${DateTime.now().millisecondsSinceEpoch}.jpg';
+        final newPath =
+            '${dir.path}/avatar_upload_${DateTime.now().millisecondsSinceEpoch}.jpg';
         file = await file.copy(newPath);
       }
       _pendingAvatarFile = file;
@@ -310,7 +321,8 @@ class ProfileController extends BaseModelStateful {
     } catch (e, t) {
       print(e);
       print(t);
-      AppUtils.instance.showToast(AppLocale.updateAccountFailed.translate(context));
+      AppUtils.instance
+          .showToast(AppLocale.updateAccountFailed.translate(context));
     }
   }
 
@@ -320,13 +332,17 @@ class ProfileController extends BaseModelStateful {
     final file = _pendingAvatarFile!;
     final response = await backendProvider.uploadAvatar(file);
     if (response.status != 200 || response.data == null) {
-      AppUtils.instance.showToast(response.message ?? AppLocale.updateAccountFailed.translate(context));
+      AppUtils.instance.showToast(
+          response.message ?? AppLocale.updateAccountFailed.translate(context));
       return false;
     }
-    final url = (response.data is Map ? (response.data as Map)['avatarUrl'] : null)?.toString();
+    final url =
+        (response.data is Map ? (response.data as Map)['avatarUrl'] : null)
+            ?.toString();
     if (url != null && url.isNotEmpty) {
       final sep = url.contains('?') ? '&' : '?';
-      appCenter.authentication?.avatarUrl = '$url${sep}v=${DateTime.now().millisecondsSinceEpoch}';
+      appCenter.authentication?.avatarUrl =
+          '$url${sep}v=${DateTime.now().millisecondsSinceEpoch}';
       _pendingAvatarFile = null;
       await backendProvider.evictAvatarCache();
     }

@@ -403,30 +403,37 @@ class SecureTokenService {
     }
   }
 
-  /// Xóa tất cả tokens (khi logout)
+  /// Xóa dữ liệu phiên đăng nhập (AccessToken) nhưng giữ lại thông tin liên kết Biometric
+  /// (userCode, userName) để có thể hiển thị trên màn hình Login.
+  Future<void> clearSession() async {
+    try {
+      log("[SecureTokenService] clearSession() - Only clearing session tokens");
+      await _storage.delete(key: _keyAccessToken);
+      await _storage.delete(key: _keyRefreshToken);
+      // Giữ lại _keyUserCode, _keyUserName, _keyAuthentication (để biết ai đã từng login)
+      log("[SecureTokenService] ✓ Session tokens cleared");
+    } catch (e) {
+      log("[SecureTokenService] ❌ clearSession() error: $e");
+    }
+  }
+
+  /// Xóa tất cả tokens và thông tin liên kết (khi người dùng chủ động Gỡ vân tay)
   Future<void> clearTokens() async {
     try {
-      log("[SecureTokenService] clearTokens() - START - Clearing all tokens from secure storage");
+      log("[SecureTokenService] clearTokens() - START - Clearing all biometric data");
       await _storage.delete(key: _keyAccessToken);
-      log("[SecureTokenService] ✓ Deleted access_token");
       await _storage.delete(key: _keyRefreshToken);
-      log("[SecureTokenService] ✓ Deleted refresh_token");
       await _storage.delete(key: _keyBiometricEnabled);
-      log("[SecureTokenService] ✓ Deleted biometric_enabled");
       await _storage.delete(key: _keyUserCode);
-      log("[SecureTokenService] ✓ Deleted user_code");
       await _storage.delete(key: _keyUserName);
-      log("[SecureTokenService] ✓ Deleted user_name");
       await _storage.delete(key: _keyAuthentication);
-      log("[SecureTokenService] ✓ Deleted authentication object");
-      // Clear saved login credentials (passwords)
+      
       try {
         await clearSavedPasswords();
       } catch (e) {
-        // Không fail toàn bộ logout nếu không xóa được hết credential keys
-        log("[SecureTokenService] ⚠️ clearTokens() - failed clearing password keys: $e");
+        log("[SecureTokenService] ⚠️ Failed clearing password keys: $e");
       }
-      log("[SecureTokenService] clearTokens() - SUCCESS - All tokens cleared");
+      log("[SecureTokenService] clearTokens() - SUCCESS");
     } catch (e) {
       log("[SecureTokenService] ❌ clearTokens() error: $e");
     }

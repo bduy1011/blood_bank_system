@@ -79,7 +79,12 @@ class BackendProvider {
 
   void create({required String url}) {
     this.url = url;
-    _client = BackendClient(Dio()..interceptors.add(HeaderInterceptor()));
+    final dio = Dio(BaseOptions(
+      baseUrl: url,
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 30),
+    ))..interceptors.add(HeaderInterceptor());
+    _client = BackendClient(dio, baseUrl: url);
 
     notifyAuthentication(
         isAuthenticated: _localStorage

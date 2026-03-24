@@ -17,6 +17,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../app/config/routes.dart';
 
 class LoginController extends BaseModelStateful {
+  void changeLanguage(AppLanguage language) {
+    localization.translate(language.languageCode);
+  }
+
   ///
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
@@ -128,34 +132,40 @@ class LoginController extends BaseModelStateful {
   /// Lưu tokens và toàn bộ Authentication vào secure storage sau khi login thành công
   /// Token được khóa bằng Face ID/vân tay cho đúng account (UserCode)
   /// Returns true nếu lưu thành công, false nếu bị chặn (đã có account khác).
+  /// Lưu tokens và toàn bộ Authentication vào secure storage sau khi login thành công.
+  /// Nếu [forceSave] là true, sẽ ghi đè không cần hỏi (dùng sau khi user xác nhận).
   Future<bool> saveTokensToSecureStorage({
     required Authentication authentication,
-    String? refreshToken,
+    bool forceSave = false,
   }) async {
     try {
-      // Không cho phép ghi đè nếu biometric đã gắn với account khác
-      final existingAuth = await _tokenService.getAuthentication();
-      if (existingAuth?.userCode != null &&
-          authentication.userCode != null &&
-          existingAuth!.userCode != authentication.userCode) {
-        log("Biometric already linked to another account: ${existingAuth.userCode}. Skipping save.");
-        return false;
+      if (!forceSave) {
+        // Kiểm tra xem biometric đã gắn với account khác chưa
+        final existingUserCode = await _tokenService.getUserCode();
+        if (existingUserCode != null &&
+            authentication.userCode != null &&
+            existingUserCode != authentication.userCode) {
+          log("Biometric already linked to another account: $existingUserCode. Need user confirmation.");
+          return false; // Trả về false để UI biết cần hiện Dialog xác nhận
+        }
       }
 
       if (authentication.accessToken != null &&
           authentication.accessToken!.isNotEmpty) {
-        log("Saving authentication to secure storage (locked by biometric): userCode=${authentication.userCode}, userName=${authentication.name}");
+        log("Saving authentication to secure storage: userCode=${authentication.userCode}");
         await _tokenService.saveAuthentication(authentication);
-        log("Authentication and tokens saved to secure storage successfully (locked by biometric)");
         return true;
-      } else {
-        log("Warning: accessToken is null or empty, cannot save to secure storage");
-        return false;
       }
+      return false;
     } catch (e) {
       log("saveTokensToSecureStorage error: $e");
       rethrow;
     }
+  }
+
+  /// Lấy thông tin User đang được liên kết Biometric
+  Future<Map<String, String?>> getLinkedUserInfo() async {
+    return await _tokenService.getUserInfo();
   }
 
   /// Kiểm tra xem có tokens đã lưu trong secure storage không
@@ -417,7 +427,10 @@ class LoginController extends BaseModelStateful {
       final isAuthenticated =
           await backendProvider.login(username: username, password: password);
       if (isAuthenticated != null) {
-        // Lưu mật khẩu (secure storage) sau khi login thành công (chỉ khi bật "Ghi nhớ mật khẩu")
+        // 1. Ẩn loading trước khi xử lý các Dialog (nếu có) hoặc chuyển trang
+        AppUtils.instance.hideLoading();
+
+        // 2. Lưu mật khẩu (secure storage) sau khi login thành công (chỉ khi bật "Ghi nhớ mật khẩu")
         if (rememberPassword) {
           try {
             await _tokenService.saveLoginCredentials(
@@ -439,29 +452,46 @@ class LoginController extends BaseModelStateful {
           }
         }
 
-        // Lưu tokens vào secure storage để dùng cho biometric login (tách biệt, không ảnh hưởng flow hiện tại)
+        // 3. Lưu tokens vào secure storage để dùng cho biometric login
         try {
-          log("[LoginController] Saving tokens to secure storage for biometric login...");
-          final saved = await saveTokensToSecureStorage(
-            authentication: isAuthenticated,
-            refreshToken: null,
-          );
-          if (saved) {
-            log("[LoginController] ✓ Tokens saved to secure storage successfully");
-          } else {
-            log("[LoginController] ⚠️ Biometric save skipped (already linked to another account)");
+          log("[LoginController] Checking biometric binding...");
+          final linkedInfo = await getLinkedUserInfo();
+          final linkedUserCode = linkedInfo['userCode'];
+
+          if (linkedUserCode != null &&
+              linkedUserCode != isAuthenticated.userCode) {
+            // Trường hợp: Tài khoản login khác với tài khoản đang giữ Vân tay
+            log("[LoginController] Identity mismatch: $linkedUserCode vs ${isAuthenticated.userCode}");
             if (context.mounted) {
-              AppUtils.instance.showToast(
-                AppLocale.biometricLockedToOtherAccount.translate(context),
+              final confirm = await _showChangeBiometricDialog(
+                context,
+                oldUser: linkedInfo['userName'] ?? linkedUserCode,
+                newUser: isAuthenticated.name ?? isAuthenticated.userCode ?? '',
               );
+
+              if (confirm == true) {
+                await saveTokensToSecureStorage(
+                  authentication: isAuthenticated,
+                  forceSave: true,
+                );
+                if (context.mounted) {
+                  AppUtils.instance.showToast(
+                      AppLocale.biometricAuthSuccess.translate(context));
+                }
+              }
             }
+          } else {
+            // Trường hợp: Trùng user hoặc máy chưa có liên kết nào -> Tự động cập nhật/lưu
+            await saveTokensToSecureStorage(
+              authentication: isAuthenticated,
+              forceSave: true,
+            );
           }
         } catch (e) {
-          log("[LoginController] ❌ Error saving tokens to secure storage: $e");
-          // Không throw error, vì đây là tính năng bổ sung, không ảnh hưởng login bằng text
+          log("[LoginController] ❌ Error handling biometric binding: $e");
         }
         
-        // emit(state.copyWith(isAuthenticated: true));
+        // 4. Các bước dọn dẹp cuối cùng và vào app
         setUserName();
         // Clear password field after successful login if rememberPassword is false
         if (!rememberPassword) {
@@ -469,13 +499,41 @@ class LoginController extends BaseModelStateful {
         }
         autoGotoHomePage(context);
       } else {
-        // emit(state.copyWith(isAuthenticated: false));
+        AppUtils.instance.hideLoading();
         AppUtils.instance.showError(AppLocale.loginFail.translate(context));
       }
     } catch (e, t) {
+      AppUtils.instance.hideLoading();
       log("login()", error: e, stackTrace: t);
       AppUtils.instance.showError("$e");
     }
-    AppUtils.instance.hideLoading();
+  }
+
+  /// Dialog xác nhận chuyển đổi liên kết vân tay giữa 2 tài khoản
+  Future<bool?> _showChangeBiometricDialog(
+    BuildContext context, {
+    required String oldUser,
+    required String newUser,
+  }) async {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(AppLocale.biometricAuth.translate(context)),
+        content: Text(
+          "Thiết bị này đang liên kết vân tay với tài khoản '$oldUser'. "
+          "Bạn có muốn chuyển liên kết sang tài khoản '$newUser' này không?",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(AppLocale.cancel.translate(context)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Chuyển đổi", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -36,6 +36,8 @@ class _LoginPageState extends BaseViewStateful<LoginPage, LoginController> {
   bool _biometricAvailable = false;
   bool _hasStoredTokens = false;
   String _biometricTypeName = 'Biometric';
+  String? _linkedUserName;
+  String? _linkedUserCode;
   final BiometricAuthService _biometricAuthService = BiometricAuthService();
 
   @override
@@ -70,10 +72,13 @@ class _LoginPageState extends BaseViewStateful<LoginPage, LoginController> {
   /// Chỉ hiển thị button biometric nếu có token đã lưu
   Future<void> _checkStoredTokens() async {
     final hasTokens = await controller.hasStoredTokens();
+    final linkedInfo = await controller.getLinkedUserInfo();
+
     log("[LoginPage] Stored tokens check - hasTokens: $hasTokens");
-    log("[LoginPage] Button biometric will show: ${_biometricAvailable && hasTokens}");
     setState(() {
       _hasStoredTokens = hasTokens;
+      _linkedUserName = linkedInfo['userName'];
+      _linkedUserCode = linkedInfo['userCode'];
     });
   }
 
@@ -127,10 +132,116 @@ class _LoginPageState extends BaseViewStateful<LoginPage, LoginController> {
               ),
             ),
             buildBottomSection(context),
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 10,
+              right: 15,
+              child: _buildLanguageButton(context),
+            ),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildLanguageButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _showLanguageDialog(context),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.9),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.language,
+              color: AppColor.mainColor,
+              size: 20,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              _getCurrentLanguage() == AppLanguage.en ? "EN" : "VI",
+              style: context.myTheme.textThemeT1.title.copyWith(
+                color: AppColor.mainColor,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showLanguageDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(AppLocale.language.translate(context)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                title: Text(AppLocale.english.translate(context)),
+                leading: Radio<AppLanguage>(
+                  value: AppLanguage.en,
+                  groupValue: _getCurrentLanguage(),
+                  onChanged: (AppLanguage? value) {
+                    if (value != null) {
+                      controller.changeLanguage(value);
+                      Navigator.of(context).pop();
+                      setState(() {});
+                    }
+                  },
+                ),
+                onTap: () {
+                  controller.changeLanguage(AppLanguage.en);
+                  Navigator.of(context).pop();
+                  setState(() {});
+                },
+              ),
+              ListTile(
+                title: Text(AppLocale.vietnamese.translate(context)),
+                leading: Radio<AppLanguage>(
+                  value: AppLanguage.vi,
+                  groupValue: _getCurrentLanguage(),
+                  onChanged: (AppLanguage? value) {
+                    if (value != null) {
+                      controller.changeLanguage(value);
+                      Navigator.of(context).pop();
+                      setState(() {});
+                    }
+                  },
+                ),
+                onTap: () {
+                  controller.changeLanguage(AppLanguage.vi);
+                  Navigator.of(context).pop();
+                  setState(() {});
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  AppLanguage _getCurrentLanguage() {
+    final currentLocale = localization.currentLocale;
+    if (currentLocale?.languageCode == 'en') {
+      return AppLanguage.en;
+    }
+    return AppLanguage.vi;
   }
 
   Positioned buildBottomSection(BuildContext context) {
@@ -302,34 +413,39 @@ class _LoginPageState extends BaseViewStateful<LoginPage, LoginController> {
       biometricIcon = Icons.fingerprint;
     }
 
-    return InkWell(
-      onTap: () {
-        log("[LoginPage] Biometric login button tapped");
-        controller.loginWithBiometric(context);
-      },
-      borderRadius: BorderRadius.circular(26),
-      child: Container(
-        width: 52,
-        height: 52,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.white,
-          border: Border.all(color: Colors.black.withOpacity(0.06)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        InkWell(
+          onTap: () {
+            log("[LoginPage] Biometric login button tapped");
+            controller.loginWithBiometric(context);
+          },
+          borderRadius: BorderRadius.circular(26),
+          child: Container(
+            width: 52,
+            height: 52,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white,
+              border: Border.all(color: Colors.black.withOpacity(0.06)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.06),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-          ],
+            child: Icon(
+              biometricIcon,
+              size: 34,
+              color: const Color.fromARGB(255, 229, 59, 59),
+            ),
+          ),
         ),
-        child: Icon(
-          biometricIcon,
-          size: 34,
-          color: const Color.fromARGB(255, 229, 59, 59),
-        ),
-      ),
+      ],
     );
   }
 

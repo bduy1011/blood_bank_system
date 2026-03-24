@@ -61,9 +61,7 @@ class _RegisterDonateBloodPageSecondState
                   children: [
                     _buildTextField(
                       label: AppLocale.fullname.translate(context),
-                      isEnabled: widget
-                              .state.appCenter.authentication?.dmNguoiHienMau ==
-                          null,
+                      isEnabled: true,
                       controller: widget.state.nameController,
                       onChanged: (value) {
                         widget.state.updateProfile(name: value);
@@ -72,9 +70,7 @@ class _RegisterDonateBloodPageSecondState
                     ),
                     _buildTextField(
                       label: AppLocale.yearOfBirth.translate(context),
-                      isEnabled: widget
-                              .state.appCenter.authentication?.dmNguoiHienMau ==
-                          null,
+                      isEnabled: true,
                       controller: widget.state.namSinhController,
                       onChanged: (value) {
                         widget.state.updateProfile(
@@ -115,9 +111,7 @@ class _RegisterDonateBloodPageSecondState
                     _buildTextField(
                       label: AppLocale.idCard.translate(context),
                       controller: widget.state.idCardController,
-                      isEnabled: widget.state.appCenter.authentication
-                              ?.dmNguoiHienMau?.cmnd?.isNotEmpty !=
-                          true,
+                      isEnabled: true,
                       onChanged: (value) {
                         widget.state.updateProfile(idCard: value);
                       },

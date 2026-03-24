@@ -14,6 +14,7 @@ using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.Annotations;
 using System.IdentityModel.Tokens.Jwt;
@@ -90,6 +91,30 @@ namespace BB.CR.Rest.Controllers
                         {
                             var view = await BaseHandler.ExecuteAsync(async () => await dmNguoiHienMauRepository.GetAsync(authorize.IdCardNr ?? string.Empty, logger).ConfigureAwait(false)
                             , logger).ConfigureAwait(false);
+
+                            // Tự động tạo hồ sơ người hiến nếu chưa có (Để Server tự mã hóa CMND)
+                            if (view?.NguoiHienMau == null)
+                            {
+                                using var context = new BloodBankContext();
+                                int nextId = (await context.DMNguoiHienMau.AsNoTracking()
+                                    .MaxAsync(i => (int?)i.NguoiHienMauId).ConfigureAwait(false) ?? 0) + 1;
+
+                                var newDonor = new DMNguoiHienMau
+                                {
+                                    NguoiHienMauId = nextId,
+                                    HoVaTen = authorize.Name ?? "Unknown",
+                                    CMND = authorize.IdCardNr, // EF sẽ tự mã hóa cái này
+                                    SoDT = authorize.PhoneNumber ?? authorize.UserCode,
+                                    SoLanHienMau = 0,
+                                    UpdatedTime = DateTime.Now
+                                };
+                                
+                                await dmNguoiHienMauRepository.CreateAsync(newDonor, logger).ConfigureAwait(false);
+
+                                // Lấy lại thông tin sau khi tạo
+                                view = await BaseHandler.ExecuteAsync(async () => await dmNguoiHienMauRepository.GetAsync(authorize.IdCardNr ?? string.Empty, logger).ConfigureAwait(false)
+                                , logger).ConfigureAwait(false);
+                            }
 
                             authorize.DMNguoiHienMau = view?.NguoiHienMau;
                             authorize.SoLanHienMau = view?.NguoiHienMau?.SoLanHienMau;

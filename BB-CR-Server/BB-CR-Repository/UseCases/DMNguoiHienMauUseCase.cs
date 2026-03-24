@@ -280,8 +280,9 @@ namespace BB.CR.Repositories.UseCases
 
             DateTime? ngayHienMauGanNhat = null;
             bool duongTinhGanNhat = false;
+            // var nguoiHienMau = await context.DMNguoiHienMau.AsNoTracking().OrderBy(i => i.NguoiHienMauId).LastOrDefaultAsync(i => i.CMND == idCardNr).ConfigureAwait(false);
 
-            var nguoiHienMau = await context.DMNguoiHienMau.AsNoTracking().OrderBy(i => i.NguoiHienMauId).LastOrDefaultAsync(i => i.CMND == idCardNr).ConfigureAwait(false);
+            var nguoiHienMau = await context.DMNguoiHienMau.AsNoTracking().OrderBy(i => i.NguoiHienMauId).LastOrDefaultAsync(i => i.CMND != null && i.CMND == idCardNr.Trim()).ConfigureAwait(false);
             if (nguoiHienMau is not null)
             {
                 var lichSuHienMau = await context.LichSuHienMau.AsNoTracking().OrderBy(i => i.Id).LastOrDefaultAsync(i => i.NguoiHienMauId == nguoiHienMau.NguoiHienMauId).ConfigureAwait(false);

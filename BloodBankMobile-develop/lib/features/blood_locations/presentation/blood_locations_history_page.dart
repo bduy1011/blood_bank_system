@@ -6,6 +6,7 @@ import 'package:blood_donation/models/donation_blood_history_response.dart';
 import 'package:blood_donation/utils/extension/context_ext.dart';
 import 'package:blood_donation/utils/extension/datetime_extension.dart';
 import 'package:blood_donation/utils/widget/spacer_widget.dart';
+import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -165,7 +166,10 @@ class _BloodLocationsHistoryPageState extends BaseViewStateful<
           children: [
             Column(
               children: [
-                Text(AppLocale.timeWithIndex.translate(context).replaceAll('{index}', '$index'),
+                Text(
+                    AppLocale.timeWithIndex
+                        .translate(context)
+                        .replaceAll('{index}', '$index'),
                     style: const TextStyle(
                         fontSize: 13,
                         color: Colors.grey,
@@ -221,44 +225,44 @@ class _BloodLocationsHistoryPageState extends BaseViewStateful<
                 Row(
                   children: [
                     const Icon(Icons.gas_meter_outlined,
-                        size: 14, color: Colors.black54),
+                        size: 14, color: Colors.grey),
                     const SizedBox(
-                      width: 3,
+                      width: 5,
                     ),
                     Text(
                       item.maVachId ?? "",
                       style: context.myTheme.textThemeT1.body
-                          .copyWith(color: Colors.black87),
+                          .copyWith(color: Colors.grey.shade700),
                     ),
                   ],
                 ),
                 Row(
                   children: [
                     const Icon(Icons.calendar_month_outlined,
-                        size: 14, color: Colors.black54),
+                        size: 14, color: Colors.grey),
                     const SizedBox(
-                      width: 3,
+                      width: 5,
                     ),
                     Text(
                       item.ngayThu != null
                           ? "${AppLocale.receivedAt.translate(context)} ${DateFormat("dd/MM/yyyy HH:mm").format(item.ngayThu!)}"
                           : "",
                       style: context.myTheme.textThemeT1.body
-                          .copyWith(color: Colors.black87),
+                          .copyWith(color: Colors.grey.shade700),
                     ),
                   ],
                 ),
                 Row(
                   children: [
                     const Icon(Icons.medical_information_outlined,
-                        size: 14, color: Colors.black54),
+                        size: 14, color: Colors.grey),
                     const SizedBox(
-                      width: 3,
+                      width: 5,
                     ),
                     Text(
                       "${AppLocale.processedAt.translate(context)} ${DateFormat("dd/MM/yyyy HH:mm").format(item.ngaySanXuat ?? item.ngayThu!.add(const Duration(hours: 3, minutes: 27)))}",
                       style: context.myTheme.textThemeT1.body
-                          .copyWith(color: Colors.black87),
+                          .copyWith(color: Colors.grey.shade700),
                     ),
                   ],
                 ),
@@ -280,32 +284,48 @@ class _BloodLocationsHistoryPageState extends BaseViewStateful<
                 Text(
                   item.description ?? "",
                   style: context.myTheme.textThemeT1.body.copyWith(
-                      color: item.isHyperlink == null
-                          ? Colors.blue.shade900
-                          : Colors.red.shade900),
+                      color: const Color(0xFF2F6FD6),
+                      fontWeight: FontWeight.w500),
                 ),
-                if (item.isHyperlink != null) ...[
-                  const SizedBox(height: 6),
-                  GestureDetector(
+                const SizedBox(height: 6),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: GestureDetector(
                     onTap: () => ThankYouLetterDialog.show(context, item),
                     behavior: HitTestBehavior.opaque,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.favorite,
-                            size: 16, color: AppColor.mainColor),
-                        const SizedBox(width: 4),
-                        Text(
-                          AppLocale.thankYouLetterTitle.translate(context),
-                          style: context.myTheme.textThemeT1.body
-                              .copyWith(
-                                  color: AppColor.mainColor,
-                                  fontWeight: FontWeight.w500),
+                    child: DottedBorder(
+                      color: Colors.grey.shade300,
+                      strokeWidth: 1.2,
+                      dashPattern: const [6, 3],
+                      borderType: BorderType.RRect,
+                      radius: const Radius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                      ],
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.favorite,
+                                size: 18, color: Colors.red),
+                            const SizedBox(width: 8),
+                            Text(
+                              AppLocale.thankYouLetterTitle.translate(context),
+                              style: context.myTheme.textThemeT1.body.copyWith(
+                                color: Colors.grey.shade700,
+                                fontWeight: FontWeight.normal,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                ],
+                ),
                 // RichText(
                 //   text: TextSpan(
                 //     text: "Kết quả xet nghiệm: ",
@@ -484,7 +504,8 @@ class _BloodLocationsHistoryPageState extends BaseViewStateful<
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 30),
         child: Text(
-          AppLocale.noDataFromDateToDate.translate(context)
+          AppLocale.noDataFromDateToDate
+              .translate(context)
               .replaceAll('{fromDate}', controller.startDate?.ddmmyyyy ?? '')
               .replaceAll('{toDate}', controller.endDate?.ddmmyyyy ?? ''),
           style: Get.context?.myTheme.textThemeT1.body,
